@@ -1,109 +1,145 @@
+#include <iostream>
 #include <SFML/Graphics.hpp>
 
 const int WINDOW_WIDTH 	= 800;
 const int WINDOW_HEIGHT = 800;
 
-float horizontal_vel 	= 0.0;
-float vertical_vel 		= 0.0;
-const float max_vel 	= 0.5;
-const float acc			= 0.000010;
-const float dec			= 0.000001;
-float x 			= 0.0;
-float y 			= 0.0;
-const int WIDTH 	= 14;
-const int HEIGHT 	= 12;
-bool up 	= false;
-bool down 	= false;
-bool left 	= false;
-bool right 	= false;
+const float GRAVITY = 0.5;
 
-float calc_velocity(float vel, bool neg_dir, bool pos_dir) {
-	if (neg_dir && !pos_dir) {
-		vel -= acc;
-	} else if (pos_dir && !neg_dir) {
-		vel += acc;
-	} else {
-		if (vel > 0) {
-			vel -= dec;
-			if (vel < 0) {
-				vel = 0;
-			}
-		} else if (vel < 0) {
-			vel += dec;
-			if (vel > 0) {
-				vel = 0;
-			}
-		}
+const float FPS = 60;
+
+bool frame(sf::Clock& clock) {
+	if (clock.getElapsedTime().asSeconds() > 1 / FPS) {
+		clock.restart();
+		return true;
 	}
 
-	if (vel > max_vel) {
-		vel = max_vel;
-	} else if (vel < -max_vel) {
-		vel = -max_vel;
-	}
-
-	return vel;
+	return false;
 }
 
+class Player {
+	public:
+		int width = 14;
+		int height = 12;
+		float x = 0;
+		float y = 0;
+		float x_vel = 0;
+		float y_vel = 0;
+		float max_vel = 5;
+		float acceleration = 0.6;
+		float deceleration = 0.2;
+
+		bool up = false;
+		bool down = false;
+		bool left = false;
+		bool right = false;
+
+		float jumpforce = 9;
+		bool jump = false;
+		bool jumped = false;
+		bool onground = false;
+
+		//sf::Texture texture;
+		//sf::Sprite sprite;
+		// texture.loadFromFile("src/resources/textures/slimey.png", sf::IntRect(0, 0, this->width, this->height));
+		// texture.setSmooth(true);
+		// sprite.setTexture(texture);
+
+		void update() {
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+				this->up = true;
+			} else {
+				this->up = false;
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+				this->down = true;
+			} else {
+				this->down = false;
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+				this->left = true;
+			} else {
+				this->left = false;
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+				this->right = true;
+			} else {
+				this->right = false;
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+				this->jump = true;
+			} else {
+				this->jump = false;
+			}
+
+			if (this->left && !this->right) {
+				this->x_vel -= this->acceleration;
+			} else if (this->right && !this->left) {
+				this->x_vel += this->acceleration;
+			} else if (this->onground) {
+				if (this->x_vel > 0) {
+					this->x_vel -= this->deceleration;
+					if (this->x_vel < 0) {
+						this->x_vel = 0;
+					}
+				} else if (this->x_vel < 0) {
+					this->x_vel += this->deceleration;
+					if (this->x_vel > 0) {
+						this->x_vel = 0;
+					}
+				}
+			}
+
+			if (this->x_vel > this->max_vel) {
+				this->x_vel = this->max_vel;
+			} else if (this->x_vel < -this->max_vel) {
+				this->x_vel = -this->max_vel;
+			}
+
+			if (this->onground && !this->jump) {
+				this->jumped = false;
+			}
+
+			if (this->onground && this->jump && !this->jumped) {
+				this->y_vel -= this->jumpforce;
+				this->jumped = true;
+				this->onground = false;
+			}
+
+			this->y_vel += GRAVITY;
+
+			this->x += this->x_vel;
+			this->y += this->y_vel;
+
+			if (this->y > WINDOW_HEIGHT - this->height) {
+				this->y = WINDOW_HEIGHT - this->height;
+				this->y_vel = 0;
+				this->onground = true;
+			}
+		}
+
+		void draw(sf::RenderWindow& window) {
+			this->update();
+			sf::Texture texture;
+			sf::Sprite sprite;
+			texture.loadFromFile("src/resources/textures/slimey.png", sf::IntRect(0, 0, this->width, this->height));
+			texture.setSmooth(true);
+			sprite.setTexture(texture);
+			//sprite.setScale(10, 10);
+			sprite.setPosition(sf::Vector2f(this->x, this->y));
+			window.draw(sprite);
+		}
+};
+
+Player player;
+
 void game(sf::RenderWindow& window) {
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-		up = true;
-	} else {
-		up = false;
-	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-		down = true;
-	} else {
-		down = false;
-	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-		left = true;
-	} else {
-		left = false;
-	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-		right = true;
-	} else {
-		right = false;
-	}
-
-	horizontal_vel = calc_velocity(horizontal_vel, left, right);
-	vertical_vel = calc_velocity(vertical_vel, up, down);
-
-	x += horizontal_vel;
-	y += vertical_vel;
-
-	// pacman style edges
-	/*if (x < 0) {
-		x = WINDOW_WIDTH;
-	} else if (x > WINDOW_WIDTH - WIDTH) {
-		x = 0;
-	}
-	if (y < 0) {
-		y = WINDOW_HEIGHT;
-	} else if (y > WINDOW_HEIGHT - HEIGHT) {
-		y = 0;
-	}*/
-
-	// bounce
-	if (x < 0 || x > WINDOW_WIDTH - WIDTH) {
-		horizontal_vel = -horizontal_vel;
-	}
-	if (y < 0 || y > WINDOW_HEIGHT - HEIGHT) {
-		vertical_vel = -vertical_vel;
-	}
-
-	sf::Texture texture;
-	texture.loadFromFile("src/resources/textures/slimey.png", sf::IntRect(0, 0, WIDTH, HEIGHT));
-	texture.setSmooth(true);
-	sf::Sprite sprite;
-	sprite.setTexture(texture);
-	sprite.setPosition(sf::Vector2f(x, y));
-
-	window.draw(sprite);
+	player.draw(window);
 }
 
 int main() {
+	sf::Clock clock;
+
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Slimey: The Five Crystals", sf::Style::Close);
 
 	while (window.isOpen()) {
@@ -113,11 +149,14 @@ int main() {
 				window.close();
 			}
 		}
-		window.clear();
 
-		game(window);
+		if (frame(clock)) {
+			window.clear();
 
-		window.display();
+			game(window);
+
+			window.display();
+		}
 	}
 
 	return 0;
