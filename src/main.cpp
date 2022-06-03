@@ -1,6 +1,8 @@
 #include <iostream>
+#include <string>
 #include <SFML/Graphics.hpp>
 
+const std::string TITLE = "Slimey";
 const int WINDOW_WIDTH 	= 800;
 const int WINDOW_HEIGHT = 800;
 
@@ -21,8 +23,7 @@ class Player {
 	public:
 		int width = 14;
 		int height = 12;
-		float x = 0;
-		float y = 0;
+		float x, y;
 		float x_vel = 0;
 		float y_vel = 0;
 		float max_vel = 5;
@@ -39,11 +40,16 @@ class Player {
 		bool jumped = false;
 		bool onground = false;
 
-		//sf::Texture texture;
-		//sf::Sprite sprite;
-		// texture.loadFromFile("src/resources/textures/slimey.png", sf::IntRect(0, 0, this->width, this->height));
-		// texture.setSmooth(true);
-		// sprite.setTexture(texture);
+		sf::Texture texture;
+		sf::Sprite sprite;
+
+		Player(float x, float y) {
+			this->x = x;
+			this->y = y;
+			this->texture.loadFromFile("src/resources/textures/slimey.png", sf::IntRect(0, 0, this->width, this->height));
+			this->texture.setSmooth(true);
+			this->sprite.setTexture(this->texture);
+		}
 
 		void update() {
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
@@ -70,6 +76,11 @@ class Player {
 				this->jump = true;
 			} else {
 				this->jump = false;
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
+				this->x = 0;
+				this->y = 0;
+				this->y_vel = 0;
 			}
 
 			if (this->left && !this->right) {
@@ -120,18 +131,20 @@ class Player {
 
 		void draw(sf::RenderWindow& window) {
 			this->update();
-			sf::Texture texture;
-			sf::Sprite sprite;
-			texture.loadFromFile("src/resources/textures/slimey.png", sf::IntRect(0, 0, this->width, this->height));
-			texture.setSmooth(true);
-			sprite.setTexture(texture);
-			//sprite.setScale(10, 10);
-			sprite.setPosition(sf::Vector2f(this->x, this->y));
-			window.draw(sprite);
+			this->sprite.setPosition(sf::Vector2f(this->x, this->y));
+			window.draw(this->sprite);
 		}
 };
 
-Player player;
+class Tile {
+	public:
+		Tile(int x, int y) {
+		}
+
+		void draw(sf::RenderWindow& window) {}
+};
+
+Player player(0, 0);
 
 void game(sf::RenderWindow& window) {
 	player.draw(window);
@@ -140,7 +153,9 @@ void game(sf::RenderWindow& window) {
 int main() {
 	sf::Clock clock;
 
-	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Slimey: The Five Crystals", sf::Style::Close);
+	sf::Color background = sf::Color(77, 120, 204);
+
+	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), TITLE, sf::Style::Close);
 
 	while (window.isOpen()) {
 		sf::Event event;
@@ -151,7 +166,7 @@ int main() {
 		}
 
 		if (frame(clock)) {
-			window.clear();
+			window.clear(background);
 
 			game(window);
 
