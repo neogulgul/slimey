@@ -273,7 +273,7 @@ int main() {
 
 	sf::Color background = sf::Color(77, 120, 204);
 
-	sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), Title, sf::Style::Resize);
+	sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), Title, sf::Style::Close);
 
 	mapSketch.loadFromFile("resources/textures/map.png");
 	mapSize = mapSketch.getSize();
