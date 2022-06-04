@@ -1,32 +1,53 @@
 #include <iostream>
+#include <cmath>
+#include <vector>
 #include <string>
 #include <SFML/Graphics.hpp>
 
-const std::string TITLE = "Slimey";
-const int WINDOW_WIDTH 	= 16 * 16;
-const int WINDOW_HEIGHT = 16 * 16;
+const std::string Title = "Slimey";
+const int WindowWidth 	= 16 * 16;
+const int WindowHeight = 16 * 16;
 
 const float GRAVITY = 0.5;
 
 const float FPS = 60;
 
+std::vector<std::vector<std::string>> mapCollision;
+
 sf::Texture tileTexture;
 sf::Sprite tileSprite;
 
 sf::Image mapSketch;
+sf::Vector2u mapSize;
+
 sf::Color pixel;
 sf::Color topPixel;
 
+void populateMapCollision() {
+	for (int x = 0; x < mapSize.x; x++) {
+		std::vector<std::string> column;
+		for (int y = 0; y < mapSize.y; y++) {
+			pixel = mapSketch.getPixel(x, y);
+			if (pixel.r == 255 && pixel.g == 0 && pixel.b == 0) {
+				column.push_back("x");
+			} else {
+				column.push_back(" ");
+			}
+		}
+		mapCollision.push_back(column);
+	}
+}
+
 void drawMap(sf::RenderWindow& window) {
-	for (int x = 0; x < 16; x++) {
-		for (int y = 0; y < 16; y++) {
+	for (int x = 0; x < mapSize.x; x++) {
+		for (int y = 0; y < mapSize.y; y++) {
 			pixel = mapSketch.getPixel(x, y);
 			if (pixel.r == 255 && pixel.g == 0 && pixel.b == 0) {
 				topPixel = mapSketch.getPixel(x, y - 1);
 				if (topPixel.r != 255 || topPixel.g != 0 || topPixel.b != 0) {
-					tileTexture.loadFromFile("src/resources/textures/grass.png");
+					tileTexture.loadFromFile("resources/textures/grass.png");
 				} else {
-					tileTexture.loadFromFile("src/resources/textures/ground.png");
+					tileTexture.loadFromFile("resources/textures/ground.png");
 				}
 				tileTexture.setSmooth(true);
 				tileSprite.setTexture(tileTexture);
@@ -51,9 +72,9 @@ class Player {
 		int width = 14;
 		int height = 12;
 		float x, y;
-		float x_vel = 0;
-		float y_vel = 0;
-		float max_vel = 4;
+		float xVelocity = 0;
+		float yVelocity = 0;
+		float maxVelocity = 2;
 		float acceleration = 0.4;
 		float deceleration = 0.2;
 
@@ -62,7 +83,7 @@ class Player {
 		bool left = false;
 		bool right = false;
 
-		float jumpforce = 6;
+		float jumpforce = 8;
 		bool jump = false;
 		bool jumped = false;
 		bool onground = false;
@@ -70,12 +91,69 @@ class Player {
 		sf::Texture texture;
 		sf::Sprite sprite;
 
+		// cells used for collision
+		int cell_0_x, cell_0_y;
+		std::string cell_0;
+
+		int cell_1_x, cell_1_y;
+		std::string cell_1;
+
+		int cell_2_x, cell_2_y;
+		std::string cell_2;
+
+		int cell_3_x, cell_3_y;
+		std::string cell_3;
+
 		Player(float x, float y) {
 			this->x = x;
 			this->y = y;
-			this->texture.loadFromFile("src/resources/textures/slimey.png", sf::IntRect(0, 0, this->width, this->height));
+			this->texture.loadFromFile("resources/textures/slimey.png", sf::IntRect(0, 0, this->width, this->height));
 			this->texture.setSmooth(true);
 			this->sprite.setTexture(this->texture);
+		}
+
+		void collision() {
+			this->onground = false;
+
+			for (int x = 0; x < mapSize.x; x++) {
+				for (int y = 0; y < mapSize.y; y++) {
+					if (mapCollision.at(x).at(y) == "x") {
+						// top
+						if (this->x > x * 16 - this->width &&
+							this->x < x * 16 + 16 &&
+							this->y + this->yVelocity > y * 16 &&
+							this->y + this->yVelocity < y * 16 + 16) {
+							this->y = y * 16 + 16;
+							this->yVelocity = 0;
+						}
+						// bottom
+						if (this->x > x * 16 - this->width &&
+							this->x < x * 16 + 16 &&
+							this->y + this->yVelocity > y * 16 - this->height &&
+							this->y + this->yVelocity < y * 16) {
+							this->y = y * 16 - this->height;
+							this->yVelocity = 0;
+							this->onground = true;
+						}
+						// left
+						if (this->y > y * 16 - this->height &&
+							this->y < y * 16 + 16 &&
+							this->x + this->xVelocity > x * 16 &&
+							this->x + this->xVelocity < x * 16 + 16 ) {
+							this->x = x * 16 + 16;
+							this->xVelocity = 0;
+						}
+						// right
+						else if (this->y > y * 16 - this->height &&
+							this->y < y * 16 + 16 &&
+							this->x + this->xVelocity > x * 16 - this->width &&
+							this->x + this->xVelocity < x * 16) {
+							this->x = x * 16 - this->width;
+							this->xVelocity = 0;
+						}
+					}
+				}
+			}
 		}
 
 		void update() {
@@ -107,31 +185,32 @@ class Player {
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
 				this->x = 0;
 				this->y = 0;
-				this->y_vel = 0;
+				this->xVelocity = 0;
+				this->yVelocity = 0;
 			}
 
 			if (this->left && !this->right) {
-				this->x_vel -= this->acceleration;
+				this->xVelocity -= this->acceleration;
 			} else if (this->right && !this->left) {
-				this->x_vel += this->acceleration;
+				this->xVelocity += this->acceleration;
 			} else if (this->onground) {
-				if (this->x_vel > 0) {
-					this->x_vel -= this->deceleration;
-					if (this->x_vel < 0) {
-						this->x_vel = 0;
+				if (this->xVelocity > 0) {
+					this->xVelocity -= this->deceleration;
+					if (this->xVelocity < 0) {
+						this->xVelocity = 0;
 					}
-				} else if (this->x_vel < 0) {
-					this->x_vel += this->deceleration;
-					if (this->x_vel > 0) {
-						this->x_vel = 0;
+				} else if (this->xVelocity < 0) {
+					this->xVelocity += this->deceleration;
+					if (this->xVelocity > 0) {
+						this->xVelocity = 0;
 					}
 				}
 			}
 
-			if (this->x_vel > this->max_vel) {
-				this->x_vel = this->max_vel;
-			} else if (this->x_vel < -this->max_vel) {
-				this->x_vel = -this->max_vel;
+			if (this->xVelocity > this->maxVelocity) {
+				this->xVelocity = this->maxVelocity;
+			} else if (this->xVelocity < -this->maxVelocity) {
+				this->xVelocity = -this->maxVelocity;
 			}
 
 			if (this->onground && !this->jump) {
@@ -139,21 +218,30 @@ class Player {
 			}
 
 			if (this->onground && this->jump && !this->jumped) {
-				this->y_vel -= this->jumpforce;
+				this->yVelocity -= this->jumpforce;
 				this->jumped = true;
 				this->onground = false;
 			}
 
-			this->y_vel += GRAVITY;
-
-			this->x += this->x_vel;
-			this->y += this->y_vel;
-
-			if (this->y > WINDOW_HEIGHT - this->height) {
-				this->y = WINDOW_HEIGHT - this->height;
-				this->y_vel = 0;
-				this->onground = true;
+			if (!this->onground) {
+				this->yVelocity += GRAVITY;
+				if (this->yVelocity > 10) {
+					this->yVelocity = 10;
+				}
 			}
+
+			if ((this->x + this->xVelocity) / 16 >= 0 && (this->x + this->xVelocity) / 16 <= mapSize.x && (this->y + this->yVelocity) / 16 >= 0 && (this->y + this->yVelocity) / 16 <= mapSize.y) {
+				this->collision();
+			}
+
+			this->x += this->xVelocity;
+			this->y += this->yVelocity;
+
+			// if (this->y > WindowHeight - this->height) {
+			// 	this->y = WindowHeight - this->height;
+			// 	this->yVelocity = 0;
+			// 	this->onground = true;
+			// }
 		}
 
 		void draw(sf::RenderWindow& window) {
@@ -175,9 +263,21 @@ int main() {
 
 	sf::Color background = sf::Color(77, 120, 204);
 
-	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), TITLE, sf::Style::Close);
+	sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), Title, sf::Style::Close);
 
-	mapSketch.loadFromFile("src/resources/textures/map.png");
+	mapSketch.loadFromFile("resources/textures/map.png");
+	mapSize = mapSketch.getSize();
+	populateMapCollision();
+
+	// prints map collision
+	// for (int y = 0; y < mapSize.y; y++) {
+	// 	for (int x = 0; x < mapSize.x; x++) {
+	// 		std::cout << "[" << mapCollision.at(x).at(y) << "]";
+	// 		if (x == 15) {
+	// 			std::cout << "\n";
+	// 		}
+	// 	}
+	// }
 
 	while (window.isOpen()) {
 		sf::Event event;
