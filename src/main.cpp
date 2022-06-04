@@ -3,12 +3,39 @@
 #include <SFML/Graphics.hpp>
 
 const std::string TITLE = "Slimey";
-const int WINDOW_WIDTH 	= 800;
-const int WINDOW_HEIGHT = 800;
+const int WINDOW_WIDTH 	= 16 * 16;
+const int WINDOW_HEIGHT = 16 * 16;
 
 const float GRAVITY = 0.5;
 
 const float FPS = 60;
+
+sf::Texture tileTexture;
+sf::Sprite tileSprite;
+
+sf::Image mapSketch;
+sf::Color pixel;
+sf::Color topPixel;
+
+void drawMap(sf::RenderWindow& window) {
+	for (int x = 0; x < 16; x++) {
+		for (int y = 0; y < 16; y++) {
+			pixel = mapSketch.getPixel(x, y);
+			if (pixel.r == 255 && pixel.g == 0 && pixel.b == 0) {
+				topPixel = mapSketch.getPixel(x, y - 1);
+				if (topPixel.r != 255 || topPixel.g != 0 || topPixel.b != 0) {
+					tileTexture.loadFromFile("src/resources/textures/grass.png");
+				} else {
+					tileTexture.loadFromFile("src/resources/textures/ground.png");
+				}
+				tileTexture.setSmooth(true);
+				tileSprite.setTexture(tileTexture);
+				tileSprite.setPosition(x * 16, y * 16);
+				window.draw(tileSprite);
+			}
+		}
+	}
+}
 
 bool frame(sf::Clock& clock) {
 	if (clock.getElapsedTime().asSeconds() > 1 / FPS) {
@@ -26,8 +53,8 @@ class Player {
 		float x, y;
 		float x_vel = 0;
 		float y_vel = 0;
-		float max_vel = 5;
-		float acceleration = 0.6;
+		float max_vel = 4;
+		float acceleration = 0.4;
 		float deceleration = 0.2;
 
 		bool up = false;
@@ -35,7 +62,7 @@ class Player {
 		bool left = false;
 		bool right = false;
 
-		float jumpforce = 9;
+		float jumpforce = 6;
 		bool jump = false;
 		bool jumped = false;
 		bool onground = false;
@@ -136,17 +163,10 @@ class Player {
 		}
 };
 
-class Tile {
-	public:
-		Tile(int x, int y) {
-		}
-
-		void draw(sf::RenderWindow& window) {}
-};
-
 Player player(0, 0);
 
 void game(sf::RenderWindow& window) {
+	drawMap(window);
 	player.draw(window);
 }
 
@@ -156,6 +176,8 @@ int main() {
 	sf::Color background = sf::Color(77, 120, 204);
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), TITLE, sf::Style::Close);
+
+	mapSketch.loadFromFile("src/resources/textures/map.png");
 
 	while (window.isOpen()) {
 		sf::Event event;
