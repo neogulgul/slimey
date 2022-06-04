@@ -8,7 +8,7 @@ const std::string Title = "Slimey";
 const int WindowWidth 	= 16 * 16;
 const int WindowHeight = 16 * 16;
 
-const float GRAVITY = 0.5;
+const float Gravity = 0.3;
 
 const float FPS = 60;
 
@@ -75,17 +75,20 @@ class Player {
 		float xVelocity = 0;
 		float yVelocity = 0;
 		float maxVelocity = 2;
-		float acceleration = 0.4;
-		float deceleration = 0.2;
+		float acceleration = 0.2;
+		float deceleration = 0.3;
 
 		bool up = false;
 		bool down = false;
 		bool left = false;
 		bool right = false;
 
-		float jumpforce = 8;
+		int currentJumpFrame = 0;
+		int jumpFrames = 8;
+		float jumpForce = 0.5;
 		bool jump = false;
 		bool jumped = false;
+		bool jumping = false;
 		bool onground = false;
 
 		sf::Texture texture;
@@ -112,6 +115,12 @@ class Player {
 			this->sprite.setTexture(this->texture);
 		}
 
+		void grounded() {
+			this->onground = true;
+			this->jumping = false;
+			this->currentJumpFrame = 0;
+		}
+
 		void collision() {
 			this->onground = false;
 
@@ -133,7 +142,7 @@ class Player {
 							this->y + this->yVelocity < y * 16) {
 							this->y = y * 16 - this->height;
 							this->yVelocity = 0;
-							this->onground = true;
+							this->grounded();
 						}
 						// left
 						if (this->y > y * 16 - this->height &&
@@ -187,6 +196,7 @@ class Player {
 				this->y = 0;
 				this->xVelocity = 0;
 				this->yVelocity = 0;
+				this->jumping = false;
 			}
 
 			if (this->left && !this->right) {
@@ -218,16 +228,22 @@ class Player {
 			}
 
 			if (this->onground && this->jump && !this->jumped) {
-				this->yVelocity -= this->jumpforce;
 				this->jumped = true;
+				this->jumping = true;
 				this->onground = false;
 			}
 
-			if (!this->onground) {
-				this->yVelocity += GRAVITY;
-				if (this->yVelocity > 10) {
-					this->yVelocity = 10;
+			if (this->jumping) {
+				this->yVelocity -= this->jumpForce;
+				this->currentJumpFrame++;
+				if (this->currentJumpFrame == this->jumpFrames) {
+					this->jumping = false;
+					this->currentJumpFrame = 0;
 				}
+			}
+
+			if (!this->onground && !this->jumping) {
+				this->yVelocity += Gravity;
 			}
 
 			if ((this->x + this->xVelocity) / 16 >= 0 && (this->x + this->xVelocity) / 16 <= mapSize.x && (this->y + this->yVelocity) / 16 >= 0 && (this->y + this->yVelocity) / 16 <= mapSize.y) {
@@ -236,12 +252,6 @@ class Player {
 
 			this->x += this->xVelocity;
 			this->y += this->yVelocity;
-
-			// if (this->y > WindowHeight - this->height) {
-			// 	this->y = WindowHeight - this->height;
-			// 	this->yVelocity = 0;
-			// 	this->onground = true;
-			// }
 		}
 
 		void draw(sf::RenderWindow& window) {
@@ -263,7 +273,7 @@ int main() {
 
 	sf::Color background = sf::Color(77, 120, 204);
 
-	sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), Title, sf::Style::Close);
+	sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), Title, sf::Style::Resize);
 
 	mapSketch.loadFromFile("resources/textures/map.png");
 	mapSize = mapSketch.getSize();
