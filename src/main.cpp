@@ -5,8 +5,9 @@
 #include <SFML/Graphics.hpp>
 
 const std::string Title = "Slimey";
-const int WindowWidth 	= 16 * 16;
-const int WindowHeight = 16 * 16;
+const int TileSize 		= 16;
+const int ViewWidth 	= TileSize * 16;
+const int ViewHeight 	= TileSize * 16;
 
 const float Gravity = 0.3;
 
@@ -115,6 +116,10 @@ class Player {
 			this->sprite.setTexture(this->texture);
 		}
 
+		sf::Vector2f getPosition() {
+			return sf::Vector2f(this->x + this->xVelocity + this->width / 2, this->y + this->yVelocity + this->height / 2);
+		}
+
 		void grounded() {
 			this->onground = true;
 			this->jumping = false;
@@ -128,36 +133,36 @@ class Player {
 				for (int y = 0; y < mapSize.y; y++) {
 					if (mapCollision.at(x).at(y) == "x") {
 						// top
-						if (this->x > x * 16 - this->width &&
-							this->x < x * 16 + 16 &&
-							this->y + this->yVelocity > y * 16 &&
-							this->y + this->yVelocity < y * 16 + 16) {
-							this->y = y * 16 + 16;
+						if (this->x > x * TileSize - this->width &&
+							this->x < x * TileSize + TileSize &&
+							this->y + this->yVelocity > y * TileSize &&
+							this->y + this->yVelocity < y * TileSize + TileSize) {
+							this->y = y * TileSize + TileSize;
 							this->yVelocity = 0;
 						}
 						// bottom
-						if (this->x > x * 16 - this->width &&
-							this->x < x * 16 + 16 &&
-							this->y + this->yVelocity > y * 16 - this->height &&
-							this->y + this->yVelocity < y * 16) {
-							this->y = y * 16 - this->height;
+						if (this->x > x * TileSize - this->width &&
+							this->x < x * TileSize + TileSize &&
+							this->y + this->yVelocity > y * TileSize - this->height &&
+							this->y + this->yVelocity < y * TileSize) {
+							this->y = y * TileSize - this->height;
 							this->yVelocity = 0;
 							this->grounded();
 						}
 						// left
-						if (this->y > y * 16 - this->height &&
-							this->y < y * 16 + 16 &&
-							this->x + this->xVelocity > x * 16 &&
-							this->x + this->xVelocity < x * 16 + 16 ) {
-							this->x = x * 16 + 16;
+						if (this->y > y * TileSize - this->height &&
+							this->y < y * TileSize + TileSize &&
+							this->x + this->xVelocity > x * TileSize &&
+							this->x + this->xVelocity < x * TileSize + TileSize ) {
+							this->x = x * TileSize + TileSize;
 							this->xVelocity = 0;
 						}
 						// right
-						else if (this->y > y * 16 - this->height &&
-							this->y < y * 16 + 16 &&
-							this->x + this->xVelocity > x * 16 - this->width &&
-							this->x + this->xVelocity < x * 16) {
-							this->x = x * 16 - this->width;
+						else if (this->y > y * TileSize - this->height &&
+							this->y < y * TileSize + TileSize &&
+							this->x + this->xVelocity > x * TileSize - this->width &&
+							this->x + this->xVelocity < x * TileSize) {
+							this->x = x * TileSize - this->width;
 							this->xVelocity = 0;
 						}
 					}
@@ -246,7 +251,7 @@ class Player {
 				this->yVelocity += Gravity;
 			}
 
-			if ((this->x + this->xVelocity) / 16 >= 0 && (this->x + this->xVelocity) / 16 <= mapSize.x && (this->y + this->yVelocity) / 16 >= 0 && (this->y + this->yVelocity) / 16 <= mapSize.y) {
+			if ((this->x + this->width + this->xVelocity) / 16 >= 0 && (this->x + this->xVelocity) / 16 <= mapSize.x && (this->y + this->height + this->yVelocity) / 16 >= 0 && (this->y + this->yVelocity) / 16 <= mapSize.y) {
 				this->collision();
 			}
 
@@ -260,8 +265,8 @@ class Player {
 			window.draw(this->sprite);
 		}
 };
-
-Player player(0, 0);
+// y: 122
+Player player(0, 122);
 
 void game(sf::RenderWindow& window) {
 	drawMap(window);
@@ -273,7 +278,9 @@ int main() {
 
 	sf::Color background = sf::Color(77, 120, 204);
 
-	sf::RenderWindow window(sf::VideoMode(WindowWidth, WindowHeight), Title, sf::Style::Close);
+	sf::RenderWindow window(sf::VideoMode(ViewWidth, ViewHeight), Title, sf::Style::Default);
+
+	sf::View view(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(ViewWidth, ViewHeight));
 
 	mapSketch.loadFromFile("resources/textures/map.png");
 	mapSize = mapSketch.getSize();
@@ -302,6 +309,22 @@ int main() {
 
 			game(window);
 
+			view.setCenter(player.getPosition());
+			// horizontal
+			if (view.getCenter().x < ViewWidth / 2) {
+				view.setCenter(ViewWidth / 2, view.getCenter().y);
+			} else if (view.getCenter().x > mapSize.x * 14) {
+				view.setCenter(mapSize.x * 14, view.getCenter().y);
+			}
+			// vertical
+			if (view.getCenter().y < ViewHeight / 2) {
+				view.setCenter(view.getCenter().x, ViewHeight / 2);
+			} else if (view.getCenter().y > mapSize.y * 12) {
+				view.setCenter(view.getCenter().x, mapSize.y * 12);
+			}
+			//std::cout << "viex-x: " << view.getCenter().x << " | " << "view-y: " << view.getCenter().y << "\n";
+
+			window.setView(view);
 			window.display();
 		}
 	}
