@@ -24,50 +24,6 @@ sf::Vector2u mapSize;
 sf::Color pixel;
 sf::Color topPixel;
 
-void populateMapCollision() {
-	for (int x = 0; x < mapSize.x; x++) {
-		std::vector<std::string> column;
-		for (int y = 0; y < mapSize.y; y++) {
-			pixel = mapSketch.getPixel(x, y);
-			if (pixel.r == 255 && pixel.g == 0 && pixel.b == 0) {
-				column.push_back("x");
-			} else {
-				column.push_back(" ");
-			}
-		}
-		mapCollision.push_back(column);
-	}
-}
-
-void drawMap(sf::RenderWindow& window) {
-	for (int x = 0; x < mapSize.x; x++) {
-		for (int y = 0; y < mapSize.y; y++) {
-			pixel = mapSketch.getPixel(x, y);
-			if (pixel.r == 255 && pixel.g == 0 && pixel.b == 0) {
-				topPixel = mapSketch.getPixel(x, y - 1);
-				if (topPixel.r != 255 || topPixel.g != 0 || topPixel.b != 0) {
-					tileTexture.loadFromFile("resources/textures/grass.png");
-				} else {
-					tileTexture.loadFromFile("resources/textures/ground.png");
-				}
-				tileTexture.setSmooth(true);
-				tileSprite.setTexture(tileTexture);
-				tileSprite.setPosition(x * 16, y * 16);
-				window.draw(tileSprite);
-			}
-		}
-	}
-}
-
-bool frame(sf::Clock& clock) {
-	if (clock.getElapsedTime().asSeconds() > 1 / FPS) {
-		clock.restart();
-		return true;
-	}
-
-	return false;
-}
-
 class Player {
 	public:
 		int width = 14;
@@ -112,7 +68,6 @@ class Player {
 			this->x = x;
 			this->y = y;
 			this->texture.loadFromFile("resources/textures/slimey.png", sf::IntRect(0, 0, this->width, this->height));
-			this->texture.setSmooth(true);
 			this->sprite.setTexture(this->texture);
 		}
 
@@ -265,12 +220,59 @@ class Player {
 			window.draw(this->sprite);
 		}
 };
-// y: 122
-Player player(0, 122);
+
+Player player(0, 0);
+
+void populateMapCollision() {
+	for (int x = 0; x < mapSize.x; x++) {
+		std::vector<std::string> column;
+		for (int y = 0; y < mapSize.y; y++) {
+			pixel = mapSketch.getPixel(x, y);
+			if (pixel.r == 255 && pixel.g == 0 && pixel.b == 0) {
+				column.push_back("x");
+			} else {
+				column.push_back(" ");
+			}
+		}
+		mapCollision.push_back(column);
+	}
+}
+
+void drawMap(sf::RenderWindow& window) {
+	for (int x = 0; x < mapSize.x; x++) {
+		if (x > std::floor(player.getPosition().x / 16) - 16 && x < std::floor(player.getPosition().x / 16) + 16) {
+			for (int y = 0; y < mapSize.y; y++) {
+				if (y > std::floor(player.getPosition().y / 16) - 16 && y < std::floor(player.getPosition().y / 16) + 16) {
+					pixel = mapSketch.getPixel(x, y);
+					if (pixel.r == 255 && pixel.g == 0 && pixel.b == 0) {
+						topPixel = mapSketch.getPixel(x, y - 1);
+						if (topPixel.r != 255 || topPixel.g != 0 || topPixel.b != 0) {
+							tileTexture.loadFromFile("resources/textures/grass.png");
+						} else {
+							tileTexture.loadFromFile("resources/textures/ground.png");
+						}
+						tileSprite.setTexture(tileTexture);
+						tileSprite.setPosition(x * 16, y * 16);
+						window.draw(tileSprite);
+					}
+				}
+			}
+		}
+	}
+}
+
+bool frame(sf::Clock& clock) {
+	if (clock.getElapsedTime().asSeconds() > 1 / FPS) {
+		clock.restart();
+		return true;
+	}
+
+	return false;
+}
 
 void game(sf::RenderWindow& window) {
-	drawMap(window);
 	player.draw(window);
+	drawMap(window);
 }
 
 int main() {
@@ -278,7 +280,7 @@ int main() {
 
 	sf::Color background = sf::Color(77, 120, 204);
 
-	sf::RenderWindow window(sf::VideoMode(ViewWidth, ViewHeight), Title, sf::Style::Default);
+	sf::RenderWindow window(sf::VideoMode(ViewWidth * 3, ViewHeight * 3), Title, sf::Style::Default);
 
 	sf::View view(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(ViewWidth, ViewHeight));
 
