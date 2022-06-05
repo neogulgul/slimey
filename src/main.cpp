@@ -18,11 +18,20 @@ std::vector<std::vector<std::string>> mapCollision;
 sf::Texture tileTexture;
 sf::Sprite tileSprite;
 
+sf::Image tileset;
+sf::Vector2f tilePos;
+
 sf::Image mapSketch;
 sf::Vector2u mapSize;
 
+// tiles
+sf::Color ground;
+
 sf::Color pixel;
 sf::Color topPixel;
+sf::Color bottomPixel;
+sf::Color leftPixel;
+sf::Color rightPixel;
 
 class Player {
 	public:
@@ -228,7 +237,7 @@ void populateMapCollision() {
 		std::vector<std::string> column;
 		for (int y = 0; y < mapSize.y; y++) {
 			pixel = mapSketch.getPixel(x, y);
-			if (pixel.r == 255 && pixel.g == 0 && pixel.b == 0) {
+			if (pixel == ground) {
 				column.push_back("x");
 			} else {
 				column.push_back(" ");
@@ -244,13 +253,80 @@ void drawMap(sf::RenderWindow& window) {
 			for (int y = 0; y < mapSize.y; y++) {
 				if (y > std::floor(player.getPosition().y / 16) - 16 && y < std::floor(player.getPosition().y / 16) + 16) {
 					pixel = mapSketch.getPixel(x, y);
-					if (pixel.r == 255 && pixel.g == 0 && pixel.b == 0) {
-						topPixel = mapSketch.getPixel(x, y - 1);
-						if (topPixel.r != 255 || topPixel.g != 0 || topPixel.b != 0) {
-							tileTexture.loadFromFile("resources/textures/grass.png");
-						} else {
-							tileTexture.loadFromFile("resources/textures/ground.png");
+					if (pixel == ground) {
+						topPixel 	= mapSketch.getPixel(x, y - 1);
+						bottomPixel = mapSketch.getPixel(x, y + 1);
+						leftPixel 	= mapSketch.getPixel(x - 1, y);
+						rightPixel 	= mapSketch.getPixel(x + 1, y);
+
+						if (topPixel 	!= ground &&
+							bottomPixel == ground &&
+							leftPixel 	!= ground &&
+							rightPixel 	== ground) {
+							tilePos.x = 0;
+							tilePos.y = 0;
 						}
+						else if (topPixel != ground &&
+							bottomPixel == ground &&
+							leftPixel 	== ground &&
+							rightPixel 	== ground) {
+							tilePos.x = 1;
+							tilePos.y = 0;
+						}
+						else if (topPixel != ground &&
+							bottomPixel == ground &&
+							leftPixel 	== ground &&
+							rightPixel 	!= ground) {
+							tilePos.x = 2;
+							tilePos.y = 0;
+						}
+						else if (topPixel == ground &&
+							bottomPixel == ground &&
+							leftPixel 	!= ground &&
+							rightPixel 	== ground) {
+							tilePos.x = 0;
+							tilePos.y = 1;
+						}
+						else if (topPixel == ground &&
+							bottomPixel == ground &&
+							leftPixel 	== ground &&
+							rightPixel 	== ground) {
+							tilePos.x = 1;
+							tilePos.y = 1;
+						}
+						else if (topPixel == ground &&
+							bottomPixel == ground &&
+							leftPixel 	== ground &&
+							rightPixel 	!= ground) {
+							tilePos.x = 2;
+							tilePos.y = 1;
+						}
+						else if (topPixel == ground &&
+							bottomPixel != ground &&
+							leftPixel 	!= ground &&
+							rightPixel 	== ground) {
+							tilePos.x = 0;
+							tilePos.y = 2;
+						}
+						else if (topPixel == ground &&
+							bottomPixel != ground &&
+							leftPixel 	== ground &&
+							rightPixel 	== ground) {
+							tilePos.x = 1;
+							tilePos.y = 2;
+						}
+						else if (topPixel == ground &&
+							bottomPixel != ground &&
+							leftPixel 	== ground &&
+							rightPixel 	!= ground) {
+							tilePos.x = 2;
+							tilePos.y = 2;
+						} else {
+							tilePos.x = 1;
+							tilePos.y = 0;
+						}
+
+						tileTexture.loadFromImage(tileset, sf::IntRect(TileSize * tilePos.x, TileSize * tilePos.y, TileSize, TileSize));
 						tileSprite.setTexture(tileTexture);
 						tileSprite.setPosition(x * 16, y * 16);
 						window.draw(tileSprite);
@@ -280,7 +356,14 @@ int main() {
 
 	sf::Color background = sf::Color(77, 120, 204);
 
-	sf::RenderWindow window(sf::VideoMode(ViewWidth * 3, ViewHeight * 3), Title, sf::Style::Default);
+	tileset.loadFromFile("resources/textures/tileset.png");
+
+	// tiles
+	ground.r = 255;
+	ground.g = 0;
+	ground.b = 0;
+
+	sf::RenderWindow window(sf::VideoMode(ViewWidth * 4, ViewHeight * 4), Title, sf::Style::Default);
 
 	sf::View view(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(ViewWidth, ViewHeight));
 
