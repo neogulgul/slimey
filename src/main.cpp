@@ -11,7 +11,7 @@ const int ViewHeight 	= TileSize * 16;
 
 const float Gravity = 0.3;
 
-const float FPS = 60;
+const int FPS = 60;
 
 std::vector<std::vector<std::string>> mapCollision;
 
@@ -337,23 +337,12 @@ void drawMap(sf::RenderWindow& window) {
 	}
 }
 
-bool frame(sf::Clock& clock) {
-	if (clock.getElapsedTime().asSeconds() > 1 / FPS) {
-		clock.restart();
-		return true;
-	}
-
-	return false;
-}
-
 void game(sf::RenderWindow& window) {
 	player.draw(window);
 	drawMap(window);
 }
 
 int main() {
-	sf::Clock clock;
-
 	sf::Color background = sf::Color(77, 120, 204);
 
 	tileset.loadFromFile("resources/textures/tileset.png");
@@ -364,6 +353,7 @@ int main() {
 	ground.b = 0;
 
 	sf::RenderWindow window(sf::VideoMode(ViewWidth * 4, ViewHeight * 4), Title, sf::Style::Default);
+	window.setFramerateLimit(FPS);
 
 	sf::View view(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(ViewWidth, ViewHeight));
 
@@ -389,29 +379,27 @@ int main() {
 			}
 		}
 
-		if (frame(clock)) {
-			window.clear(background);
+		window.clear(background);
 
-			game(window);
+		game(window);
 
-			view.setCenter(player.getPosition());
-			// horizontal
-			if (view.getCenter().x < ViewWidth / 2) {
-				view.setCenter(ViewWidth / 2, view.getCenter().y);
-			} else if (view.getCenter().x > mapSize.x * 14) {
-				view.setCenter(mapSize.x * 14, view.getCenter().y);
-			}
-			// vertical
-			if (view.getCenter().y < ViewHeight / 2) {
-				view.setCenter(view.getCenter().x, ViewHeight / 2);
-			} else if (view.getCenter().y > mapSize.y * 12) {
-				view.setCenter(view.getCenter().x, mapSize.y * 12);
-			}
-			//std::cout << "viex-x: " << view.getCenter().x << " | " << "view-y: " << view.getCenter().y << "\n";
-
-			window.setView(view);
-			window.display();
+		view.setCenter(player.getPosition());
+		// horizontal
+		if (view.getCenter().x < ViewWidth / 2) {
+			view.setCenter(ViewWidth / 2, view.getCenter().y);
+		} else if (view.getCenter().x > mapSize.x * 14) {
+			view.setCenter(mapSize.x * 14, view.getCenter().y);
 		}
+		// vertical
+		if (view.getCenter().y < ViewHeight / 2) {
+			view.setCenter(view.getCenter().x, ViewHeight / 2);
+		} else if (view.getCenter().y > mapSize.y * 12) {
+			view.setCenter(view.getCenter().x, mapSize.y * 12);
+		}
+		//std::cout << "viex-x: " << view.getCenter().x << " | " << "view-y: " << view.getCenter().y << "\n";
+
+		window.setView(view);
+		window.display();
 	}
 
 	return 0;
