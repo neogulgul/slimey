@@ -64,25 +64,22 @@ class Player {
 		bool jumping = false;
 		bool onground = false;
 
+		// std::vector<std::vector<sf::Vector2i>> animations = {
+		// 	{, },	// idle
+		// 	{, },	// walk left
+		// 	{, }	// walk right
+		// };
+		// int animation = 0;
+		// int animationFrame = 0;
+		// int animationFrameCap;
+
 		sf::Texture texture;
 		sf::Sprite sprite;
-
-		// cells used for collision
-		int cell_0_x, cell_0_y;
-		std::string cell_0;
-
-		int cell_1_x, cell_1_y;
-		std::string cell_1;
-
-		int cell_2_x, cell_2_y;
-		std::string cell_2;
-
-		int cell_3_x, cell_3_y;
-		std::string cell_3;
 
 		Player(float x, float y) {
 			this->x = x;
 			this->y = y;
+			//this->animationFrameCap = this->animations.at(this->animation).size();
 			this->texture.loadFromFile("resources/textures/slimey.png", sf::IntRect(0, 0, this->width, this->height));
 			this->sprite.setTexture(this->texture);
 		}
