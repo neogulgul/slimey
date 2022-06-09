@@ -15,10 +15,10 @@ std::string TITLE = "Slimey: The Five Crystals";
 std::vector<CollisionObject> CollisionObjects;
 
 Player player;
-CollisionObject test(0, 200, 100, 56);
 
 void setup() {
-	CollisionObjects.push_back(test);
+	CollisionObjects.push_back(CollisionObject(0, 200, 100, 56));
+	CollisionObjects.push_back(CollisionObject(120, 226, 30, 20));
 }
 
 void game(sf::RenderWindow &window) {
@@ -26,7 +26,7 @@ void game(sf::RenderWindow &window) {
 		CollisionObjects.at(i).draw(window);
 	}
 
-	player.draw(window);
+	player.draw(window, CollisionObjects);
 }
 
 int main() {

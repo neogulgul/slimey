@@ -1,3 +1,3 @@
 #pragma once
 
-const float gravity = 0.1;
+const float gravity = 0.2;
