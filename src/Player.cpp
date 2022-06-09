@@ -81,6 +81,7 @@ void Player::collision(std::vector<CollisionObject> CollisionObjects) {
 					this->x = collider.x + collider.width;
 					this->xVelocity = 0;
 				}
+				this->xDelta = 0;
 			}
 		}
 
@@ -110,6 +111,7 @@ void Player::collision(std::vector<CollisionObject> CollisionObjects) {
 					this->y = collider.y + collider.height;
 					this->yVelocity = 0;
 				}
+				this->yDelta = 0;
 			}
 		}
 	}
@@ -121,7 +123,7 @@ void Player::update(std::vector<CollisionObject> CollisionObjects) {
 	if (!this->onground) {
 		this->yVelocity += gravity;
 	} else if (this->jump) {
-		this->yVelocity = -5;
+		this->yVelocity = -3;
 	}
 
 	if (this->left && !this->right) {

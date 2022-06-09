@@ -18,7 +18,11 @@ Player player;
 
 void setup() {
 	CollisionObjects.push_back(CollisionObject(0, 200, 100, 56));
-	CollisionObjects.push_back(CollisionObject(120, 226, 30, 20));
+	CollisionObjects.push_back(CollisionObject(125, 128, 20, 20));
+	CollisionObjects.push_back(CollisionObject(155, 146, 20, 20));
+	CollisionObjects.push_back(CollisionObject(125, 178, 50, 25));
+	CollisionObjects.push_back(CollisionObject(125, 228, 50, 25));
+	CollisionObjects.push_back(CollisionObject(200, 200, 56, 56));
 }
 
 void game(sf::RenderWindow &window) {
