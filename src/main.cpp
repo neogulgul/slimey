@@ -1,36 +1,17 @@
-#include <iostream>
 #include <string>
-#include <vector>
 #include <SFML/Graphics.hpp>
-
+#include "headers/constants.hpp"
+#include "headers/functions.hpp"
+#include "headers/Map.hpp"
 #include "headers/Player.hpp"
-#include "headers/CollisionObject.hpp"
 
-int FPS = 60;
-
-int viewWidth = 256;
-int viewHeight = 256;
 std::string TITLE = "Slimey: The Five Crystals";
 
-std::vector<CollisionObject> CollisionObjects;
+void game(sf::RenderWindow &window, sf::View view, Map map, Player &player) {
+	map.draw(window, view);
 
-Player player;
-
-void setup() {
-	CollisionObjects.push_back(CollisionObject(0, 200, 100, 56));
-	CollisionObjects.push_back(CollisionObject(125, 128, 20, 20));
-	CollisionObjects.push_back(CollisionObject(155, 146, 20, 20));
-	CollisionObjects.push_back(CollisionObject(125, 178, 50, 25));
-	CollisionObjects.push_back(CollisionObject(125, 228, 50, 25));
-	CollisionObjects.push_back(CollisionObject(200, 200, 56, 56));
-}
-
-void game(sf::RenderWindow &window) {
-	for (int i = 0; i < CollisionObjects.size(); i++) {
-		CollisionObjects.at(i).draw(window);
-	}
-
-	player.draw(window, CollisionObjects);
+	player.update(map);
+	player.draw(window);
 }
 
 int main() {
@@ -40,7 +21,10 @@ int main() {
 	sf::Event event;
 	sf::View view(sf::Vector2f(viewWidth / 2, viewHeight / 2), sf::Vector2f(viewWidth, viewHeight));
 
-	setup();
+	Map map("resources/textures/map.png");
+	Player player(0, map.size.y - 3);
+
+	adjustView(view, player.x, player.y, map.size, true);
 
 	while (window.isOpen()) {
 		while (window.pollEvent(event)) {
@@ -51,8 +35,9 @@ int main() {
 
 		window.clear(background);
 
-		game(window);
+		game(window, view, map, player);
 
+		adjustView(view, player.x, player.y, map.size, false);
 		window.setView(view);
 		window.display();
 	}
