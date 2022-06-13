@@ -2,6 +2,7 @@
 
 class Map {
 	public:
+		sf::Image tileset;
 		sf::Image image;
 		sf::Vector2u size;
 

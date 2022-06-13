@@ -19,10 +19,10 @@ int main() {
 	sf::RenderWindow window(sf::VideoMode(viewWidth * 2, viewHeight * 2), TITLE, sf::Style::Default);
 	window.setFramerateLimit(FPS);
 	sf::Event event;
-	sf::View view(sf::Vector2f(viewWidth / 2, viewHeight / 2), sf::Vector2f(viewWidth, viewHeight));
+	sf::View view(sf::Vector2f(0, 0), sf::Vector2f(viewWidth, viewHeight));
 
 	Map map("resources/textures/map.png");
-	Player player(0, map.size.y - 3);
+	Player player(0, map.size.y - 10);
 
 	adjustView(view, player.x, player.y, map.size, true);
 
@@ -37,7 +37,7 @@ int main() {
 
 		game(window, view, map, player);
 
-		adjustView(view, player.x, player.y, map.size, false);
+		adjustView(view, player.x + player.width / 2, player.y + player.height / 2, map.size, false);
 		window.setView(view);
 		window.display();
 	}

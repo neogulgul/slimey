@@ -24,11 +24,19 @@ class Player {
 		bool left = false;
 		bool right = false;
 
-		bool onground = false;
+		int preJumpFrames = 10;
+		int preJumpTimer = 0;
+		int postJumpFrames = 5;
+		int postJumpTimer = 0;
 		bool jump = false;
+		bool jumped = false;
+		bool dash = false;
+		bool dashed = false;
+		bool onground = false;
 
 		Player(int xCord, int yCord);
 		void input();
+		void jumping();
 		void checkCollision(Map map);
 		void update(Map map);
 		void draw(sf::RenderWindow &window);
