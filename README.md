@@ -1,5 +1,5 @@
 controls:
 	A - left
 	D - right
-	Space - jump
+	J - jump
 	R - reset

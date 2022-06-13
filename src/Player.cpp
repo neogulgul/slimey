@@ -1,17 +1,23 @@
 #include <cmath>
 #include <SFML/Graphics.hpp>
-#include "headers/constants.hpp"
-#include "headers/functions.hpp"
+#include "headers/global.hpp"
 #include "headers/Map.hpp"
 #include "headers/Player.hpp"
 
 Player::Player(int xCord, int yCord) {
-	this->x = xCord * tilesize + (tilesize - this->width) / 2;
-	this->y = yCord * tilesize + tilesize - this->height;
-	this->xSpawn = this->x;
-	this->ySpawn = this->y;
+	this->setPosition(xCord, yCord);
+	this->xCordSpawn = xCord;
+	this->yCordSpawn = yCord;
 	this->texture.loadFromFile("resources/textures/slimey.png");
 	this->sprite.setTexture(this->texture);
+}
+
+void Player::setPosition(int xCord, int yCord) {
+	this->x = xCord * tilesize + (tilesize - this->width) / 2;
+	this->y = yCord * tilesize + tilesize - this->height;
+	this->xVelocity = 0;
+	this->yVelocity = 0;
+	this->onground = false;
 }
 
 void Player::input() {
@@ -43,21 +49,13 @@ void Player::input() {
 	} else {
 		this->jump = false;
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::K)) {
-		this->dash = true;
-	} else {
-		this->dash = false;
-	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
-		this->x = this->xSpawn;
-		this->y = this->ySpawn;
-		this->xVelocity = 0;
-		this->yVelocity = 0;
+		this->setPosition(this->xCordSpawn, this->yCordSpawn);
 	}
 }
 
 void Player::jumping() {
-	this->yVelocity = -3;
+	this->yVelocity = -this->jumpForce;
 	this->jumped = true;
 }
 
@@ -108,7 +106,7 @@ void Player::checkCollision(Map map) {
 			&&
 			cell_0.y >= 0 && cell_0.y <= map.size.y
 			&&
-			map.image.getPixel(cell_0.x, cell_0.y) != sf::Color::Transparent
+			map.image.getPixel(cell_0.x, cell_0.y) != sf::Color::Transparent && map.image.getPixel(cell_0.x, cell_0.y) != playerColor
 			&&
 			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_0.x * tilesize, cell_0.y * tilesize, tilesize, tilesize)
 			||
@@ -116,7 +114,7 @@ void Player::checkCollision(Map map) {
 			&&
 			cell_1.y >= 0 && cell_1.y <= map.size.y
 			&&
-			map.image.getPixel(cell_1.x, cell_1.y) != sf::Color::Transparent
+			map.image.getPixel(cell_1.x, cell_1.y) != sf::Color::Transparent && map.image.getPixel(cell_1.x, cell_1.y) != playerColor
 			&&
 			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_1.x * tilesize, cell_1.y * tilesize, tilesize, tilesize)) {
 			this->y = cell_0.y * tilesize + tilesize;
@@ -128,7 +126,7 @@ void Player::checkCollision(Map map) {
 			&&
 			cell_2.y >= 0 && cell_2.y <= map.size.y
 			&&
-			map.image.getPixel(cell_2.x, cell_2.y) != sf::Color::Transparent
+			map.image.getPixel(cell_2.x, cell_2.y) != sf::Color::Transparent && map.image.getPixel(cell_2.x, cell_2.y) != playerColor
 			&&
 			(
 			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_2.x * tilesize, cell_2.y * tilesize, tilesize, tilesize)
@@ -140,7 +138,7 @@ void Player::checkCollision(Map map) {
 			&&
 			cell_3.y >= 0 && cell_3.y <= map.size.y
 			&&
-			map.image.getPixel(cell_3.x, cell_3.y) != sf::Color::Transparent
+			map.image.getPixel(cell_3.x, cell_3.y) != sf::Color::Transparent && map.image.getPixel(cell_3.x, cell_3.y) != playerColor
 			&&
 			(
 			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_3.x * tilesize, cell_3.y * tilesize, tilesize, tilesize)
@@ -201,7 +199,7 @@ void Player::checkCollision(Map map) {
 				&&
 				cell_0.y >= 0 && cell_0.y <= map.size.y
 				&&
-				map.image.getPixel(cell_0.x, cell_0.y) != sf::Color::Transparent
+				map.image.getPixel(cell_0.x, cell_0.y) != sf::Color::Transparent && map.image.getPixel(cell_0.x, cell_0.y) != playerColor
 				&&
 				collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_0.x * tilesize, cell_0.y * tilesize, tilesize, tilesize)
 				||
@@ -209,7 +207,7 @@ void Player::checkCollision(Map map) {
 				&&
 				cell_2.y >= 0 && cell_2.y <= map.size.y
 				&&
-				map.image.getPixel(cell_2.x, cell_2.y) != sf::Color::Transparent
+				map.image.getPixel(cell_2.x, cell_2.y) != sf::Color::Transparent && map.image.getPixel(cell_2.x, cell_2.y) != playerColor
 				&&
 				collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_2.x * tilesize, cell_2.y * tilesize, tilesize, tilesize)) {
 				this->x = cell_0.x * tilesize + tilesize;
@@ -221,7 +219,7 @@ void Player::checkCollision(Map map) {
 				&&
 				cell_1.y >= 0 && cell_1.y <= map.size.y
 				&&
-				map.image.getPixel(cell_1.x, cell_1.y) != sf::Color::Transparent
+				map.image.getPixel(cell_1.x, cell_1.y) != sf::Color::Transparent && map.image.getPixel(cell_1.x, cell_1.y) != playerColor
 				&&
 				collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_1.x * tilesize, cell_1.y * tilesize, tilesize, tilesize)
 				||
@@ -229,7 +227,7 @@ void Player::checkCollision(Map map) {
 				&&
 				cell_3.y >= 0 && cell_3.y <= map.size.y
 				&&
-				map.image.getPixel(cell_3.x, cell_3.y) != sf::Color::Transparent
+				map.image.getPixel(cell_3.x, cell_3.y) != sf::Color::Transparent && map.image.getPixel(cell_3.x, cell_3.y) != playerColor
 				&&
 				collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_3.x * tilesize, cell_3.y * tilesize, tilesize, tilesize)) {
 				this->x = cell_3.x * tilesize - this->width;
@@ -287,10 +285,8 @@ void Player::update(Map map) {
 		}
 	}
 
-	if (this->xVelocity > this->maxHorizontalVelocity) {
-		this->xVelocity = this->maxHorizontalVelocity;
-	} else if (this->xVelocity < -this->maxHorizontalVelocity) {
-		this->xVelocity = -this->maxHorizontalVelocity;
+	if (this->xVelocity > this->maxHorizontalVelocity || this->xVelocity < -this->maxHorizontalVelocity) {
+		this->xVelocity -= this->xVelocity * 0.2;
 	}
 
 	this->x += this->xVelocity;

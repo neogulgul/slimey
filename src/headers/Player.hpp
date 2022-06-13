@@ -6,15 +6,15 @@ class Player {
 	public:
 		float x;
 		float y;
-		float xSpawn;
-		float ySpawn;
+		float xCordSpawn;
+		float yCordSpawn;
 		int width = 14;
 		int height = 12;
 		float xVelocity = 0;
 		float yVelocity = 0;
 		float maxHorizontalVelocity = 2;
-		float acceleration = 0.2;
-		float deceleration = 0.3;
+		float acceleration = 0.3;
+		float deceleration = 0.2;
 
 		sf::Texture texture;
 		sf::Sprite sprite;
@@ -24,17 +24,17 @@ class Player {
 		bool left = false;
 		bool right = false;
 
+		float jumpForce = 3.2;
 		int preJumpFrames = 10;
 		int preJumpTimer = 0;
 		int postJumpFrames = 5;
 		int postJumpTimer = 0;
 		bool jump = false;
 		bool jumped = false;
-		bool dash = false;
-		bool dashed = false;
 		bool onground = false;
 
 		Player(int xCord, int yCord);
+		void setPosition(int xCord, int yCord);
 		void input();
 		void jumping();
 		void checkCollision(Map map);

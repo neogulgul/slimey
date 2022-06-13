@@ -1,7 +1,13 @@
 #include <SFML/Graphics.hpp>
-#include "headers/constants.hpp"
-#include "headers/functions.hpp"
+#include "headers/global.hpp"
 
+// colors
+sf::Color background(66, 76, 110);
+sf::Color playerColor(90, 197, 79);
+sf::Color foreWall(146, 161, 185);
+sf::Color backWall(42, 47, 78);
+
+// functions
 bool collision(float x1, float y1, int width1, int height1, float x2, float y2, int width2, int height2) {
 	if (x1 > x2 - width1 &&
 		x1 < x2 + width2 &&
@@ -13,7 +19,7 @@ bool collision(float x1, float y1, int width1, int height1, float x2, float y2, 
 	return false;
 }
 
-void adjustView(sf::View &view, float xTarget, float yTarget, sf::Vector2u mapSize, bool instant) {
+void updateView(sf::View &view, float xTarget, float yTarget, sf::Vector2u mapSize, bool instant) {
 	if (instant) {
 		view.setCenter(xTarget, yTarget);
 	} else {

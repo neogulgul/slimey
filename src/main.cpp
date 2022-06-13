@@ -1,11 +1,8 @@
 #include <string>
 #include <SFML/Graphics.hpp>
-#include "headers/constants.hpp"
-#include "headers/functions.hpp"
+#include "headers/global.hpp"
 #include "headers/Map.hpp"
 #include "headers/Player.hpp"
-
-std::string TITLE = "Slimey: The Five Crystals";
 
 void game(sf::RenderWindow &window, sf::View view, Map map, Player &player) {
 	map.draw(window, view);
@@ -15,16 +12,15 @@ void game(sf::RenderWindow &window, sf::View view, Map map, Player &player) {
 }
 
 int main() {
-	sf::Color background = sf::Color(77, 120, 204);
-	sf::RenderWindow window(sf::VideoMode(viewWidth * 2, viewHeight * 2), TITLE, sf::Style::Default);
+	sf::RenderWindow window(sf::VideoMode(viewWidth * 2, viewHeight * 2), "Slimey", sf::Style::Default);
 	window.setFramerateLimit(FPS);
 	sf::Event event;
 	sf::View view(sf::Vector2f(0, 0), sf::Vector2f(viewWidth, viewHeight));
 
 	Map map("resources/textures/map.png");
-	Player player(0, map.size.y - 10);
+	Player player(map.spawn.x, map.spawn.y);
 
-	adjustView(view, player.x, player.y, map.size, true);
+	updateView(view, player.x, player.y, map.size, true);
 
 	while (window.isOpen()) {
 		while (window.pollEvent(event)) {
@@ -37,7 +33,7 @@ int main() {
 
 		game(window, view, map, player);
 
-		adjustView(view, player.x + player.width / 2, player.y + player.height / 2, map.size, false);
+		updateView(view, player.x + player.width / 2, player.y + player.height / 2, map.size, false);
 		window.setView(view);
 		window.display();
 	}
