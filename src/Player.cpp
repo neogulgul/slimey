@@ -106,7 +106,7 @@ void Player::checkCollision(Map map) {
 			&&
 			cell_0.y >= 0 && cell_0.y <= map.size.y
 			&&
-			map.image.getPixel(cell_0.x, cell_0.y) != sf::Color::Transparent && map.image.getPixel(cell_0.x, cell_0.y) != playerColor
+			map.image.getPixel(cell_0.x, cell_0.y) == foreWall
 			&&
 			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_0.x * tilesize, cell_0.y * tilesize, tilesize, tilesize)
 			||
@@ -114,22 +114,24 @@ void Player::checkCollision(Map map) {
 			&&
 			cell_1.y >= 0 && cell_1.y <= map.size.y
 			&&
-			map.image.getPixel(cell_1.x, cell_1.y) != sf::Color::Transparent && map.image.getPixel(cell_1.x, cell_1.y) != playerColor
+			map.image.getPixel(cell_1.x, cell_1.y) == foreWall
 			&&
-			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_1.x * tilesize, cell_1.y * tilesize, tilesize, tilesize)) {
+			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_1.x * tilesize, cell_1.y * tilesize, tilesize, tilesize)
+			) {
 			this->y = cell_0.y * tilesize + tilesize;
 			this->yVelocity = 0;
 			yDelta = 0;
 		}
 		// down
-		else if (cell_2.x >= 0 && cell_2.x <= map.size.x
+		else if (
+			cell_2.x >= 0 && cell_2.x <= map.size.x
 			&&
 			cell_2.y >= 0 && cell_2.y <= map.size.y
 			&&
-			map.image.getPixel(cell_2.x, cell_2.y) != sf::Color::Transparent && map.image.getPixel(cell_2.x, cell_2.y) != playerColor
+			map.image.getPixel(cell_2.x, cell_2.y) == foreWall
 			&&
 			(
-			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_2.x * tilesize, cell_2.y * tilesize, tilesize, tilesize)
+			collision(/* player */ xCurrent, yCurrent,           this->width, this->height, /* tile */ cell_2.x * tilesize, cell_2.y * tilesize, tilesize, tilesize)
 			||
 			collision(/* player */ xCurrent, yCurrent + gravity, this->width, this->height, /* tile */ cell_2.x * tilesize, cell_2.y * tilesize, tilesize, tilesize)
 			)
@@ -138,10 +140,10 @@ void Player::checkCollision(Map map) {
 			&&
 			cell_3.y >= 0 && cell_3.y <= map.size.y
 			&&
-			map.image.getPixel(cell_3.x, cell_3.y) != sf::Color::Transparent && map.image.getPixel(cell_3.x, cell_3.y) != playerColor
+			map.image.getPixel(cell_3.x, cell_3.y) == foreWall
 			&&
 			(
-			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_3.x * tilesize, cell_3.y * tilesize, tilesize, tilesize)
+			collision(/* player */ xCurrent, yCurrent,           this->width, this->height, /* tile */ cell_3.x * tilesize, cell_3.y * tilesize, tilesize, tilesize)
 			||
 			collision(/* player */ xCurrent, yCurrent + gravity, this->width, this->height, /* tile */ cell_3.x * tilesize, cell_3.y * tilesize, tilesize, tilesize)
 			)
@@ -199,7 +201,7 @@ void Player::checkCollision(Map map) {
 				&&
 				cell_0.y >= 0 && cell_0.y <= map.size.y
 				&&
-				map.image.getPixel(cell_0.x, cell_0.y) != sf::Color::Transparent && map.image.getPixel(cell_0.x, cell_0.y) != playerColor
+				map.image.getPixel(cell_0.x, cell_0.y) == foreWall
 				&&
 				collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_0.x * tilesize, cell_0.y * tilesize, tilesize, tilesize)
 				||
@@ -207,19 +209,21 @@ void Player::checkCollision(Map map) {
 				&&
 				cell_2.y >= 0 && cell_2.y <= map.size.y
 				&&
-				map.image.getPixel(cell_2.x, cell_2.y) != sf::Color::Transparent && map.image.getPixel(cell_2.x, cell_2.y) != playerColor
+				map.image.getPixel(cell_2.x, cell_2.y) == foreWall
 				&&
-				collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_2.x * tilesize, cell_2.y * tilesize, tilesize, tilesize)) {
+				collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_2.x * tilesize, cell_2.y * tilesize, tilesize, tilesize)
+				) {
 				this->x = cell_0.x * tilesize + tilesize;
 				this->xVelocity = 0;
 				xDelta = 0;
 			}
 			// right
-			else if (cell_1.x >= 0 && cell_1.x <= map.size.x
+			else if (
+				cell_1.x >= 0 && cell_1.x <= map.size.x
 				&&
 				cell_1.y >= 0 && cell_1.y <= map.size.y
 				&&
-				map.image.getPixel(cell_1.x, cell_1.y) != sf::Color::Transparent && map.image.getPixel(cell_1.x, cell_1.y) != playerColor
+				map.image.getPixel(cell_1.x, cell_1.y) == foreWall
 				&&
 				collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_1.x * tilesize, cell_1.y * tilesize, tilesize, tilesize)
 				||
@@ -227,9 +231,10 @@ void Player::checkCollision(Map map) {
 				&&
 				cell_3.y >= 0 && cell_3.y <= map.size.y
 				&&
-				map.image.getPixel(cell_3.x, cell_3.y) != sf::Color::Transparent && map.image.getPixel(cell_3.x, cell_3.y) != playerColor
+				map.image.getPixel(cell_3.x, cell_3.y) == foreWall
 				&&
-				collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_3.x * tilesize, cell_3.y * tilesize, tilesize, tilesize)) {
+				collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* tile */ cell_3.x * tilesize, cell_3.y * tilesize, tilesize, tilesize)
+				) {
 				this->x = cell_3.x * tilesize - this->width;
 				this->xVelocity = 0;
 				xDelta = 0;
@@ -285,8 +290,10 @@ void Player::update(Map map) {
 		}
 	}
 
-	if (this->xVelocity > this->maxHorizontalVelocity || this->xVelocity < -this->maxHorizontalVelocity) {
-		this->xVelocity -= this->xVelocity * 0.2;
+	if (this->xVelocity > this->maxHorizontalVelocity) {
+		this->xVelocity = this->maxHorizontalVelocity;
+	} else if (this->xVelocity < -this->maxHorizontalVelocity) {
+		this->xVelocity = -this->maxHorizontalVelocity;
 	}
 
 	this->x += this->xVelocity;

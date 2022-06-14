@@ -29,13 +29,15 @@ int main() {
 			}
 		}
 
-		window.clear(background);
+		if (window.hasFocus()) {
+			window.clear(background);
 
-		game(window, view, map, player);
+			game(window, view, map, player);
 
-		updateView(view, player.x + player.width / 2, player.y + player.height / 2, map.size, false);
-		window.setView(view);
-		window.display();
+			updateView(view, player.x + player.width / 2, player.y + player.height / 2, map.size, false);
+			window.setView(view);
+			window.display();
+		}
 	}
 
 	return 0;

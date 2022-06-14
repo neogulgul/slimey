@@ -13,8 +13,8 @@ class Player {
 		float xVelocity = 0;
 		float yVelocity = 0;
 		float maxHorizontalVelocity = 2;
-		float acceleration = 0.3;
-		float deceleration = 0.2;
+		float acceleration = 0.2;
+		float deceleration = 0.3;
 
 		sf::Texture texture;
 		sf::Sprite sprite;

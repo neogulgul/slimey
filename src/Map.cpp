@@ -9,9 +9,12 @@ Map::Map(std::string imagePath) {
 	this->image.loadFromFile(imagePath);
 	this->size = this->image.getSize();
 
+	sf::Color pixel;
+
 	for (int x = 0; x < this->size.x; x++) {
 		for (int y = 0; y < this->size.y; y++) {
-			if (this->image.getPixel(x, y) == sf::Color(90, 197, 79)) {
+			pixel = this->image.getPixel(x, y);
+			if (pixel == playerColor) {
 				this->spawn.x = x;
 				this->spawn.y = y;
 			}
@@ -25,6 +28,7 @@ void Map::draw(sf::RenderWindow &window, sf::View view) {
 	sf::Color pixel;
 	sf::Color topPixel;
 	int xCrop, yCrop;
+
 	for (int x = 0; x < this->size.x; x++) {
 		for (int y = 0; y < this->size.y; y++) {
 			if (x >= std::floor((view.getCenter().x - viewWidth / 2) / tilesize) && x <= std::floor((view.getCenter().x + viewWidth / 2) / tilesize)
