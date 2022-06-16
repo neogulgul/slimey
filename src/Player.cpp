@@ -10,6 +10,8 @@ Player::Player(int xCord, int yCord) {
 	this->yCordSpawn = yCord;
 	this->texture.loadFromFile("resources/textures/slimey.png");
 	this->sprite.setTexture(this->texture);
+	this->deathTexture.loadFromFile("resources/textures/death.png");
+	this->deathSprite.setTexture(this->deathTexture);
 }
 
 void Player::setPosition(int xCord, int yCord) {
@@ -20,7 +22,7 @@ void Player::setPosition(int xCord, int yCord) {
 	this->onground = false;
 }
 
-void Player::input() {
+void Player::input(Map &map) {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
 		this->up = true;
 	} else {
@@ -51,6 +53,7 @@ void Player::input() {
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
 		this->setPosition(this->xCordSpawn, this->yCordSpawn);
+		map.clock.restart();
 	}
 }
 
@@ -59,7 +62,7 @@ void Player::jumping() {
 	this->jumped = true;
 }
 
-void Player::checkCollision(Map map) {
+void Player::checkCollision(Map &map) {
 	float xDelta = this->xVelocity;
 	float yDelta = this->yVelocity;
 	float xCurrent;
@@ -69,6 +72,8 @@ void Player::checkCollision(Map map) {
 	sf::Vector2f cell_1;
 	sf::Vector2f cell_2;
 	sf::Vector2f cell_3;
+
+	// DISCLAIMER: THIS CODE SUCKS
 
 	while (xDelta != 0 || yDelta != 0) {
 		////////////////////////
@@ -240,11 +245,92 @@ void Player::checkCollision(Map map) {
 				xDelta = 0;
 			}
 		}
+
+		////////////
+		// DANGER //
+		////////////
+		if (cell_0.x >= 0 && cell_0.x <= map.size.x
+			&&
+			cell_0.y >= 0 && cell_0.y <= map.size.y
+			&&
+			map.image.getPixel(cell_0.x, cell_0.y) == danger
+			&&
+			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ cell_0.x * tilesize + 1, cell_0.y * tilesize + 1, tilesize - 2, tilesize - 2)
+			||
+			cell_1.x >= 0 && cell_1.x <= map.size.x
+			&&
+			cell_1.y >= 0 && cell_1.y <= map.size.y
+			&&
+			map.image.getPixel(cell_1.x, cell_1.y) == danger
+			&&
+			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ cell_1.x * tilesize + 1, cell_1.y * tilesize + 1, tilesize - 2, tilesize - 2)
+			||
+			cell_2.x >= 0 && cell_2.x <= map.size.x
+			&&
+			cell_2.y >= 0 && cell_2.y <= map.size.y
+			&&
+			map.image.getPixel(cell_2.x, cell_2.y) == danger
+			&&
+			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ cell_2.x * tilesize + 1, cell_2.y * tilesize + 1, tilesize - 2, tilesize - 2)
+			||
+			cell_3.x >= 0 && cell_3.x <= map.size.x
+			&&
+			cell_3.y >= 0 && cell_3.y <= map.size.y
+			&&
+			map.image.getPixel(cell_3.x, cell_3.y) == danger
+			&&
+			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ cell_3.x * tilesize + 1, cell_3.y * tilesize + 1, tilesize - 2, tilesize - 2)
+		) {
+			this->alive = false;
+		}
+
+		////////////////
+		// LEVEL EXIT //
+		////////////////
+		if (cell_0.x >= 0 && cell_0.x <= map.size.x
+			&&
+			cell_0.y >= 0 && cell_0.y <= map.size.y
+			&&
+			map.image.getPixel(cell_0.x, cell_0.y) == levelExit && map.image.getPixel(cell_0.x, cell_0.y - 1) == levelExit
+			&&
+			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ cell_0.x * tilesize + 7, cell_0.y * tilesize + 7, 2, 2)
+			||
+			cell_1.x >= 0 && cell_1.x <= map.size.x
+			&&
+			cell_1.y >= 0 && cell_1.y <= map.size.y
+			&&
+			map.image.getPixel(cell_1.x, cell_1.y) == levelExit && map.image.getPixel(cell_1.x, cell_1.y - 1) == levelExit
+			&&
+			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ cell_1.x * tilesize + 7, cell_1.y * tilesize + 7, 2, 2)
+			||
+			cell_2.x >= 0 && cell_2.x <= map.size.x
+			&&
+			cell_2.y >= 0 && cell_2.y <= map.size.y
+			&&
+			map.image.getPixel(cell_2.x, cell_2.y) == levelExit && map.image.getPixel(cell_2.x, cell_2.y - 1) == levelExit
+			&&
+			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ cell_2.x * tilesize + 7, cell_2.y * tilesize + 7, 2, 2)
+			||
+			cell_3.x >= 0 && cell_3.x <= map.size.x
+			&&
+			cell_3.y >= 0 && cell_3.y <= map.size.y
+			&&
+			map.image.getPixel(cell_3.x, cell_3.y) == levelExit && map.image.getPixel(cell_3.x, cell_3.y - 1) == levelExit
+			&&
+			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ cell_3.x * tilesize + 7, cell_3.y * tilesize + 7, 2, 2)
+		) {
+			map.cleared = true;
+			map.clearTime = map.clock.getElapsedTime().asSeconds();
+		}
 	}
 }
 
-void Player::update(Map map) {
-	this->input();
+void Player::update(Map &map) {
+	if (!this->alive) {
+		return;
+	}
+
+	this->input(map);
 
 	///////////////////////
 	// VERTICAL MOVEMENT //
@@ -303,6 +389,37 @@ void Player::update(Map map) {
 }
 
 void Player::draw(sf::RenderWindow &window) {
-	this->sprite.setPosition(this->x, this->y);
-	window.draw(this->sprite);
+	if (this->alive) {
+		int animation = 0;
+
+		if (this->left && !this->right) {
+			animation = 1;
+		} else if(this->right && !this->left) {
+			animation = 2;
+		}
+
+		if (this->animationTimer == this->animationFrames * this->animationFrameDuration) {
+			this->animationTimer = 0;
+		}
+
+		int frame = std::floor(animationTimer / animationFrameDuration);
+		this->sprite.setTextureRect(sf::IntRect(frame * this->width, animation * this->height, this->width, this->height));
+		this->sprite.setPosition(this->x, this->y);
+		window.draw(this->sprite);
+
+		animationTimer++;
+	} else {
+		if (this->deathTimer == this->deathFrames * this->deathFramesDuration) {
+			this->deathTimer = 0;
+			this->setPosition(this->xCordSpawn, this->yCordSpawn);
+			this->alive = true;
+		} else {
+			int frame = std::floor(deathTimer / deathFramesDuration);
+			this->deathSprite.setTextureRect(sf::IntRect(frame * tilesize, 0, tilesize, tilesize));
+			this->deathSprite.setPosition(this->x - (tilesize - this->width) / 2, this->y - (tilesize - this->height) / 2);
+			window.draw(this->deathSprite);
+
+			deathTimer++;
+		}
+	}
 }

@@ -40,8 +40,18 @@ void Map::draw(sf::RenderWindow &window, sf::View view) {
 						xCrop = 0;
 						yCrop = 0;
 					} else if (pixel == backWall) {
+						xCrop = 0;
+						yCrop = 1;
+					} else if (pixel == danger) {
+						xCrop = 0;
+						yCrop = 2;
+					} else if (pixel == levelExit) {
 						xCrop = 1;
-						yCrop = 0;
+						if (this->image.getPixel(x, y + 1) == levelExit) {
+							yCrop = 0;
+						} else {
+							yCrop = 1;
+						}
 					}
 
 					texture.loadFromImage(this->tileset, sf::IntRect(xCrop * tilesize, yCrop * tilesize, tilesize, tilesize));

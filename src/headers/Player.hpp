@@ -19,6 +19,19 @@ class Player {
 		sf::Texture texture;
 		sf::Sprite sprite;
 
+		int animationFrames = 4;
+		int animationFrameDuration = 8;
+		int animationTimer = 0;
+
+		sf::Texture deathTexture;
+		sf::Sprite deathSprite;
+
+		int deathFrames = 8;
+		int deathFramesDuration = 4;
+		int deathTimer = 0;
+
+		bool alive = true;
+
 		bool up = false;
 		bool down = false;
 		bool left = false;
@@ -35,9 +48,9 @@ class Player {
 
 		Player(int xCord, int yCord);
 		void setPosition(int xCord, int yCord);
-		void input();
+		void input(Map &map);
 		void jumping();
-		void checkCollision(Map map);
-		void update(Map map);
+		void checkCollision(Map &map);
+		void update(Map &map);
 		void draw(sf::RenderWindow &window);
 };
