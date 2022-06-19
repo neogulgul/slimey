@@ -45,6 +45,9 @@ void Map::draw(sf::RenderWindow &window, sf::View view) {
 					} else if (pixel == danger) {
 						xCrop = 0;
 						yCrop = 2;
+					} else if (pixel == ice) {
+						xCrop = 1;
+						yCrop = 2;
 					} else if (pixel == levelExit) {
 						xCrop = 1;
 						if (this->image.getPixel(x, y + 1) == levelExit) {

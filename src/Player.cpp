@@ -126,6 +126,7 @@ void Player::checkCollision(Map &map) {
 			this->y = cell_0.y * tilesize + tilesize;
 			this->yVelocity = 0;
 			yDelta = 0;
+			this->preJumpTimer = 0;
 		}
 		// down
 		else if (
@@ -282,6 +283,7 @@ void Player::checkCollision(Map &map) {
 			collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ cell_3.x * tilesize + 1, cell_3.y * tilesize + 1, tilesize - 2, tilesize - 2)
 		) {
 			this->alive = false;
+			map.clock.restart();
 		}
 
 		////////////////
@@ -345,7 +347,11 @@ void Player::update(Map &map) {
 		if (this->preJumpTimer > 0 && this->postJumpTimer > 0 && !this->jumped) {
 			this->jumping();
 		}
-		this->yVelocity += gravity;
+		if (this->down) {
+			this->yVelocity += gravity * 2;
+		} else {
+			this->yVelocity += gravity;
+		}
 	}
 
 	if (this->preJumpTimer > 0) {
@@ -358,9 +364,9 @@ void Player::update(Map &map) {
 	/////////////////////////
 	// HORIZONTAL MOVEMENT //
 	/////////////////////////
-	if (this->left && !this->right) {
+	if (this->left && !this->right && !this->down) {
 		this->xVelocity -= this->acceleration;
-	} else if (this->right && !this->left) {
+	} else if (this->right && !this->left && !this->down) {
 		this->xVelocity += this->acceleration;
 	} else if (this->onground) {
 		if (this->xVelocity > 0) {
@@ -376,10 +382,18 @@ void Player::update(Map &map) {
 		}
 	}
 
-	if (this->xVelocity > this->maxHorizontalVelocity) {
-		this->xVelocity = this->maxHorizontalVelocity;
-	} else if (this->xVelocity < -this->maxHorizontalVelocity) {
-		this->xVelocity = -this->maxHorizontalVelocity;
+	if (this->down) {
+		if (this->xVelocity > this->maxHorizontalVelocity / 2) {
+			this->xVelocity = this->maxHorizontalVelocity / 2;
+		} else if (this->xVelocity < -this->maxHorizontalVelocity / 2) {
+			this->xVelocity = -this->maxHorizontalVelocity / 2;
+		}
+	} else {
+		if (this->xVelocity > this->maxHorizontalVelocity) {
+			this->xVelocity = this->maxHorizontalVelocity;
+		} else if (this->xVelocity < -this->maxHorizontalVelocity) {
+			this->xVelocity = -this->maxHorizontalVelocity;
+		}
 	}
 
 	this->x += this->xVelocity;
@@ -390,12 +404,16 @@ void Player::update(Map &map) {
 
 void Player::draw(sf::RenderWindow &window) {
 	if (this->alive) {
-		int animation = 0;
+			int animation = 0;
 
-		if (this->left && !this->right) {
-			animation = 1;
-		} else if(this->right && !this->left) {
+		if (this->down) {
 			animation = 2;
+		} else if (this->left && !this->right) {
+			animation = 3;
+		} else if(this->right && !this->left) {
+			animation = 4;
+		} else if (this->up) {
+			animation = 1;
 		}
 
 		if (this->animationTimer == this->animationFrames * this->animationFrameDuration) {

@@ -16,6 +16,7 @@ extern sf::Color playerColor;
 extern sf::Color foreWall;
 extern sf::Color backWall;
 extern sf::Color danger;
+extern sf::Color ice;
 extern sf::Color levelExit;
 
 // functions
