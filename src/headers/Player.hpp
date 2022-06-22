@@ -27,7 +27,7 @@ class Player {
 		sf::Sprite deathSprite;
 
 		int deathFrames = 8;
-		int deathFramesDuration = 4;
+		int deathFramesDuration = 3;
 		int deathTimer = 0;
 
 		bool alive = true;
@@ -45,11 +45,15 @@ class Player {
 		bool jump = false;
 		bool jumped = false;
 		bool onground = false;
+		bool onice = false;
 
 		Player(int xCord, int yCord);
 		void setPosition(int xCord, int yCord);
 		void input(Map &map);
 		void jumping();
+		void death(Map &map);
+		void levelClear(Map &map);
+		bool validTile(Map map, int xCord, int yCord);
 		void checkCollision(Map &map);
 		void update(Map &map);
 		void draw(sf::RenderWindow &window);

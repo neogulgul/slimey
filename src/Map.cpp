@@ -14,9 +14,9 @@ Map::Map(std::string imagePath) {
 	for (int x = 0; x < this->size.x; x++) {
 		for (int y = 0; y < this->size.y; y++) {
 			pixel = this->image.getPixel(x, y);
-			if (pixel == playerColor) {
+			if (pixel == playerWall) {
 				this->spawn.x = x;
-				this->spawn.y = y;
+				this->spawn.y = y - 1;
 			}
 		}
 	}
@@ -35,25 +35,28 @@ void Map::draw(sf::RenderWindow &window, sf::View view) {
 				&&
 				y >= std::floor((view.getCenter().y - viewHeight / 2) / tilesize) && y <= std::floor((view.getCenter().y + viewHeight / 2) / tilesize) ) {
 				pixel = this->image.getPixel(x, y);
-				if (pixel != sf::Color::Transparent && pixel != playerColor) {
+				if (pixel != sf::Color::Transparent) {
 					if (pixel == foreWall) {
 						xCrop = 0;
 						yCrop = 0;
 					} else if (pixel == backWall) {
 						xCrop = 0;
 						yCrop = 1;
+					} else if (pixel == playerWall) {
+						xCrop = 1;
+						yCrop = 0;
 					} else if (pixel == danger) {
 						xCrop = 0;
 						yCrop = 2;
 					} else if (pixel == ice) {
-						xCrop = 1;
-						yCrop = 2;
+						xCrop = 0;
+						yCrop = 3;
 					} else if (pixel == levelExit) {
 						xCrop = 1;
 						if (this->image.getPixel(x, y + 1) == levelExit) {
-							yCrop = 0;
-						} else {
 							yCrop = 1;
+						} else {
+							yCrop = 2;
 						}
 					}
 

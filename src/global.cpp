@@ -4,9 +4,9 @@
 // colors
 sf::Color background(66, 76, 110);
 sf::Color altBackground(101, 115, 146);
-sf::Color playerColor(90, 197, 79);
 sf::Color foreWall(146, 161, 185);
 sf::Color backWall(42, 47, 78);
+sf::Color playerWall(90, 197, 79);
 sf::Color danger(234, 50, 60);
 sf::Color levelExit(27, 27, 27);
 sf::Color ice(148, 253, 255);

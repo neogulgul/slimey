@@ -12,9 +12,9 @@ const float gravity = 0.16;
 // colors
 extern sf::Color background;
 extern sf::Color altBackground;
-extern sf::Color playerColor;
 extern sf::Color foreWall;
 extern sf::Color backWall;
+extern sf::Color playerWall;
 extern sf::Color danger;
 extern sf::Color ice;
 extern sf::Color levelExit;
