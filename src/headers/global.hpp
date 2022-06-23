@@ -6,7 +6,7 @@ const int FPS = 60;
 const int tilesize = 16;
 const int viewWidth = tilesize * 16;
 const int viewHeight = tilesize * 16;
-const int windowScale = 3;
+const int windowScale = 4;
 const float gravity = 0.16;
 
 // colors
@@ -18,6 +18,7 @@ extern sf::Color playerWall;
 extern sf::Color danger;
 extern sf::Color ice;
 extern sf::Color levelExit;
+extern sf::Color bounce;
 
 // functions
 bool collision(float x1, float y1, int width1, int height1, float x2, float y2, int width2, int height2);

@@ -36,20 +36,18 @@ void Map::draw(sf::RenderWindow &window, sf::View view) {
 				y >= std::floor((view.getCenter().y - viewHeight / 2) / tilesize) && y <= std::floor((view.getCenter().y + viewHeight / 2) / tilesize) ) {
 				pixel = this->image.getPixel(x, y);
 				if (pixel != sf::Color::Transparent) {
-					if (pixel == foreWall) {
-						xCrop = 0;
-						yCrop = 0;
-					} else if (pixel == backWall) {
-						xCrop = 0;
+					xCrop = 0;
+					yCrop = 0;
+					if (pixel == backWall) {
 						yCrop = 1;
 					} else if (pixel == playerWall) {
 						xCrop = 1;
-						yCrop = 0;
 					} else if (pixel == danger) {
-						xCrop = 0;
 						yCrop = 2;
 					} else if (pixel == ice) {
-						xCrop = 0;
+						yCrop = 3;
+					} else if (pixel == bounce) {
+						xCrop = 1;
 						yCrop = 3;
 					} else if (pixel == levelExit) {
 						xCrop = 1;

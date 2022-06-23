@@ -8,44 +8,53 @@ class Player {
 		float y;
 		float xCordSpawn;
 		float yCordSpawn;
-		int width = 14;
+		int width  = 14;
 		int height = 12;
 		float xVelocity = 0;
 		float yVelocity = 0;
 		float maxHorizontalVelocity = 2;
+		float maxVerticalVelocity   = 12;
 		float acceleration = 0.2;
 		float deceleration = 0.3;
 
 		sf::Texture texture;
 		sf::Sprite sprite;
 
-		int animationFrames = 4;
+		int animationFrames        = 4;
 		int animationFrameDuration = 8;
-		int animationTimer = 0;
+		int animationTimer         = 0;
 
 		sf::Texture deathTexture;
 		sf::Sprite deathSprite;
 
-		int deathFrames = 8;
+		int deathFrames         = 8;
 		int deathFramesDuration = 3;
-		int deathTimer = 0;
+		int deathTimer          = 0;
 
 		bool alive = true;
 
-		bool up = false;
-		bool down = false;
-		bool left = false;
+		bool up    = false;
+		bool down  = false;
+		bool left  = false;
 		bool right = false;
 
-		float jumpForce = 3.2;
-		int preJumpFrames = 10;
-		int preJumpTimer = 0;
-		int postJumpFrames = 5;
-		int postJumpTimer = 0;
-		bool jump = false;
-		bool jumped = false;
-		bool onground = false;
-		bool onice = false;
+		float jumpForce     = 3.2;
+		int preJumpFrames   = 10;
+		int preJumpTimer    = 0;
+		int postJumpFrames  = 5;
+		int postJumpTimer   = 0;
+		bool jump           = false;
+		bool jumped         = false;
+		bool onGround       = false;
+		bool onIce          = false;
+		bool hitCeil        = false;
+		bool hitCeilBounce  = false;
+		bool hitFloor       = false;
+		bool hitFloorBounce = false;
+		bool hitWall        = false;
+		bool hitWallBounce  = false;
+		float bounciness    = 1.2;   // the amount the velocity is multiplied with after bounce
+		float baseBounce    = 2;     // the minimum amount of velocity after bounce
 
 		Player(int xCord, int yCord);
 		void setPosition(int xCord, int yCord);
