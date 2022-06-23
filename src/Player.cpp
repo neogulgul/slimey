@@ -77,9 +77,9 @@ void Player::levelClear(Map &map) {
 }
 
 bool Player::validTile(Map map, int xCord, int yCord) {
-	if (xCord >= 0 && xCord <= map.size.x
+	if (xCord >= 0 && xCord < map.size.x
 		&&
-		yCord >= 0 && yCord <= map.size.y
+		yCord >= 0 && yCord < map.size.y
 		&&
 		map.image.getPixel(xCord, yCord) != sf::Color::Transparent
 		&&
@@ -130,7 +130,6 @@ void Player::checkCollision(Map &map) {
 			this->death(map);
 			yDelta = 0;
 		} else {
-
 			this->hitCeil       = false;
 			this->hitCeilBounce = false;
 
@@ -144,7 +143,7 @@ void Player::checkCollision(Map &map) {
 						sf::Color pixel = map.image.getPixel(xCord, yCord);
 						if (pixel == danger && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ xCord * tilesize + 1, yCord * tilesize + 1, tilesize - 2, tilesize - 2)) {
 							this->death(map);
-						} else if (pixel == levelExit && map.image.getPixel(xCord, yCord - 1) == levelExit && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ xCord * tilesize + 7, yCord * tilesize + 7, 2, 2)) {
+						} else if (pixel == levelExit && map.image.getPixel(xCord, yCord + 1) != levelExit && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ xCord * tilesize + 7, yCord * tilesize + 7, 2, 2)) {
 							this->levelClear(map);
 						} else if (pixel != danger && pixel != levelExit) {
 							this->y = yCord * tilesize + tilesize;
@@ -161,6 +160,7 @@ void Player::checkCollision(Map &map) {
 			}
 
 			if (this->hitCeilBounce) {
+				this->y++; // to avoid a bug
 				this->yVelocity *= -this->bounciness;
 				if (this->yVelocity < baseBounce) {
 					this->yVelocity = baseBounce;
@@ -183,7 +183,7 @@ void Player::checkCollision(Map &map) {
 					sf::Color pixel = map.image.getPixel(xCord, yCord);
 					if (pixel == danger && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ xCord * tilesize + 1, yCord * tilesize + 1, tilesize - 2, tilesize - 2)) {
 						this->death(map);
-					} else if (pixel == levelExit && map.image.getPixel(xCord, yCord - 1) == levelExit && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ xCord * tilesize + 7, yCord * tilesize + 7, 2, 2)) {
+					} else if (pixel == levelExit && map.image.getPixel(xCord, yCord + 1) != levelExit && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ xCord * tilesize + 7, yCord * tilesize + 7, 2, 2)) {
 						this->levelClear(map);
 					} else if (pixel != danger && pixel != levelExit) {
 						this->y = yCord * tilesize - this->height;
@@ -202,6 +202,7 @@ void Player::checkCollision(Map &map) {
 			}
 
 			if (this->hitFloorBounce) {
+				this->y--; // to avoid a bug
 				this->yVelocity *= -this->bounciness;
 				if (this->yVelocity > -baseBounce) {
 					this->yVelocity = -baseBounce;
@@ -257,7 +258,7 @@ void Player::checkCollision(Map &map) {
 						sf::Color pixel = map.image.getPixel(xCord, yCord);
 						if (pixel == danger && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ xCord * tilesize + 1, yCord * tilesize + 1, tilesize - 2, tilesize - 2)) {
 							this->death(map);
-						} else if (pixel == levelExit && map.image.getPixel(xCord, yCord - 1) == levelExit && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ xCord * tilesize + 7, yCord * tilesize + 7, 2, 2)) {
+						} else if (pixel == levelExit && map.image.getPixel(xCord, yCord + 1) != levelExit && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ xCord * tilesize + 7, yCord * tilesize + 7, 2, 2)) {
 							this->levelClear(map);
 						} else if (pixel != danger && pixel != levelExit) {
 							this->x = xCord * tilesize + tilesize;
@@ -282,7 +283,7 @@ void Player::checkCollision(Map &map) {
 						sf::Color pixel = map.image.getPixel(xCord, yCord);
 						if (pixel == danger && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ xCord * tilesize + 1, yCord * tilesize + 1, tilesize - 2, tilesize - 2)) {
 							this->death(map);
-						} else if (pixel == levelExit && map.image.getPixel(xCord, yCord - 1) == levelExit && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ xCord * tilesize + 7, yCord * tilesize + 7, 2, 2)) {
+						} else if (pixel == levelExit && map.image.getPixel(xCord, yCord + 1) != levelExit && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ xCord * tilesize + 7, yCord * tilesize + 7, 2, 2)) {
 							this->levelClear(map);
 						} else if (pixel != danger && pixel != levelExit) {
 							this->x = xCord * tilesize - this->width;
@@ -379,6 +380,18 @@ void Player::update(Map &map) {
 		this->yVelocity = -this->maxVerticalVelocity;
 	}
 
+	// preventing too small numbers
+	if (this->xVelocity > 0 && this->xVelocity < 0.1) {
+		this->xVelocity = 0;
+	} else if (this->xVelocity < 0 && this->xVelocity > -0.1) {
+		this->xVelocity = 0;
+	}
+	if (this->yVelocity > 0 && this->yVelocity < 0.1) {
+		this->yVelocity = 0;
+	} else if (this->yVelocity < 0 && this->yVelocity > -0.1) {
+		this->yVelocity = 0;
+	}
+
 	this->x += this->xVelocity;
 	this->y += this->yVelocity;
 
@@ -387,7 +400,7 @@ void Player::update(Map &map) {
 
 void Player::draw(sf::RenderWindow &window) {
 	if (this->alive) {
-			int animation = 0;
+		int animation = 0;
 
 		if (this->down) {
 			animation = 2;
