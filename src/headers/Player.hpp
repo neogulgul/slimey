@@ -12,11 +12,12 @@ class Player {
 		int height = 12;
 		float xVelocity = 0;
 		float yVelocity = 0;
-		float maxHorizontalVelocity = 2;
-		float maxVerticalVelocity   = 12;
+		float maxMoveVelocity = 2;
+		float maxAirVelocity = 8;
 		float acceleration = 0.2;
 		float deceleration = 0.3;
 
+		bool hitbox = false;
 		sf::Texture texture;
 		sf::Sprite sprite;
 

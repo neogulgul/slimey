@@ -349,10 +349,16 @@ void Player::update(Map &map) {
 	/////////////////////////
 	// HORIZONTAL MOVEMENT //
 	/////////////////////////
-	if (this->left && !this->right && !this->down) {
+	if (this->left && !this->right && !this->down && this->xVelocity > -this->maxMoveVelocity) {
 		this->xVelocity -= this->acceleration;
-	} else if (this->right && !this->left && !this->down) {
+		if (this->xVelocity < -this->maxMoveVelocity) {
+			this->xVelocity = -this->maxMoveVelocity;
+		}
+	} else if (this->right && !this->left && !this->down && this->xVelocity < this->maxMoveVelocity) {
 		this->xVelocity += this->acceleration;
+		if (this->xVelocity > this->maxMoveVelocity) {
+			this->xVelocity = this->maxMoveVelocity;
+		}
 	} else if (this->onGround && !this->onIce) {
 		if (this->xVelocity > 0) {
 			this->xVelocity -= this->deceleration;
@@ -368,16 +374,16 @@ void Player::update(Map &map) {
 	}
 
 	// horizontal speed cap
-	if (this->xVelocity > this->maxHorizontalVelocity) {
-		this->xVelocity = this->maxHorizontalVelocity;
-	} else if (this->xVelocity < -this->maxHorizontalVelocity) {
-		this->xVelocity = -this->maxHorizontalVelocity;
+	if (this->xVelocity > this->maxAirVelocity) {
+		this->xVelocity = this->maxAirVelocity;
+	} else if (this->xVelocity < -this->maxAirVelocity) {
+		this->xVelocity = -this->maxAirVelocity;
 	}
 	// vertical speed cap
-	if (this->yVelocity > this->maxVerticalVelocity) {
-		this->yVelocity = this->maxVerticalVelocity;
-	} else if (this->yVelocity < -this->maxVerticalVelocity) {
-		this->yVelocity = -this->maxVerticalVelocity;
+	if (this->yVelocity > this->maxAirVelocity) {
+		this->yVelocity = this->maxAirVelocity;
+	} else if (this->yVelocity < -this->maxAirVelocity) {
+		this->yVelocity = -this->maxAirVelocity;
 	}
 
 	// preventing too small numbers
@@ -420,6 +426,15 @@ void Player::draw(sf::RenderWindow &window) {
 		this->sprite.setTextureRect(sf::IntRect(frame * this->width, animation * this->height, this->width, this->height));
 		this->sprite.setPosition(this->x, this->y);
 		window.draw(this->sprite);
+
+		if (this->hitbox) {
+			sf::RectangleShape hitbox(sf::Vector2f(this->width, this->height));
+			hitbox.setPosition(sf::Vector2f(this->x, this->y));
+			hitbox.setFillColor(sf::Color::Transparent);
+			hitbox.setOutlineColor(sf::Color::Red);
+			hitbox.setOutlineThickness(-1);
+			window.draw(hitbox);
+		}
 
 		animationTimer++;
 	} else {

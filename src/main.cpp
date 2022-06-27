@@ -8,34 +8,71 @@ Map map("resources/textures/map.png");
 Player player(map.spawn.x, map.spawn.y);
 bool gaming = false;
 
+bool onExit = false;
+bool inputted = false;
+
 // TODO: clean up, level select & multiple levels
+
+void textBox(sf::RenderWindow &window, int x, int y, bool centerX, bool centerY, std::string string, sf::Font font, int fontSize, int padding, sf::Color backgroundColor, bool active) {
+	sf::Text text(string, font, fontSize);
+	sf::FloatRect textRect = text.getGlobalBounds();
+	sf::RectangleShape background(sf::Vector2f(textRect.width + padding, textRect.height + padding));
+	sf::Vector2f adjustment;
+	if (centerX) {
+		adjustment.x = -textRect.width / 2;
+	}
+	if (centerY) {
+		adjustment.y = -textRect.height / 2;
+	}
+
+	text.setOrigin(0, text.getCharacterSize() - textRect.height);
+	text.setPosition(sf::Vector2f(x + adjustment.x, y + adjustment.y));
+	background.setPosition(sf::Vector2f(x + adjustment.x - padding / 2, y + adjustment.y - padding / 2));
+	background.setFillColor(backgroundColor);
+	if (active) {
+		background.setOutlineColor(sf::Color::Green);
+		background.setOutlineThickness(-1);
+	}
+
+	window.draw(background);
+	window.draw(text);
+}
 
 void menu(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font bigFont) {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
-		gaming = true;
-		map.clock.restart();
-		updateView(view, player.x + player.width / 2, player.y + player.height / 2, map.size, true);
+		if (onExit) {
+			window.close();
+		} else {
+			gaming = true;
+			map.clock.restart();
+			updateView(view, player.x + player.width / 2, player.y + player.height / 2, map.size, true);
+		}
 		return;
 	}
 
-	sf::Text title("Slimey", bigFont, bigFontSize);
-	sf::FloatRect titleRect = title.getGlobalBounds();
-	title.setPosition(sf::Vector2f(-titleRect.width / 2, -50));
-	title.setOrigin(0, title.getCharacterSize() - titleRect.height);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+		if (!inputted) {
+			if (onExit) {
+				onExit = false;
+			} else {
+				onExit = true;
+			}
+			inputted = true;
+		}
+	} else {
+		inputted = false;
+	}
 
-	sf::Text text("Press enter to continue", smallFont, smallFontSize);
-	sf::FloatRect textRect = text.getGlobalBounds();
-	sf::RectangleShape textBackground(sf::Vector2f(textRect.width + 25, textRect.height + 25));
-	text.setPosition(sf::Vector2f(-textRect.width / 2, -textRect.height / 2));
-	text.setOrigin(0, text.getCharacterSize() - textRect.height);
-	textBackground.setPosition(sf::Vector2f(-textBackground.getSize().x / 2, -textBackground.getSize().y / 2));
-	textBackground.setFillColor(altBackground);
+	textBox(window, viewWidth / 2, viewHeight / 4, true, true, "slimey", bigFont, bigFontSize, 0, sf::Color::Transparent, false);
+	if (!onExit) {
+		textBox(window, viewWidth / 2, viewHeight / 2, true, true, "start", smallFont, smallFontSize, 20, altBackground, true);
+		textBox(window, viewWidth / 2, viewHeight / 2 + 30, true, true, "exit", smallFont, smallFontSize, 20, altBackground, false);
+	} else {
+		textBox(window, viewWidth / 2, viewHeight / 2, true, true, "start", smallFont, smallFontSize, 20, altBackground, false);
+		textBox(window, viewWidth / 2, viewHeight / 2 + 30, true, true, "exit", smallFont, smallFontSize, 20, altBackground, true);
+	}
 
-	window.draw(title);
-	window.draw(textBackground);
-	window.draw(text);
-
-	view.setCenter(0, 0);
+	view.setCenter(viewWidth / 2, viewHeight / 2);
 }
 
 void game(sf::RenderWindow &window, sf::View &view, Map &map, Player &player) {
@@ -85,6 +122,7 @@ int main() {
 	sf::Font bigFont;
 	smallFont.loadFromFile("resources/fonts/FiveByFive.ttf");
 	bigFont.loadFromFile("resources/fonts/FiveByFive.ttf");
+	// avoiding blurry font
 	sf::Texture& smallFontTexture = const_cast<sf::Texture&>(smallFont.getTexture(smallFontSize));
 	sf::Texture& bigFontTexture = const_cast<sf::Texture&>(bigFont.getTexture(bigFontSize));
 	smallFontTexture.setSmooth(false);
