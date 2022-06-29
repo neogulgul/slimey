@@ -4,16 +4,12 @@
 #include "headers/Map.hpp"
 #include "headers/Player.hpp"
 
-#include <iostream>
+Player::Player() {}
 
 Player::Player(int xCord, int yCord) {
 	this->xCordSpawn = xCord;
 	this->yCordSpawn = yCord;
 	this->setPosition(xCordSpawn, yCordSpawn);
-	this->texture.loadFromFile("resources/textures/slimey.png");
-	this->sprite.setTexture(this->texture);
-	this->deathTexture.loadFromFile("resources/textures/death.png");
-	this->deathSprite.setTexture(this->deathTexture);
 }
 
 void Player::setPosition(int xCord, int yCord) {
@@ -73,7 +69,6 @@ void Player::death(Map &map) {
 
 void Player::levelClear(Map &map) {
 	map.cleared = true;
-	map.clearTime = map.clock.getElapsedTime().asSeconds();
 }
 
 bool Player::validTile(Map map, int xCord, int yCord) {
@@ -118,12 +113,6 @@ void Player::checkCollision(Map &map) {
 		currentTile.y = std::floor(yCurrent / tilesize);
 		currentIntersections.x = std::floor((xCurrent + this->width) / tilesize) - currentTile.x;
 		currentIntersections.y = std::floor((yCurrent + this->height) / tilesize) - currentTile.y;
-
-		// std::cout << "\n";
-		// std::cout << "0x: " << currentTile.x                          << ", 0y:" << currentTile.y                          << "\n";
-		// std::cout << "1x: " << currentTile.x + currentIntersections.x << ", 1y:" << currentTile.y                          << "\n";
-		// std::cout << "2x: " << currentTile.x                          << ", 2y:" << currentTile.y + currentIntersections.y << "\n";
-		// std::cout << "3x: " << currentTile.x + currentIntersections.x << ", 3y:" << currentTile.y + currentIntersections.y << "\n";
 
 		if (yCurrent > map.size.y * tilesize) {
 			this->y = yCurrent - this->height;
@@ -349,12 +338,12 @@ void Player::update(Map &map) {
 	/////////////////////////
 	// HORIZONTAL MOVEMENT //
 	/////////////////////////
-	if (this->left && !this->right && !this->down && this->xVelocity > -this->maxMoveVelocity) {
+	if (this->left && !this->right && !this->down && this->xVelocity >= -this->maxMoveVelocity) {
 		this->xVelocity -= this->acceleration;
 		if (this->xVelocity < -this->maxMoveVelocity) {
 			this->xVelocity = -this->maxMoveVelocity;
 		}
-	} else if (this->right && !this->left && !this->down && this->xVelocity < this->maxMoveVelocity) {
+	} else if (this->right && !this->left && !this->down && this->xVelocity <= this->maxMoveVelocity) {
 		this->xVelocity += this->acceleration;
 		if (this->xVelocity > this->maxMoveVelocity) {
 			this->xVelocity = this->maxMoveVelocity;
@@ -404,7 +393,7 @@ void Player::update(Map &map) {
 	this->checkCollision(map);
 }
 
-void Player::draw(sf::RenderWindow &window) {
+void Player::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite playerSprite, sf::Sprite playerDeathSprite, sf::Sprite offscreenCircleSprite) {
 	if (this->alive) {
 		int animation = 0;
 
@@ -423,9 +412,33 @@ void Player::draw(sf::RenderWindow &window) {
 		}
 
 		int frame = std::floor(animationTimer / animationFrameDuration);
-		this->sprite.setTextureRect(sf::IntRect(frame * this->width, animation * this->height, this->width, this->height));
-		this->sprite.setPosition(this->x, this->y);
-		window.draw(this->sprite);
+		playerSprite.setTextureRect(sf::IntRect(frame * this->width, animation * this->height, this->width, this->height));
+		float xSpritePosition = this->x;
+		float ySpritePosition = this->y;
+		bool outsideView = false;
+
+		if (this->x + this->width <= view.getCenter().x - viewWidth / 2) {
+			xSpritePosition = view.getCenter().x - viewWidth / 2;
+			outsideView = true;
+		} else if (this->x >= view.getCenter().x + viewWidth / 2) {
+			xSpritePosition = view.getCenter().x + viewWidth / 2 - this->width;
+			outsideView = true;
+		}
+		if (this->y + this->height <= view.getCenter().y - viewHeight / 2) {
+			ySpritePosition = view.getCenter().y - viewHeight / 2;
+			outsideView = true;
+		} else if (this->y >= view.getCenter().y + viewHeight / 2) {
+			ySpritePosition = view.getCenter().y + viewHeight / 2 - this->height;
+			outsideView = true;
+		}
+
+		if (outsideView) {
+			offscreenCircleSprite.setPosition(xSpritePosition - offscreenCircleSprite.getTexture()->getSize().x / 2 + this->width / 2, ySpritePosition - offscreenCircleSprite.getTexture()->getSize().y / 2 + this->height / 2);
+			window.draw(offscreenCircleSprite);
+		}
+
+		playerSprite.setPosition(xSpritePosition, ySpritePosition);
+		window.draw(playerSprite);
 
 		if (this->hitbox) {
 			sf::RectangleShape hitbox(sf::Vector2f(this->width, this->height));
@@ -444,9 +457,9 @@ void Player::draw(sf::RenderWindow &window) {
 			this->alive = true;
 		} else {
 			int frame = std::floor(deathTimer / deathFramesDuration);
-			this->deathSprite.setTextureRect(sf::IntRect(frame * tilesize, 0, tilesize, tilesize));
-			this->deathSprite.setPosition(this->x - (tilesize - this->width) / 2, this->y - (tilesize - this->height) / 2);
-			window.draw(this->deathSprite);
+			playerDeathSprite.setTextureRect(sf::IntRect(frame * tilesize, 0, tilesize, tilesize));
+			playerDeathSprite.setPosition(this->x - (tilesize - this->width) / 2, this->y - (tilesize - this->height) / 2);
+			window.draw(playerDeathSprite);
 
 			deathTimer++;
 		}

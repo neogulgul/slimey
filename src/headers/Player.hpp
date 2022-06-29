@@ -13,20 +13,15 @@ class Player {
 		float xVelocity = 0;
 		float yVelocity = 0;
 		float maxMoveVelocity = 2;
-		float maxAirVelocity = 8;
+		float maxAirVelocity  = 8;
 		float acceleration = 0.2;
 		float deceleration = 0.3;
 
 		bool hitbox = false;
-		sf::Texture texture;
-		sf::Sprite sprite;
 
 		int animationFrames        = 4;
 		int animationFrameDuration = 8;
 		int animationTimer         = 0;
-
-		sf::Texture deathTexture;
-		sf::Sprite deathSprite;
 
 		int deathFrames         = 8;
 		int deathFramesDuration = 3;
@@ -57,6 +52,7 @@ class Player {
 		float bounciness    = 1.2;   // the amount the velocity is multiplied with after bounce
 		float baseBounce    = 2;     // the minimum amount of velocity after bounce
 
+		Player();
 		Player(int xCord, int yCord);
 		void setPosition(int xCord, int yCord);
 		void input(Map &map);
@@ -66,5 +62,5 @@ class Player {
 		bool validTile(Map map, int xCord, int yCord);
 		void checkCollision(Map &map);
 		void update(Map &map);
-		void draw(sf::RenderWindow &window);
+		void draw(sf::RenderWindow &window, sf::View &view, sf::Sprite playerSprite, sf::Sprite playerDeathSprite, sf::Sprite offscreenCircleSprite);
 };

@@ -1,12 +1,16 @@
-#include <string>
 #include <cmath>
+#include <string>
 #include <SFML/Graphics.hpp>
 #include "headers/global.hpp"
 #include "headers/Map.hpp"
 
-Map::Map(std::string imagePath) {
+Map::Map() {}
+
+Map::Map(int mapIndex) {
 	this->tileset.loadFromFile("resources/textures/tileset.png");
-	this->image.loadFromFile(imagePath);
+	if (!this->image.loadFromFile("resources/textures/maps/" + std::to_string(mapIndex) + ".png")) {
+		this->image.loadFromFile("resources/textures/maps/null.png");
+	}
 	this->size = this->image.getSize();
 
 	sf::Color pixel;
@@ -17,6 +21,7 @@ Map::Map(std::string imagePath) {
 			if (pixel == playerWall) {
 				this->spawn.x = x;
 				this->spawn.y = y - 1;
+				break;
 			}
 		}
 	}

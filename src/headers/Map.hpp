@@ -8,9 +8,9 @@ class Map {
 		sf::Vector2u spawn;
 
 		bool cleared = false;
-		float clearTime;
 		sf::Clock clock;
 
-		Map(std::string imagePath);
+		Map();
+		Map(int mapIndex);
 		void draw(sf::RenderWindow &window, sf::View view);
 };
