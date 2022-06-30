@@ -13,7 +13,7 @@ class Player {
 		float xVelocity = 0;
 		float yVelocity = 0;
 		float maxMoveVelocity = 2;
-		float maxAirVelocity  = 8;
+		float maxVelocity     = 8;
 		float acceleration = 0.2;
 		float deceleration = 0.3;
 
@@ -34,7 +34,9 @@ class Player {
 		bool left  = false;
 		bool right = false;
 
-		float jumpForce     = 3.2;
+		float jumpForce     = 2.5;
+		int jumpFrames      = 8;
+		int jumpTimer       = 0;
 		int preJumpFrames   = 10;
 		int preJumpTimer    = 0;
 		int postJumpFrames  = 5;

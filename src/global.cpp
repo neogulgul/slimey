@@ -2,15 +2,15 @@
 #include "headers/global.hpp"
 
 // colors
-sf::Color backgroundColor(66 , 76 , 110);
+sf::Color backgroundColor( 66,  76, 110);
 sf::Color       textColor(255, 255, 255);
 sf::Color        foreWall(146, 161, 185);
-sf::Color        backWall(42 , 47 , 78 );
-sf::Color      playerWall(90 , 197, 79 );
-sf::Color          danger(234, 50 , 60 );
-sf::Color       levelExit(27 , 27 , 27 );
+sf::Color        backWall( 42,  47,  78);
+sf::Color      playerWall( 90, 197,  79);
+sf::Color          danger(234,  50,  60);
+sf::Color       levelExit( 27,  27,  27);
 sf::Color             ice(148, 253, 255);
-sf::Color          bounce(255, 235, 87 );
+sf::Color          bounce(255, 235,  87);
 
 // functions
 bool collision(float x1, float y1, int width1, int height1, float x2, float y2, int width2, int height2) {

@@ -56,6 +56,7 @@ void Player::input(Map &map) {
 }
 
 void Player::jumping() {
+	this->jumpTimer++;
 	this->yVelocity = -this->jumpForce;
 	this->jumped = true;
 }
@@ -308,6 +309,19 @@ void Player::update(Map &map) {
 
 	this->input(map);
 
+	if (this->jumpTimer > 0) {
+		if (this->jump) {
+			this->yVelocity = -this->jumpForce;
+
+			this->jumpTimer++;
+			if (this->jumpTimer == this->jumpFrames) {
+				this->jumpTimer = 0;
+			}
+		} else {
+			this->jumpTimer = 0;
+		}
+	}
+
 	///////////////////////
 	// VERTICAL MOVEMENT //
 	///////////////////////
@@ -362,19 +376,6 @@ void Player::update(Map &map) {
 		}
 	}
 
-	// horizontal speed cap
-	if (this->xVelocity > this->maxAirVelocity) {
-		this->xVelocity = this->maxAirVelocity;
-	} else if (this->xVelocity < -this->maxAirVelocity) {
-		this->xVelocity = -this->maxAirVelocity;
-	}
-	// vertical speed cap
-	if (this->yVelocity > this->maxAirVelocity) {
-		this->yVelocity = this->maxAirVelocity;
-	} else if (this->yVelocity < -this->maxAirVelocity) {
-		this->yVelocity = -this->maxAirVelocity;
-	}
-
 	// preventing too small numbers
 	if (this->xVelocity > 0 && this->xVelocity < 0.1) {
 		this->xVelocity = 0;
@@ -391,6 +392,19 @@ void Player::update(Map &map) {
 	this->y += this->yVelocity;
 
 	this->checkCollision(map);
+
+	// horizontal speed cap
+	if (this->xVelocity > this->maxVelocity) {
+		this->xVelocity = this->maxVelocity;
+	} else if (this->xVelocity < -this->maxVelocity) {
+		this->xVelocity = -this->maxVelocity;
+	}
+	// vertical speed cap
+	if (this->yVelocity > this->maxVelocity) {
+		this->yVelocity = this->maxVelocity;
+	} else if (this->yVelocity < -this->maxVelocity) {
+		this->yVelocity = -this->maxVelocity;
+	}
 }
 
 void Player::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, bool paused) {
