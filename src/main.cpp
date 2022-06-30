@@ -29,6 +29,7 @@ int main() {
 	int menuSelectionTimerFrames = 6;
 	bool entered = true;
 	bool escaped = true;
+	bool paused = false;
 
 	// loading textures
 	sf::Texture playerTexture;
@@ -55,7 +56,7 @@ int main() {
 		}
 
 		if (window.hasFocus()) {
-			window.clear(background);
+			window.clear(backgroundColor);
 
 			if (state != lastState) {
 				lastState = state;
@@ -115,7 +116,7 @@ int main() {
 					levelSelect(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped, map, player);
 					break;
 				case gameState:
-					game(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped, map, player, playerSprite, playerDeathSprite, offscreenCircleSprite);
+					game(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped, map, player, playerSprite, playerDeathSprite, offscreenCircleSprite, paused);
 					break;
 			}
 

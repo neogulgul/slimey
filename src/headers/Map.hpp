@@ -8,9 +8,13 @@ class Map {
 		sf::Vector2u spawn;
 
 		bool cleared = false;
-		sf::Clock clock;
+		float levelTime = 0;
+		float pauseTime = 0;
+		sf::Clock levelClock;
+		sf::Clock pauseClock;
 
 		Map();
 		Map(int mapIndex);
-		void draw(sf::RenderWindow &window, sf::View view);
+		void resetTime();
+		void draw(sf::RenderWindow &window, sf::View view, bool paused);
 };

@@ -2,14 +2,15 @@
 #include "headers/global.hpp"
 
 // colors
-sf::Color background(66, 76, 110);
-sf::Color foreWall(146, 161, 185);
-sf::Color backWall(42, 47, 78);
-sf::Color playerWall(90, 197, 79);
-sf::Color danger(234, 50, 60);
-sf::Color levelExit(27, 27, 27);
-sf::Color ice(148, 253, 255);
-sf::Color bounce(255, 235, 87);
+sf::Color backgroundColor(66 , 76 , 110);
+sf::Color       textColor(255, 255, 255);
+sf::Color        foreWall(146, 161, 185);
+sf::Color        backWall(42 , 47 , 78 );
+sf::Color      playerWall(90 , 197, 79 );
+sf::Color          danger(234, 50 , 60 );
+sf::Color       levelExit(27 , 27 , 27 );
+sf::Color             ice(148, 253, 255);
+sf::Color          bounce(255, 235, 87 );
 
 // functions
 bool collision(float x1, float y1, int width1, int height1, float x2, float y2, int width2, int height2) {
@@ -23,8 +24,9 @@ bool collision(float x1, float y1, int width1, int height1, float x2, float y2, 
 	return false;
 }
 
-void textBox(sf::RenderWindow &window, sf::View &view, sf::Font font, int fontSize, std::string string, int x, int y, bool centerX, bool centerY, int width, int height, int padding, sf::Color backgroundColor, sf::Color outlineColor) {
+void textBox(sf::RenderWindow &window, sf::View &view, sf::Font font, int fontSize, std::string string, int x, int y, bool centerX, bool centerY, int width, int height, int padding, sf::Color textColor, sf::Color backgroundColor, sf::Color outlineColor) {
 	sf::Text text(string, font, fontSize);
+	text.setFillColor(textColor);
 	sf::FloatRect textRect = text.getGlobalBounds();
 	sf::Vector2f adjustment;
 	if (centerX) {

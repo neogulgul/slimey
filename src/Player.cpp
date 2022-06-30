@@ -51,7 +51,7 @@ void Player::input(Map &map) {
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
 		this->setPosition(this->xCordSpawn, this->yCordSpawn);
-		map.clock.restart();
+		map.resetTime();
 	}
 }
 
@@ -64,7 +64,7 @@ void Player::death(Map &map) {
 	this->alive = false;
 	this->preJumpTimer = 0;
 	this->postJumpTimer = 0;
-	map.clock.restart();
+	map.resetTime();
 }
 
 void Player::levelClear(Map &map) {
@@ -393,7 +393,7 @@ void Player::update(Map &map) {
 	this->checkCollision(map);
 }
 
-void Player::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite playerSprite, sf::Sprite playerDeathSprite, sf::Sprite offscreenCircleSprite) {
+void Player::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, bool paused) {
 	if (this->alive) {
 		int animation = 0;
 
@@ -449,7 +449,9 @@ void Player::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite playerSpr
 			window.draw(hitbox);
 		}
 
-		animationTimer++;
+		if (!paused) {
+			animationTimer++;
+		}
 	} else {
 		if (this->deathTimer == this->deathFrames * this->deathFramesDuration) {
 			this->deathTimer = 0;
@@ -461,7 +463,9 @@ void Player::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite playerSpr
 			playerDeathSprite.setPosition(this->x - (tilesize - this->width) / 2, this->y - (tilesize - this->height) / 2);
 			window.draw(playerDeathSprite);
 
-			deathTimer++;
+			if (!paused) {
+				deathTimer++;
+			}
 		}
 	}
 }

@@ -27,7 +27,14 @@ Map::Map(int mapIndex) {
 	}
 }
 
-void Map::draw(sf::RenderWindow &window, sf::View view) {
+void Map::resetTime() {
+	this->levelTime = 0;
+	this->pauseTime = 0;
+	this->levelClock.restart();
+	this->pauseClock.restart();
+}
+
+void Map::draw(sf::RenderWindow &window, sf::View view, bool paused) {
 	sf::Texture texture;
 	sf::Sprite sprite;
 	sf::Color pixel;
