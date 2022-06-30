@@ -1,3 +1,4 @@
+#include <sstream>
 #include <vector>
 #include <SFML/Graphics.hpp>
 #include "headers/global.hpp"
@@ -35,18 +36,27 @@ int main() {
 	sf::Texture playerTexture;
 	sf::Texture playerDeathTexture;
 	sf::Texture offscreenCircleTexture;
+	sf::Texture tilesetTexture;
 	sf::Sprite playerSprite;
 	sf::Sprite playerDeathSprite;
 	sf::Sprite offscreenCircleSprite;
+	sf::Sprite tilesetSprite;
 	playerTexture.loadFromFile("resources/textures/slimey.png");
 	playerDeathTexture.loadFromFile("resources/textures/death.png");
 	offscreenCircleTexture.loadFromFile("resources/textures/offscreen-circle.png");
+	tilesetTexture.loadFromFile("resources/textures/tileset.png");
 	playerSprite.setTexture(playerTexture);
 	playerDeathSprite.setTexture(playerDeathTexture);
 	offscreenCircleSprite.setTexture(offscreenCircleTexture);
+	tilesetSprite.setTexture(tilesetTexture);
 
 	Player player;
 	Map map;
+
+	sf::Clock fpsClock;
+	float fpsCounter = 0;
+	float currentTime = 0;
+	float lastTime = 0;
 
 	while (window.isOpen()) {
 		while (window.pollEvent(event)) {
@@ -116,11 +126,19 @@ int main() {
 					levelSelect(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped, map, player);
 					break;
 				case gameState:
-					game(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped, map, player, playerSprite, playerDeathSprite, offscreenCircleSprite, paused);
+					game(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped, map, player, playerSprite, playerDeathSprite, offscreenCircleSprite, tilesetSprite, paused);
 					break;
 			}
 
+			currentTime = fpsClock.restart().asSeconds();
+			fpsCounter = 1 / currentTime;
+			lastTime = currentTime;
+
+			std::stringstream fpsString;
+			fpsString << "fps: " << fpsCounter;
+
 			window.setView(view);
+			textBox(window, view, smallFont, smallFontSize, fpsString.str(), 10, viewHeight / 2, false, true, 0, 0, 5, textColor, sf::Color(0, 0, 0, 64), sf::Color(0, 0, 0, 128));
 			window.display();
 		}
 	}

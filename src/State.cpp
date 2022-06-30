@@ -1,6 +1,5 @@
 #include <cmath>
 #include <sstream>
-#include <thread>
 #include <vector>
 #include <SFML/Graphics.hpp>
 #include "headers/global.hpp"
@@ -86,7 +85,7 @@ void levelSelect(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, s
 	}
 }
 
-void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font largeFont, State &state, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f &menuSelection, bool &entered, bool &escaped, Map &map, Player &player, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, bool &paused) {
+void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font largeFont, State &state, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f &menuSelection, bool &entered, bool &escaped, Map &map, Player &player, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, sf::Sprite &tilesetSprite, bool &paused) {
 	if (menu.size() == 0) {
 		menu.push_back(std::vector<MenuBox>{
 			MenuBox(smallFont, smallFontSize, "Yes", viewWidth / 2 - 25, viewHeight / 2, true, true, 0, 0, 15)
@@ -100,15 +99,9 @@ void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font
 		state = levelSelectState;
 	}
 
-	if (!paused) {
-		player.update(map);
-		if (!map.cleared) {
-			map.levelTime = map.levelClock.getElapsedTime().asSeconds() - map.pauseTime;
-		}
-	}
+	map.draw(window, view, tilesetSprite, paused);
 
-	map.draw(window, view, paused);
-
+	player.update(map, paused);
 	player.draw(window, view, playerSprite, playerDeathSprite, offscreenCircleSprite, paused);
 
 	if (paused) {
@@ -116,6 +109,10 @@ void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font
 		textBox(window, view, largeFont, largeFontSize, "Go to level select?", viewWidth / 2, viewHeight / 4, true, true, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
 		drawMenu(window, view, menu, menuSelection);
 	} else {
+		if (!map.cleared) {
+			map.levelTime = map.levelClock.getElapsedTime().asSeconds() - map.pauseTime;
+		}
+
 		std::stringstream levelTimer;
 		levelTimer << std::floor(map.levelTime * 100) / 100;
 
@@ -129,10 +126,10 @@ void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font
 		yPlayerVelocity << "yVel: " << player.yVelocity;
 
 		textBox(window, view, smallFont, smallFontSize, levelTimer.str()     , 10, 10                 , false, false, 0, 0, 5, textColor, sf::Color(0, 0, 0, 64), sf::Color(0, 0, 0, 128));
-		textBox(window, view, smallFont, smallFontSize, xPlayerPosition.str(), 10, viewHeight / 2 - 30, false, true , 0, 0, 5, textColor, sf::Color(0, 0, 0, 64), sf::Color(0, 0, 0, 128));
-		textBox(window, view, smallFont, smallFontSize, yPlayerPosition.str(), 10, viewHeight / 2 - 15, false, true , 0, 0, 5, textColor, sf::Color(0, 0, 0, 64), sf::Color(0, 0, 0, 128));
-		textBox(window, view, smallFont, smallFontSize, xPlayerVelocity.str(), 10, viewHeight / 2 + 15, false, true , 0, 0, 5, textColor, sf::Color(0, 0, 0, 64), sf::Color(0, 0, 0, 128));
-		textBox(window, view, smallFont, smallFontSize, yPlayerVelocity.str(), 10, viewHeight / 2 + 30, false, true , 0, 0, 5, textColor, sf::Color(0, 0, 0, 64), sf::Color(0, 0, 0, 128));
+		textBox(window, view, smallFont, smallFontSize, xPlayerPosition.str(), 10, viewHeight / 2 + 20, false, true , 0, 0, 5, textColor, sf::Color(0, 0, 0, 64), sf::Color(0, 0, 0, 128));
+		textBox(window, view, smallFont, smallFontSize, yPlayerPosition.str(), 10, viewHeight / 2 + 40, false, true , 0, 0, 5, textColor, sf::Color(0, 0, 0, 64), sf::Color(0, 0, 0, 128));
+		textBox(window, view, smallFont, smallFontSize, xPlayerVelocity.str(), 10, viewHeight / 2 + 60, false, true , 0, 0, 5, textColor, sf::Color(0, 0, 0, 64), sf::Color(0, 0, 0, 128));
+		textBox(window, view, smallFont, smallFontSize, yPlayerVelocity.str(), 10, viewHeight / 2 + 80, false, true , 0, 0, 5, textColor, sf::Color(0, 0, 0, 64), sf::Color(0, 0, 0, 128));
 
 		updateView(view, player.x + player.width / 2, player.y + player.height / 2, map.size, false);
 	}

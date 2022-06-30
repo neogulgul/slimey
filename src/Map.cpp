@@ -7,7 +7,6 @@
 Map::Map() {}
 
 Map::Map(int mapIndex) {
-	this->tileset.loadFromFile("resources/textures/tileset.png");
 	if (!this->image.loadFromFile("resources/textures/maps/" + std::to_string(mapIndex) + ".png")) {
 		this->image.loadFromFile("resources/textures/maps/null.png");
 	}
@@ -34,11 +33,8 @@ void Map::resetTime() {
 	this->pauseClock.restart();
 }
 
-void Map::draw(sf::RenderWindow &window, sf::View view, bool paused) {
-	sf::Texture texture;
-	sf::Sprite sprite;
+void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprite, bool paused) {
 	sf::Color pixel;
-	sf::Color topPixel;
 	int xCrop, yCrop;
 
 	for (int x = 0; x < this->size.x; x++) {
@@ -70,10 +66,9 @@ void Map::draw(sf::RenderWindow &window, sf::View view, bool paused) {
 						}
 					}
 
-					texture.loadFromImage(this->tileset, sf::IntRect(xCrop * tilesize, yCrop * tilesize, tilesize, tilesize));
-					sprite.setTexture(texture);
-					sprite.setPosition(x * tilesize, y * tilesize);
-					window.draw(sprite);
+					tilesetSprite.setTextureRect(sf::IntRect(xCrop * tilesize, yCrop * tilesize, tilesize, tilesize));
+					tilesetSprite.setPosition(x * tilesize, y * tilesize);
+					window.draw(tilesetSprite);
 				}
 			}
 		}

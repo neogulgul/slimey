@@ -302,15 +302,17 @@ void Player::checkCollision(Map &map) {
 	}
 }
 
-void Player::update(Map &map) {
-	if (!this->alive) {
+void Player::update(Map &map, bool paused) {
+	if (!this->alive || paused) {
 		return;
 	}
 
 	this->input(map);
 
 	if (this->jumpTimer > 0) {
-		if (this->jump) {
+		if (this->yVelocity == 0) {
+			this->jumpTimer = 0;
+		} else if (this->jump) {
 			this->yVelocity = -this->jumpForce;
 
 			this->jumpTimer++;
