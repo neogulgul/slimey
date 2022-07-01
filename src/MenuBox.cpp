@@ -29,5 +29,5 @@ void MenuBox::draw(sf::RenderWindow &window, sf::View &view, bool active) {
 		backgroundColor = this->backgroundColor;
 		outlineColor    = this->outlineColor;
 	}
-	textBox(window, view, this->font, this->fontSize, this->string, this->x, this->y, this->centerX, this->centerY, this->width, this->height, this->padding, outlineColor, backgroundColor, outlineColor);
+	textBox(window, view, this->font, this->fontSize, this->string, this->x, this->y, this->centerX, this->centerY, false, false, this->width, this->height, this->padding, outlineColor, backgroundColor, outlineColor);
 }

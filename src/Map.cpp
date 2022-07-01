@@ -27,10 +27,7 @@ Map::Map(int mapIndex) {
 }
 
 void Map::resetTime() {
-	this->levelTime = 0;
-	this->pauseTime = 0;
-	this->levelClock.restart();
-	this->pauseClock.restart();
+	this->clearTime = 0;
 }
 
 void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprite, bool paused) {

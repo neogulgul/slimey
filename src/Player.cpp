@@ -50,8 +50,7 @@ void Player::input(Map &map) {
 		this->jump = false;
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
-		this->setPosition(this->xCordSpawn, this->yCordSpawn);
-		map.resetTime();
+		this->death(map);
 	}
 }
 
@@ -307,12 +306,12 @@ void Player::checkCollision(Map &map) {
 	}
 }
 
-void Player::update(Map &map, bool paused) {
+void Player::update(Map &map, bool paused, bool locked) {
 	if (!this->alive || paused) {
 		return;
 	}
 
-	if (!map.cleared) {
+	if (!locked) {
 		this->input(map);
 	}
 
@@ -477,12 +476,21 @@ void Player::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &playerSp
 		}
 	} else {
 		if (this->deathTimer == this->deathFrames * this->deathFramesDuration) {
+			if (this->resurrection) {
+				this->resurrection = false;
+				this->alive = true;
+			} else {
+				this->setPosition(this->xCordSpawn, this->yCordSpawn);
+				this->resurrection = true;
+			}
 			this->deathTimer = 0;
-			this->setPosition(this->xCordSpawn, this->yCordSpawn);
-			this->alive = true;
 		} else {
 			int frame = std::floor(deathTimer / deathFramesDuration);
-			playerDeathSprite.setTextureRect(sf::IntRect(frame * tilesize, 0, tilesize, tilesize));
+			if (resurrection) {
+				playerDeathSprite.setTextureRect(sf::IntRect((deathFrames - frame) * tilesize, 0, tilesize, tilesize));
+			} else {
+				playerDeathSprite.setTextureRect(sf::IntRect(frame * tilesize, 0, tilesize, tilesize));
+			}
 			playerDeathSprite.setPosition(this->x - (tilesize - this->width) / 2, this->y - (tilesize - this->height) / 2);
 			window.draw(playerDeathSprite);
 

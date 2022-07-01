@@ -1,3 +1,4 @@
+#include <cmath>
 #include <sstream>
 #include <vector>
 #include <SFML/Graphics.hpp>
@@ -6,9 +7,6 @@
 #include "headers/Player.hpp"
 #include "headers/State.hpp"
 #include "headers/Transition.hpp"
-
-// TODO: tie time to framerate
-// TODO: player resurrection animation
 
 int main() {
 	sf::RenderWindow window(sf::VideoMode(viewWidth * windowScale, viewHeight * windowScale), "Slimey", sf::Style::Default);
@@ -60,9 +58,11 @@ int main() {
 	Transition transition;
 
 	sf::Clock fpsClock;
-	float fpsCounter = 0;
-	float currentTime = 0;
-	float lastTime = 0;
+	float currentTime   = 0;
+	float lastTime      = 0;
+	float fpsCounter    = 0;
+	int fpsUpdateTimer  = 0;
+	int fpsUpdateFrames = 4;
 
 	while (window.isOpen()) {
 		while (window.pollEvent(event)) {
@@ -125,6 +125,10 @@ int main() {
 				}
 			}
 
+			if (transition.inwardComplete) {
+				state = transition.destination;
+			}
+
 			switch (state) {
 				case startMenuState:
 					startMenu(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped);
@@ -137,16 +141,21 @@ int main() {
 					break;
 			}
 
-			currentTime = fpsClock.restart().asSeconds();
-			fpsCounter = 1 / currentTime;
-			lastTime = currentTime;
-
 			std::stringstream fpsString;
-			fpsString << "fps: " << fpsCounter;
+			fpsString << "FPS: " << fpsCounter;
 
 			window.setView(view);
-			textBox(window, view, smallFont, smallFontSize, fpsString.str(), 10, viewHeight / 2, false, true, 0, 0, 5, textColor, sf::Color(0, 0, 0, 64), sf::Color(0, 0, 0, 128));
+			textBox(window, view, smallFont, smallFontSize, fpsString.str(), viewWidth - 10, 10, false, true, true, false, 0, 0, 5, textColor, sf::Color::Transparent, sf::Color::Transparent);
 			window.display();
+
+			fpsUpdateTimer++;
+
+			currentTime = fpsClock.restart().asSeconds();
+			if (fpsUpdateTimer == fpsUpdateFrames) {
+				fpsUpdateTimer = 0;
+				fpsCounter = std::ceil(1 / currentTime);
+			}
+			lastTime = currentTime;
 		}
 	}
 

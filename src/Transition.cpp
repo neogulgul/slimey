@@ -1,10 +1,16 @@
 #include <SFML/Graphics.hpp>
 #include "headers/global.hpp"
+#include "headers/State.hpp"
 #include "headers/Transition.hpp"
 
 Transition::Transition() {
 	this->square = sf::RectangleShape(sf::Vector2f(tilesize, tilesize));
 	this->square.setFillColor(sf::Color::Black);
+}
+
+void Transition::to(State destination) {
+	this->ongoing = true;
+	this->destination = destination;
 }
 
 void Transition::reset() {
@@ -27,7 +33,7 @@ void Transition::reset() {
 
 void Transition::draw(sf::RenderWindow &window, sf::View view) {
 	if (this->transitionTimer < this->transitionFrames) {
-		this->transitionTimer++;
+		this->transitionTimer += this->transitionSpeed;
 	} else {
 		this->transitionDelayTimer++;
 		if (this->transitionDelayTimer == this->transitionDelayFrames) {
@@ -39,6 +45,7 @@ void Transition::draw(sf::RenderWindow &window, sf::View view) {
 					this->outwardComplete = true;
 					break;
 			}
+			this->reset();
 		}
 	}
 	this->direction = right;
