@@ -32,11 +32,12 @@ void startMenu(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf:
 	textBox(window, view, largeFont, largeFontSize, "Slimey", viewWidth / 2, viewHeight / 4, true, true, false, false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
 
 	/* HOW TO PLAY */
-	textBox(window, view, smallFont, smallFontSize, "Up - W"         , 10            , viewHeight / 2 - 20, false, true, false, false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
-	textBox(window, view, smallFont, smallFontSize, "Down - S"       , 10            , viewHeight / 2 - 10, false, true, false, false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
-	textBox(window, view, smallFont, smallFontSize, "Left - A"       , 10            , viewHeight / 2     , false, true, false, false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
-	textBox(window, view, smallFont, smallFontSize, "Right - D"      , 10            , viewHeight / 2 + 10, false, true, false, false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
-	textBox(window, view, smallFont, smallFontSize, "Jump - J"       , 10            , viewHeight / 2 + 20, false, true, false, false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
+	textBox(window, view, smallFont, smallFontSize, "Up - W"         , 10            , viewHeight / 2 - 40, false, true, false, false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
+	textBox(window, view, smallFont, smallFontSize, "Down - S"       , 10            , viewHeight / 2 - 30, false, true, false, false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
+	textBox(window, view, smallFont, smallFontSize, "Left - A"       , 10            , viewHeight / 2 - 20, false, true, false, false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
+	textBox(window, view, smallFont, smallFontSize, "Right - D"      , 10            , viewHeight / 2 - 10, false, true, false, false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
+	textBox(window, view, smallFont, smallFontSize, "Jump - J"       , 10            , viewHeight / 2 + 10, false, true, false, false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
+	textBox(window, view, smallFont, smallFontSize, "Reset - R"      , 10            , viewHeight / 2 + 20, false, true, false, false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
 	textBox(window, view, smallFont, smallFontSize, "Confirm - Enter", viewWidth - 5 , viewHeight / 2 - 5 , false, true, true , false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
 	textBox(window, view, smallFont, smallFontSize, "Back - Escape"  , viewWidth - 10, viewHeight / 2 + 5 , false, true, true , false, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
 	/* HOW TO PLAY */
