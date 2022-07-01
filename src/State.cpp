@@ -7,6 +7,7 @@
 #include "headers/MenuBox.hpp"
 #include "headers/Player.hpp"
 #include "headers/State.hpp"
+#include "headers/Transition.hpp"
 
 void drawMenu(sf::RenderWindow &window, sf::View &view, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f menuSelection) {
 	for (int x = 0; x < menu.size(); x++) {
@@ -43,7 +44,7 @@ void startMenu(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf:
 	}
 }
 
-void levelSelect(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font largeFont, State &state, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f &menuSelection, bool &entered, bool &escaped, Map &map, Player &player) {
+void levelSelect(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font largeFont, State &state, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f &menuSelection, bool &entered, bool &escaped, Map &map, Player &player, Transition &transition) {
 	if (menu.size() == 0) {
 		int boxWidth      = 24;
 		int boxHeight     = 24;
@@ -74,18 +75,25 @@ void levelSelect(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, s
 
 	drawMenu(window, view, menu, menuSelection);
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape) && !escaped) {
-		escaped = true;
-		state = startMenuState;
-	} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) && !entered) {
-		entered = true;
-		map = Map(stoi(menu.at(menuSelection.x).at(menuSelection.y).string)); // converts map string (number) to int
-		player = Player(map.spawn.x, map.spawn.y);
-		state = gameState;
+	if (transition.ongoing) {
+		transition.draw(window, view);
+		if (transition.outwardComplete) {
+			transition.reset();
+		}
+	} else {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape) && !escaped) {
+			escaped = true;
+			state = startMenuState;
+		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) && !entered) {
+			entered = true;
+			map = Map(stoi(menu.at(menuSelection.x).at(menuSelection.y).string)); // converts map string (number) to int
+			player = Player(map.spawn.x, map.spawn.y);
+			state = gameState;
+		}
 	}
 }
 
-void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font largeFont, State &state, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f &menuSelection, bool &entered, bool &escaped, Map &map, Player &player, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, sf::Sprite &tilesetSprite, bool &paused) {
+void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font largeFont, State &state, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f &menuSelection, bool &entered, bool &escaped, Map &map, Player &player, Transition &transition, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, sf::Sprite &tilesetSprite, bool &paused) {
 	if (menu.size() == 0) {
 		menu.push_back(std::vector<MenuBox>{
 			MenuBox(smallFont, smallFontSize, "Yes", viewWidth / 2 - 25, viewHeight / 2, true, true, 0, 0, 15)
@@ -93,10 +101,6 @@ void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font
 		menu.push_back(std::vector<MenuBox>{
 			MenuBox(smallFont, smallFontSize, "No", viewWidth / 2 + 25, viewHeight / 2, true, true, 0, 0, 15)
 		});
-	}
-
-	if (map.cleared) {
-		state = levelSelectState;
 	}
 
 	map.draw(window, view, tilesetSprite, paused);
@@ -108,10 +112,8 @@ void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font
 		textBox(window, view, largeFont, largeFontSize, "", viewWidth / 2, viewHeight / 2, false, false, viewWidth, viewHeight, 0, textColor, sf::Color(0, 0, 0, 128), sf::Color::Transparent);
 		textBox(window, view, largeFont, largeFontSize, "Go to level select?", viewWidth / 2, viewHeight / 4, true, true, 0, 0, 0, textColor, sf::Color::Transparent, sf::Color::Transparent);
 		drawMenu(window, view, menu, menuSelection);
-	} else {
-		if (!map.cleared) {
-			map.levelTime = map.levelClock.getElapsedTime().asSeconds() - map.pauseTime;
-		}
+	} else if (!map.cleared) {
+		map.levelTime = map.levelClock.getElapsedTime().asSeconds() - map.pauseTime;
 
 		std::stringstream levelTimer;
 		levelTimer << std::floor(map.levelTime * 100) / 100;
@@ -132,24 +134,35 @@ void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font
 		textBox(window, view, smallFont, smallFontSize, yPlayerVelocity.str(), 10, viewHeight / 2 + 80, false, true , 0, 0, 5, textColor, sf::Color(0, 0, 0, 64), sf::Color(0, 0, 0, 128));
 
 		updateView(view, player.x + player.width / 2, player.y + player.height / 2, map.size, false);
+	} else {
+		transition.ongoing = true;
 	}
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape) && !escaped) {
-		escaped = true;
-		if (paused) {
-			paused = false;
-			map.pauseTime += map.pauseClock.getElapsedTime().asSeconds();
-		} else {
-			paused = true;
-			menuSelection = sf::Vector2f(1, 0);
-			map.pauseClock.restart();
-		}
-	} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) && paused) {
-		entered = true;
-		std::string menuBoxString = menu.at(menuSelection.x).at(menuSelection.y).string;
-		if (menuBoxString == "Yes") {
+	if (transition.ongoing) {
+		transition.draw(window, view);
+		if (transition.inwardComplete) {
+			transition.reset();
 			state = levelSelectState;
 		}
-		paused = false;
+	} else {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape) && !escaped) {
+			escaped = true;
+			if (paused) {
+				paused = false;
+				map.pauseTime += map.pauseClock.getElapsedTime().asSeconds();
+			} else {
+				paused = true;
+				menuSelection = sf::Vector2f(1, 0);
+				map.pauseClock.restart();
+			}
+		} else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) && paused) {
+			entered = true;
+			std::string menuBoxString = menu.at(menuSelection.x).at(menuSelection.y).string;
+			if (menuBoxString == "Yes") {
+				transition.ongoing = true;
+			} else if (menuBoxString == "No") {
+				paused = false;
+			}
+		}
 	}
 }

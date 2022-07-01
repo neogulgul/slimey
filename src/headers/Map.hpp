@@ -6,11 +6,12 @@ class Map {
 		sf::Vector2u size;
 		sf::Vector2u spawn;
 
-		bool cleared = false;
 		float levelTime = 0;
 		float pauseTime = 0;
 		sf::Clock levelClock;
 		sf::Clock pauseClock;
+
+		bool cleared = false;
 
 		Map();
 		Map(int mapIndex);

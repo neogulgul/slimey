@@ -5,10 +5,12 @@ const int FPS = 60;
 
 const float gravity = 0.16;
 
-const int tilesize    = 16;
-const int viewWidth   = tilesize * 16;
-const int viewHeight  = tilesize * 16;
-const int windowScale = 3;
+const int tilesize        = 16;
+const int horizontalTiles = 16;
+const int verticalTiles   = 16;
+const int viewWidth       = tilesize * horizontalTiles;
+const int viewHeight      = tilesize * verticalTiles;
+const int windowScale     = 3;
 
 const int smallFontSize = 8;
 const int largeFontSize = 16;

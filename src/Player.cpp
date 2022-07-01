@@ -70,6 +70,11 @@ void Player::death(Map &map) {
 
 void Player::levelClear(Map &map) {
 	map.cleared = true;
+	this->xVelocity = 0;
+	this->up    = false;
+	this->down  = false;
+	this->left  = false;
+	this->right = false;
 }
 
 bool Player::validTile(Map map, int xCord, int yCord) {
@@ -307,7 +312,9 @@ void Player::update(Map &map, bool paused) {
 		return;
 	}
 
-	this->input(map);
+	if (!map.cleared) {
+		this->input(map);
+	}
 
 	if (this->jumpTimer > 0) {
 		if (this->yVelocity == 0) {

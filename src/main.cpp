@@ -5,6 +5,10 @@
 #include "headers/Map.hpp"
 #include "headers/Player.hpp"
 #include "headers/State.hpp"
+#include "headers/Transition.hpp"
+
+// TODO: tie time to framerate
+// TODO: player resurrection animation
 
 int main() {
 	sf::RenderWindow window(sf::VideoMode(viewWidth * windowScale, viewHeight * windowScale), "Slimey", sf::Style::Default);
@@ -53,6 +57,8 @@ int main() {
 	Player player;
 	Map map;
 
+	Transition transition;
+
 	sf::Clock fpsClock;
 	float fpsCounter = 0;
 	float currentTime = 0;
@@ -72,6 +78,7 @@ int main() {
 				lastState = state;
 				menu.clear();
 				menuSelection = sf::Vector2f(0, 0);
+				paused = false;
 			}
 
 			if (menuSelectionTimer > 0) {
@@ -81,7 +88,7 @@ int main() {
 				}
 			}
 
-			if (menu.size() > 0 && menuSelectionTimer == 0) {
+			if (menu.size() > 0 && menuSelectionTimer == 0 && !transition.ongoing) {
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
 					menuSelection.y--;
 					menuSelectionTimer++;
@@ -123,10 +130,10 @@ int main() {
 					startMenu(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped);
 					break;
 				case levelSelectState:
-					levelSelect(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped, map, player);
+					levelSelect(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped, map, player, transition);
 					break;
 				case gameState:
-					game(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped, map, player, playerSprite, playerDeathSprite, offscreenCircleSprite, tilesetSprite, paused);
+					game(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped, map, player, transition, playerSprite, playerDeathSprite, offscreenCircleSprite, tilesetSprite, paused);
 					break;
 			}
 

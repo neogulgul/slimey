@@ -34,8 +34,8 @@ class Player {
 		bool left  = false;
 		bool right = false;
 
-		float jumpForce     = 2.5;
-		int jumpFrames      = 8;
+		float jumpForce     = 2.2;
+		int jumpFrames      = 11;
 		int jumpTimer       = 0;
 		int preJumpFrames   = 10;
 		int preJumpTimer    = 0;
