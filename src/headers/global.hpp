@@ -15,7 +15,7 @@ const int windowScale     = 3;
 const int smallFontSize = 8;
 const int largeFontSize = 16;
 
-enum State { startMenuState, levelSelectState, gameState };
+enum State { startScreenState, levelSelectState, levelClearState, gameState };
 
 // colors
 extern sf::Color backgroundColor;

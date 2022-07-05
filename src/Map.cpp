@@ -7,8 +7,17 @@
 Map::Map() {}
 
 Map::Map(int mapIndex) {
-	if (!this->image.loadFromFile("resources/textures/maps/" + std::to_string(mapIndex) + ".png")) {
-		this->image.loadFromFile("resources/textures/maps/null.png");
+	if (this->image.loadFromFile("resources/textures/maps/" + std::to_string(mapIndex) + ".png")) {
+		this->valid = true;
+		this->index = mapIndex;
+	} else {
+		this->image.create(16, 16, sf::Color::Transparent);
+		this->image.setPixel(0, 15, playerWall);
+		for (int i = 1; i <= 15; i++) {
+			this->image.setPixel(i, 15, foreWall);
+		}
+		this->image.setPixel(15, 14, levelExit);
+		this->image.setPixel(15, 13, levelExit);
 	}
 	this->size = this->image.getSize();
 

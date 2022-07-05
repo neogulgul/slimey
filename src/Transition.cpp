@@ -35,17 +35,18 @@ void Transition::draw(sf::RenderWindow &window, sf::View view) {
 	if (this->transitionTimer < this->transitionFrames) {
 		this->transitionTimer += this->transitionSpeed;
 	} else {
-		this->transitionDelayTimer++;
-		if (this->transitionDelayTimer == this->transitionDelayFrames) {
-			switch (this->type) {
-				case inward:
+		switch (this->type) {
+			case inward:
+				this->transitionDelayTimer++;
+				if (this->transitionDelayTimer == this->transitionDelayFrames) {
 					this->inwardComplete = true;
-					break;
-				case outward:
-					this->outwardComplete = true;
-					break;
-			}
-			this->reset();
+					this->reset();
+				}
+				break;
+			case outward:
+				this->outwardComplete = true;
+				this->reset();
+				break;
 		}
 	}
 	this->direction = right;

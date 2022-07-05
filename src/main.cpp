@@ -24,15 +24,20 @@ int main() {
 	smallFontTexture.setSmooth(false);
 	largeFontTexture.setSmooth(false);
 
-	State state = startMenuState;
+	State state = startScreenState;
 	State lastState = state;
+
 	std::vector<std::vector<MenuBox>> menu;
 	sf::Vector2f menuSelection;
 	int menuSelectionTimer = 0;
 	int menuSelectionTimerFrames = 6;
+
+	bool enter   = false;
 	bool entered = true;
+	bool escape  = false;
 	bool escaped = true;
-	bool paused = false;
+
+	bool paused  = false;
 
 	// loading textures
 	sf::Texture playerTexture;
@@ -74,6 +79,25 @@ int main() {
 		if (window.hasFocus()) {
 			window.clear(backgroundColor);
 
+			enter  = false;
+			escape = false;
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+				if (!entered) {
+					entered = true;
+					enter = true;
+				}
+			} else {
+				entered = false;
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+				if (!escaped) {
+					escaped = true;
+					escape = true;
+				}
+			} else {
+				escaped = false;
+			}
+
 			if (state != lastState) {
 				lastState = state;
 				menu.clear();
@@ -106,13 +130,6 @@ int main() {
 					menuSelectionTimer++;
 				}
 
-				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
-					entered = false;
-				}
-				if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
-					escaped = false;
-				}
-
 				if (menuSelection.x < 0) {
 					menuSelection.x = 0;
 				} else if (menuSelection.x > menu.size() - 1) {
@@ -130,14 +147,17 @@ int main() {
 			}
 
 			switch (state) {
-				case startMenuState:
-					startMenu(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped);
+				case startScreenState:
+					startScreen(window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape);
 					break;
 				case levelSelectState:
-					levelSelect(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped, map, player, transition);
+					levelSelect(window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape, transition, map, player);
+					break;
+				case levelClearState:
+					levelClear (window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape, transition, map, player);
 					break;
 				case gameState:
-					game(window, view, smallFont, largeFont, state, menu, menuSelection, entered, escaped, map, player, transition, playerSprite, playerDeathSprite, offscreenCircleSprite, tilesetSprite, paused);
+					game       (window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape, transition, map, player, playerSprite, playerDeathSprite, offscreenCircleSprite, tilesetSprite, paused);
 					break;
 			}
 

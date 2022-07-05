@@ -6,6 +6,9 @@ class Map {
 		sf::Vector2u size;
 		sf::Vector2u spawn;
 
+		int index;
+		bool valid = false;
+
 		float clearTime = 0;
 		bool cleared = false;
 
