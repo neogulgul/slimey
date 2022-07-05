@@ -1,5 +1,6 @@
 #pragma once
 
+#include "global.hpp"
 #include "State.hpp"
 
 class Transition {
@@ -12,7 +13,6 @@ class Transition {
 
 		sf::RectangleShape square;
 
-		enum Direction { up, down, left, right };
 		Direction direction;
 		enum Type { inward, outward };
 		Type type = inward;

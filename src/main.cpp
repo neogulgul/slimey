@@ -8,6 +8,8 @@
 #include "headers/State.hpp"
 #include "headers/Transition.hpp"
 
+// todo: bullet collision
+
 int main() {
 	sf::RenderWindow window(sf::VideoMode(viewWidth * windowScale, viewHeight * windowScale), "Slimey", sf::Style::Default);
 	window.setFramerateLimit(FPS);
@@ -29,7 +31,7 @@ int main() {
 
 	std::vector<std::vector<MenuBox>> menu;
 	sf::Vector2f menuSelection;
-	int menuSelectionTimer = 0;
+	int menuSelectionTimer       = 0;
 	int menuSelectionTimerFrames = 6;
 
 	bool enter   = false;
@@ -44,18 +46,22 @@ int main() {
 	sf::Texture playerDeathTexture;
 	sf::Texture offscreenCircleTexture;
 	sf::Texture tilesetTexture;
-	sf::Sprite playerSprite;
-	sf::Sprite playerDeathSprite;
-	sf::Sprite offscreenCircleSprite;
-	sf::Sprite tilesetSprite;
-	playerTexture.loadFromFile("resources/textures/slimey.png");
-	playerDeathTexture.loadFromFile("resources/textures/death.png");
+	sf::Texture bulletTexture;
+	sf::Sprite  playerSprite;
+	sf::Sprite  playerDeathSprite;
+	sf::Sprite  offscreenCircleSprite;
+	sf::Sprite  tilesetSprite;
+	sf::Sprite  bulletSprite;
+	playerTexture         .loadFromFile("resources/textures/slimey.png");
+	playerDeathTexture    .loadFromFile("resources/textures/death.png");
 	offscreenCircleTexture.loadFromFile("resources/textures/offscreen-circle.png");
-	tilesetTexture.loadFromFile("resources/textures/tileset.png");
-	playerSprite.setTexture(playerTexture);
-	playerDeathSprite.setTexture(playerDeathTexture);
-	offscreenCircleSprite.setTexture(offscreenCircleTexture);
-	tilesetSprite.setTexture(tilesetTexture);
+	tilesetTexture        .loadFromFile("resources/textures/tileset.png");
+	bulletTexture         .loadFromFile("resources/textures/bullet.png");
+	playerSprite          .setTexture(playerTexture);
+	playerDeathSprite     .setTexture(playerDeathTexture);
+	offscreenCircleSprite .setTexture(offscreenCircleTexture);
+	tilesetSprite         .setTexture(tilesetTexture);
+	bulletSprite          .setTexture(bulletTexture);
 
 	Player player;
 	Map map;
@@ -157,19 +163,27 @@ int main() {
 					levelClear (window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape, transition, map, player);
 					break;
 				case gameState:
-					game       (window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape, transition, map, player, playerSprite, playerDeathSprite, offscreenCircleSprite, tilesetSprite, paused);
+					game       (window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape, transition, map, player, playerSprite, playerDeathSprite, offscreenCircleSprite, tilesetSprite, bulletSprite, paused);
 					break;
 			}
+			window.setView(view);
 
 			std::stringstream fpsString;
 			fpsString << "FPS: " << fpsCounter;
-
-			window.setView(view);
 			textBox(window, view, smallFont, smallFontSize, fpsString.str(), viewWidth - 10, 10, false, true, true, false, 0, 0, 5, textColor, sf::Color::Transparent, sf::Color::Transparent);
+
+			if (false) { // border around the view
+				sf::RectangleShape viewBorder(sf::Vector2f(viewWidth, viewHeight));
+				viewBorder.setPosition(view.getCenter().x - viewWidth / 2, view.getCenter().y - viewHeight / 2);
+				viewBorder.setFillColor(sf::Color::Transparent);
+				viewBorder.setOutlineColor(sf::Color::Red);
+				viewBorder.setOutlineThickness(1);
+				window.draw(viewBorder);
+			}
+
 			window.display();
 
 			fpsUpdateTimer++;
-
 			currentTime = fpsClock.restart().asSeconds();
 			if (fpsUpdateTimer == fpsUpdateFrames) {
 				fpsUpdateTimer = 0;

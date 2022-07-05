@@ -76,7 +76,7 @@ void Player::levelClear(Map &map) {
 	this->right = false;
 }
 
-bool Player::validTile(Map map, int xCord, int yCord) {
+bool Player::validTile(Map &map, int xCord, int yCord) {
 	if (xCord >= 0 && xCord < map.size.x
 		&&
 		yCord >= 0 && yCord < map.size.y
@@ -306,8 +306,8 @@ void Player::checkCollision(Map &map) {
 	}
 }
 
-void Player::update(Map &map, bool paused, bool locked) {
-	if (!this->alive || paused) {
+void Player::update(Map &map, bool locked) {
+	if (!this->alive) {
 		return;
 	}
 

@@ -1,8 +1,10 @@
 #include <cmath>
 #include <string>
 #include <SFML/Graphics.hpp>
+#include "headers/Bullet.hpp"
 #include "headers/global.hpp"
 #include "headers/Map.hpp"
+#include "headers/Turret.hpp"
 
 Map::Map() {}
 
@@ -10,7 +12,7 @@ Map::Map(int mapIndex) {
 	if (this->image.loadFromFile("resources/textures/maps/" + std::to_string(mapIndex) + ".png")) {
 		this->valid = true;
 		this->index = mapIndex;
-	} else {
+	} else { // if unable to load map
 		this->image.create(16, 16, sf::Color::Transparent);
 		this->image.setPixel(0, 15, playerWall);
 		for (int i = 1; i <= 15; i++) {
@@ -23,13 +25,21 @@ Map::Map(int mapIndex) {
 
 	sf::Color pixel;
 
+	// locating player and turrets
 	for (int x = 0; x < this->size.x; x++) {
 		for (int y = 0; y < this->size.y; y++) {
 			pixel = this->image.getPixel(x, y);
 			if (pixel == playerWall) {
 				this->spawn.x = x;
 				this->spawn.y = y - 1;
-				break;
+			} else if (pixel == turretUp) {
+				this->turretVector.push_back(Turret(sf::Vector2f(x * tilesize + tilesize / 2 - bulletRadius, y * tilesize            - bulletRadius * 2), up));
+			} else if (pixel == turretDown) {
+				this->turretVector.push_back(Turret(sf::Vector2f(x * tilesize + tilesize / 2 - bulletRadius, y * tilesize + tilesize                   ), down));
+			} else if (pixel == turretLeft) {
+				this->turretVector.push_back(Turret(sf::Vector2f(x * tilesize            - bulletRadius * 2, y * tilesize + tilesize / 2 - bulletRadius), left));
+			} else if (pixel == turretRight) {
+				this->turretVector.push_back(Turret(sf::Vector2f(x * tilesize + tilesize                   , y * tilesize + tilesize / 2 - bulletRadius), right));
 			}
 		}
 	}
@@ -39,7 +49,22 @@ void Map::resetTime() {
 	this->clearTime = 0;
 }
 
-void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprite, bool paused) {
+void Map::update() {
+	turretTimer++;
+	if (turretTimer == turretFrames) {
+		turretTimer = 0;
+
+		for (Turret &turret : this->turretVector) {
+			turret.shoot(this->bulletVector);
+		}
+	}
+
+	for (Bullet &bullet : this->bulletVector) {
+		bullet.update();
+	}
+}
+
+void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprite, sf::Sprite bulletSprite) {
 	sf::Color pixel;
 	int xCrop, yCrop;
 
@@ -50,8 +75,12 @@ void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprit
 				y >= std::floor((view.getCenter().y - viewHeight / 2) / tilesize) && y <= std::floor((view.getCenter().y + viewHeight / 2) / tilesize) ) {
 				pixel = this->image.getPixel(x, y);
 				if (pixel != sf::Color::Transparent) {
+					tilesetSprite.setRotation(0);
+					tilesetSprite.setPosition(x * tilesize, y * tilesize);
+
 					xCrop = 0;
 					yCrop = 0;
+
 					if (pixel == backWall) {
 						yCrop = 1;
 					} else if (pixel == playerWall) {
@@ -63,6 +92,18 @@ void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprit
 					} else if (pixel == bounce) {
 						xCrop = 1;
 						yCrop = 3;
+					} else if (pixel == turretUp || pixel == turretDown || pixel == turretLeft || pixel == turretRight) {
+						yCrop = 4;
+						if (pixel == turretLeft) {
+							tilesetSprite.setRotation(-90);
+							tilesetSprite.setPosition((x    ) * tilesize, (y + 1) * tilesize);
+						} else if (pixel == turretDown) {
+							tilesetSprite.setRotation(-180);
+							tilesetSprite.setPosition((x + 1) * tilesize, (y + 1) * tilesize);
+						} else if (pixel == turretRight) {
+							tilesetSprite.setRotation(-270);
+							tilesetSprite.setPosition((x + 1) * tilesize, (y    ) * tilesize);
+						}
 					} else if (pixel == levelExit) {
 						xCrop = 1;
 						if (this->image.getPixel(x, y + 1) == levelExit) {
@@ -73,10 +114,13 @@ void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprit
 					}
 
 					tilesetSprite.setTextureRect(sf::IntRect(xCrop * tilesize, yCrop * tilesize, tilesize, tilesize));
-					tilesetSprite.setPosition(x * tilesize, y * tilesize);
 					window.draw(tilesetSprite);
 				}
 			}
 		}
+	}
+
+	for (Bullet &bullet : this->bulletVector) {
+		bullet.draw(window, view, bulletSprite);
 	}
 }

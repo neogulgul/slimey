@@ -5,6 +5,9 @@ const int FPS = 60;
 
 const float gravity = 0.16;
 
+const int   bulletRadius   = 2;
+const float bulletVelocity = 0.5;
+
 const int tilesize        = 16;
 const int horizontalTiles = 16;
 const int verticalTiles   = 16;
@@ -14,6 +17,8 @@ const int windowScale     = 3;
 
 const int smallFontSize = 8;
 const int largeFontSize = 16;
+
+enum Direction { up, down, left, right };
 
 enum State { startScreenState, levelSelectState, levelClearState, gameState };
 
@@ -27,6 +32,10 @@ extern sf::Color danger;
 extern sf::Color ice;
 extern sf::Color levelExit;
 extern sf::Color bounce;
+extern sf::Color turretUp;
+extern sf::Color turretDown;
+extern sf::Color turretLeft;
+extern sf::Color turretRight;
 
 // functions
 bool collision(float x1, float y1, int width1, int height1, float x2, float y2, int width2, int height2);

@@ -2,12 +2,15 @@
 #include <sstream>
 #include <vector>
 #include <SFML/Graphics.hpp>
+#include "headers/Bullet.hpp"
 #include "headers/global.hpp"
 #include "headers/Map.hpp"
 #include "headers/MenuBox.hpp"
 #include "headers/Player.hpp"
 #include "headers/State.hpp"
 #include "headers/Transition.hpp"
+
+#include <iostream>
 
 void drawMenu(sf::RenderWindow &window, sf::View &view, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f menuSelection) {
 	for (int x = 0; x < menu.size(); x++) {
@@ -144,7 +147,7 @@ void levelClear(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf
 	}
 }
 
-void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font largeFont, State &state, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f &menuSelection, bool &enter, bool &escape, Transition &transition, Map &map, Player &player, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, sf::Sprite &tilesetSprite, bool &paused) {
+void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font largeFont, State &state, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f &menuSelection, bool &enter, bool &escape, Transition &transition, Map &map, Player &player, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, sf::Sprite &tilesetSprite, sf::Sprite &bulletSprite, bool &paused) {
 	if (menu.size() == 0) {
 		menu.push_back(std::vector<MenuBox>{
 			MenuBox(smallFont, smallFontSize, "Yes", viewWidth / 2 - 25, viewHeight / 2, true, true, false, false, 0, 0, 15)
@@ -154,10 +157,16 @@ void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font
 		});
 	}
 
-	map.draw(window, view, tilesetSprite, paused);
+	if (!paused) {
+		map.update();
+	}
+	map.draw(window, view, tilesetSprite, bulletSprite);
 
-	player.update(map, paused, transition.ongoing);
+	std::cout << map.bulletVector.size() << "\n";
 
+	if (!paused) {
+		player.update(map, transition.ongoing);
+	}
 	player.draw(window, view, playerSprite, playerDeathSprite, offscreenCircleSprite, paused);
 
 	if (map.cleared) {
