@@ -47,21 +47,25 @@ int main() {
 	sf::Texture offscreenCircleTexture;
 	sf::Texture tilesetTexture;
 	sf::Texture bulletTexture;
+	sf::Texture bulletExplosionTexture;
 	sf::Sprite  playerSprite;
 	sf::Sprite  playerDeathSprite;
 	sf::Sprite  offscreenCircleSprite;
 	sf::Sprite  tilesetSprite;
 	sf::Sprite  bulletSprite;
+	sf::Sprite  bulletExplosionSprite;
 	playerTexture         .loadFromFile("resources/textures/slimey.png");
 	playerDeathTexture    .loadFromFile("resources/textures/death.png");
 	offscreenCircleTexture.loadFromFile("resources/textures/offscreen-circle.png");
 	tilesetTexture        .loadFromFile("resources/textures/tileset.png");
 	bulletTexture         .loadFromFile("resources/textures/bullet.png");
+	bulletExplosionTexture.loadFromFile("resources/textures/bullet-explosion.png");
 	playerSprite          .setTexture(playerTexture);
 	playerDeathSprite     .setTexture(playerDeathTexture);
 	offscreenCircleSprite .setTexture(offscreenCircleTexture);
 	tilesetSprite         .setTexture(tilesetTexture);
 	bulletSprite          .setTexture(bulletTexture);
+	bulletExplosionSprite .setTexture(bulletExplosionTexture);
 
 	Player player;
 	Map map;
@@ -163,7 +167,7 @@ int main() {
 					levelClear (window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape, transition, map, player);
 					break;
 				case gameState:
-					game       (window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape, transition, map, player, playerSprite, playerDeathSprite, offscreenCircleSprite, tilesetSprite, bulletSprite, paused);
+					game       (window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape, transition, map, player, playerSprite, playerDeathSprite, offscreenCircleSprite, tilesetSprite, bulletSprite, bulletExplosionSprite, paused);
 					break;
 			}
 			window.setView(view);

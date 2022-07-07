@@ -7,7 +7,7 @@ sf::Color textColor      (255, 255, 255);
 sf::Color foreWall       (146, 161, 185);
 sf::Color backWall       ( 42,  47,  78);
 sf::Color playerWall     ( 90, 197,  79);
-sf::Color danger         (234,  50,  60);
+sf::Color sawblade       (234,  50,  60);
 sf::Color levelExit      ( 27,  27,  27);
 sf::Color ice            (148, 253, 255);
 sf::Color bounce         (255, 235,  87);
@@ -17,11 +17,25 @@ sf::Color turretLeft     (255, 191,   0);
 sf::Color turretRight    (255, 255,   0);
 
 // functions
-bool collision(float x1, float y1, int width1, int height1, float x2, float y2, int width2, int height2) {
+bool collision(float x1, float y1, float width1, float height1, float x2, float y2, float width2, float height2) {
 	if (x1 > x2 - width1  &&
 		x1 < x2 + width2  &&
 		y1 > y2 - height1 &&
 		y1 < y2 + height2) {
+		return true;
+	}
+
+	return false;
+}
+
+bool validCollisionTile(sf::Image mapImage, sf::Vector2u mapSize, int xCord, int yCord) {
+	if (xCord >= 0 && xCord < mapSize.x
+		&&
+		yCord >= 0 && yCord < mapSize.y
+		&&
+		mapImage.getPixel(xCord, yCord) != sf::Color::Transparent
+		&&
+		mapImage.getPixel(xCord, yCord) != backWall) {
 		return true;
 	}
 

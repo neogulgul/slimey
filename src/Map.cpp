@@ -45,26 +45,44 @@ Map::Map(int mapIndex) {
 	}
 }
 
-void Map::resetTime() {
+void Map::reset() {
 	this->clearTime = 0;
+	this->turretTimer = 0;
+
+	for (int i = 0; i < this->bulletVector.size(); i++) {
+		this->bulletVector.at(i).exploding = true;
+	}
 }
 
-void Map::update() {
-	turretTimer++;
-	if (turretTimer == turretFrames) {
-		turretTimer = 0;
+void Map::update(sf::FloatRect playerRect, bool &playerDead) {
+	sawbladeTimer++;
+	if (sawbladeTimer == sawbladeFrames) {
+		sawbladeTimer = 0;
+	}
 
-		for (Turret &turret : this->turretVector) {
-			turret.shoot(this->bulletVector);
+	if (!this->cleared) {
+		turretTimer++;
+		if (turretTimer == turretFrames) {
+			turretTimer = 0;
+
+			for (Turret &turret : this->turretVector) {
+				turret.shoot(this->bulletVector);
+			}
 		}
 	}
 
-	for (Bullet &bullet : this->bulletVector) {
-		bullet.update();
+	for (int i = 0; i < this->bulletVector.size(); i++) {
+		this->bulletVector.at(i).update(this->image, this->size, playerRect, playerDead);
+	}
+
+	for (int i = 0; i < this->bulletVector.size(); i++) {
+		if (this->bulletVector.at(i).destroyed) {
+			this->bulletVector.at(i).destroy(this->bulletVector);
+		}
 	}
 }
 
-void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprite, sf::Sprite bulletSprite) {
+void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprite, sf::Sprite &bulletSprite, sf::Sprite &bulletExplosionSprite) {
 	sf::Color pixel;
 	int xCrop, yCrop;
 
@@ -85,15 +103,20 @@ void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprit
 						yCrop = 1;
 					} else if (pixel == playerWall) {
 						xCrop = 1;
-					} else if (pixel == danger) {
-						yCrop = 2;
+					} else if (pixel == sawblade) {
+						yCrop = 4;
+						xCrop = this->sawbladeTimer;
+						if (this->sawbladeTimer >= sawbladeFrames / 2) {
+							yCrop++;
+							xCrop -= sawbladeFrames / 2;
+						}
 					} else if (pixel == ice) {
 						yCrop = 3;
 					} else if (pixel == bounce) {
 						xCrop = 1;
 						yCrop = 3;
 					} else if (pixel == turretUp || pixel == turretDown || pixel == turretLeft || pixel == turretRight) {
-						yCrop = 4;
+						yCrop = 2;
 						if (pixel == turretLeft) {
 							tilesetSprite.setRotation(-90);
 							tilesetSprite.setPosition((x    ) * tilesize, (y + 1) * tilesize);
@@ -121,6 +144,6 @@ void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprit
 	}
 
 	for (Bullet &bullet : this->bulletVector) {
-		bullet.draw(window, view, bulletSprite);
+		bullet.draw(window, view, bulletSprite, bulletExplosionSprite);
 	}
 }

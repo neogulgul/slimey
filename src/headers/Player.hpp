@@ -62,7 +62,6 @@ class Player {
 		void jumping();
 		void death(Map &map);
 		void levelClear(Map &map);
-		bool validTile(Map &map, int xCord, int yCord);
 		void checkCollision(Map &map);
 		void update(Map &map, bool locked);
 		void draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, bool paused);

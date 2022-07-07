@@ -10,8 +10,6 @@
 #include "headers/State.hpp"
 #include "headers/Transition.hpp"
 
-#include <iostream>
-
 void drawMenu(sf::RenderWindow &window, sf::View &view, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f menuSelection) {
 	for (int x = 0; x < menu.size(); x++) {
 		for (int y = 0; y < menu.at(x).size(); y++) {
@@ -147,7 +145,7 @@ void levelClear(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf
 	}
 }
 
-void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font largeFont, State &state, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f &menuSelection, bool &enter, bool &escape, Transition &transition, Map &map, Player &player, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, sf::Sprite &tilesetSprite, sf::Sprite &bulletSprite, bool &paused) {
+void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font largeFont, State &state, std::vector<std::vector<MenuBox>> &menu, sf::Vector2f &menuSelection, bool &enter, bool &escape, Transition &transition, Map &map, Player &player, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, sf::Sprite &tilesetSprite, sf::Sprite &bulletSprite, sf::Sprite &bulletExplosionSprite, bool &paused) {
 	if (menu.size() == 0) {
 		menu.push_back(std::vector<MenuBox>{
 			MenuBox(smallFont, smallFontSize, "Yes", viewWidth / 2 - 25, viewHeight / 2, true, true, false, false, 0, 0, 15)
@@ -158,11 +156,13 @@ void game(sf::RenderWindow &window, sf::View &view, sf::Font smallFont, sf::Font
 	}
 
 	if (!paused) {
-		map.update();
+		bool playerDead = false;
+		map.update(sf::FloatRect(player.x, player.y, player.width, player.height), playerDead);
+		if (playerDead) {
+			player.death(map);
+		}
 	}
-	map.draw(window, view, tilesetSprite, bulletSprite);
-
-	std::cout << map.bulletVector.size() << "\n";
+	map.draw(window, view, tilesetSprite, bulletSprite, bulletExplosionSprite);
 
 	if (!paused) {
 		player.update(map, transition.ongoing);

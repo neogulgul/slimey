@@ -64,7 +64,7 @@ void Player::death(Map &map) {
 	this->alive = false;
 	this->preJumpTimer = 0;
 	this->postJumpTimer = 0;
-	map.resetTime();
+	map.reset();
 }
 
 void Player::levelClear(Map &map) {
@@ -76,20 +76,6 @@ void Player::levelClear(Map &map) {
 	this->right = false;
 }
 
-bool Player::validTile(Map &map, int xCord, int yCord) {
-	if (xCord >= 0 && xCord < map.size.x
-		&&
-		yCord >= 0 && yCord < map.size.y
-		&&
-		map.image.getPixel(xCord, yCord) != sf::Color::Transparent
-		&&
-		map.image.getPixel(xCord, yCord) != backWall) {
-		return true;
-	}
-
-	return false;
-}
-
 void Player::checkCollision(Map &map) {
 	float xDelta = this->xVelocity;
 	float yDelta = this->yVelocity;
@@ -99,6 +85,9 @@ void Player::checkCollision(Map &map) {
 	sf::Vector2f currentIntersections;
 
 	while (xDelta != 0 || yDelta != 0) {
+		////////////////////////
+		// VERTICAL COLLISION //
+		////////////////////////
 		if (yDelta > 0) {
 			yDelta--;
 			if (yDelta < 0) {
@@ -113,7 +102,6 @@ void Player::checkCollision(Map &map) {
 
 		xCurrent = this->x - xDelta;
 		yCurrent = this->y - yDelta;
-
 		currentTile.x = std::floor(xCurrent / tilesize);
 		currentTile.y = std::floor(yCurrent / tilesize);
 		currentIntersections.x = std::floor((xCurrent + this->width) / tilesize) - currentTile.x;
@@ -133,13 +121,13 @@ void Player::checkCollision(Map &map) {
 					int xCord = currentTile.x + x;
 					int yCord = currentTile.y;
 					if (xCurrent <= xCord * tilesize - this->width || xCurrent >= xCord * tilesize + tilesize) { break; }
-					if (validTile(map, xCord, yCord)) {
+					if (validCollisionTile(map.image, map.size, xCord, yCord)) {
 						sf::Color pixel = map.image.getPixel(xCord, yCord);
-						if (pixel == danger && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ xCord * tilesize + 1, yCord * tilesize + 1, tilesize - 2, tilesize - 2)) {
+						if (pixel == sawblade && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* sawblade */ xCord * tilesize + 1, yCord * tilesize + 1, tilesize - 2, tilesize - 2)) {
 							this->death(map);
 						} else if (pixel == levelExit && map.image.getPixel(xCord, yCord + 1) != levelExit && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ xCord * tilesize + 7, yCord * tilesize + 7, 2, 2)) {
 							this->levelClear(map);
-						} else if (pixel != danger && pixel != levelExit) {
+						} else if (pixel != sawblade && pixel != levelExit) {
 							this->y = yCord * tilesize + tilesize;
 							if (pixel == bounce) {
 								this->hitCeilBounce = true;
@@ -173,13 +161,13 @@ void Player::checkCollision(Map &map) {
 				int xCord = currentTile.x + x;
 				int yCord = currentTile.y + currentIntersections.y;
 				if (xCurrent <= xCord * tilesize - this->width || xCurrent >= xCord * tilesize + tilesize) { break; }
-				if (validTile(map, xCord, yCord)) {
+				if (validCollisionTile(map.image, map.size, xCord, yCord)) {
 					sf::Color pixel = map.image.getPixel(xCord, yCord);
-					if (pixel == danger && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ xCord * tilesize + 1, yCord * tilesize + 1, tilesize - 2, tilesize - 2)) {
+					if (pixel == sawblade && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* sawblade */ xCord * tilesize + 1, yCord * tilesize + 1, tilesize - 2, tilesize - 2)) {
 						this->death(map);
 					} else if (pixel == levelExit && map.image.getPixel(xCord, yCord + 1) != levelExit && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ xCord * tilesize + 7, yCord * tilesize + 7, 2, 2)) {
 						this->levelClear(map);
-					} else if (pixel != danger && pixel != levelExit) {
+					} else if (pixel != sawblade && pixel != levelExit) {
 						this->y = yCord * tilesize - this->height;
 						if (pixel == bounce) {
 							this->hitFloorBounce = true;
@@ -224,7 +212,6 @@ void Player::checkCollision(Map &map) {
 
 		xCurrent = this->x - xDelta;
 		yCurrent = this->y - yDelta;
-
 		currentTile.x = std::floor(xCurrent / tilesize);
 		currentTile.y = std::floor(yCurrent / tilesize);
 		currentIntersections.x = std::floor((xCurrent + this->width) / tilesize) - currentTile.x;
@@ -248,13 +235,13 @@ void Player::checkCollision(Map &map) {
 					int xCord = currentTile.x;
 					int yCord = currentTile.y + y;
 					if (yCurrent <= yCord * tilesize - this->height || yCurrent >= yCord * tilesize + tilesize) { break; }
-					if (validTile(map, xCord, yCord)) {
+					if (validCollisionTile(map.image, map.size, xCord, yCord)) {
 						sf::Color pixel = map.image.getPixel(xCord, yCord);
-						if (pixel == danger && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ xCord * tilesize + 1, yCord * tilesize + 1, tilesize - 2, tilesize - 2)) {
+						if (pixel == sawblade && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* sawblade */ xCord * tilesize + 1, yCord * tilesize + 1, tilesize - 2, tilesize - 2)) {
 							this->death(map);
 						} else if (pixel == levelExit && map.image.getPixel(xCord, yCord + 1) != levelExit && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ xCord * tilesize + 7, yCord * tilesize + 7, 2, 2)) {
 							this->levelClear(map);
-						} else if (pixel != danger && pixel != levelExit) {
+						} else if (pixel != sawblade && pixel != levelExit) {
 							this->x = xCord * tilesize + tilesize;
 							if (pixel == bounce) {
 								this->hitWallBounce = true;
@@ -273,13 +260,13 @@ void Player::checkCollision(Map &map) {
 					int xCord = currentTile.x + currentIntersections.x;
 					int yCord = currentTile.y + y;
 					if (yCurrent <= yCord * tilesize - this->height || yCurrent >= yCord * tilesize + tilesize) { break; }
-					if (validTile(map, xCord, yCord)) {
+					if (validCollisionTile(map.image, map.size, xCord, yCord)) {
 						sf::Color pixel = map.image.getPixel(xCord, yCord);
-						if (pixel == danger && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* danger */ xCord * tilesize + 1, yCord * tilesize + 1, tilesize - 2, tilesize - 2)) {
+						if (pixel == sawblade && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* sawblade */ xCord * tilesize + 1, yCord * tilesize + 1, tilesize - 2, tilesize - 2)) {
 							this->death(map);
 						} else if (pixel == levelExit && map.image.getPixel(xCord, yCord + 1) != levelExit && collision(/* player */ xCurrent, yCurrent, this->width, this->height, /* levelExit */ xCord * tilesize + 7, yCord * tilesize + 7, 2, 2)) {
 							this->levelClear(map);
-						} else if (pixel != danger && pixel != levelExit) {
+						} else if (pixel != sawblade && pixel != levelExit) {
 							this->x = xCord * tilesize - this->width;
 							if (pixel == bounce) {
 								this->hitWallBounce = true;
