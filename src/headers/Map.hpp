@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Bullet.hpp"
+#include "SoundManager.hpp"
 #include "Turret.hpp"
 
 class Map {
@@ -27,6 +28,6 @@ class Map {
 		Map();
 		Map(int mapIndex);
 		void reset();
-		void update(sf::FloatRect playerRect, bool &playerDead);
-		void draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprite, sf::Sprite &bulletSprite, sf::Sprite &bulletExplosionSprite);
+		void update(sf::FloatRect playerRect, bool &playerDead, bool frozen, SoundManager &soundManager);
+		void draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprite, sf::Sprite &bulletSprite, sf::Sprite &bulletExplosionSprite, bool drawHitbox);
 };

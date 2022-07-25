@@ -5,14 +5,15 @@
 #include "headers/global.hpp"
 #include "headers/Map.hpp"
 #include "headers/Player.hpp"
+#include "headers/SettingsManager.hpp"
+#include "headers/SoundManager.hpp"
+#include "headers/SpriteManager.hpp"
 #include "headers/State.hpp"
 #include "headers/Transition.hpp"
 
-// todo: bullet collision
-
 int main() {
-	sf::RenderWindow window(sf::VideoMode(viewWidth * windowScale, viewHeight * windowScale), "Slimey", sf::Style::Default);
-	window.setFramerateLimit(FPS);
+	sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Slimey", sf::Style::Default);
+	window.setFramerateLimit(targetFPS);
 	sf::View view(sf::Vector2f(0, 0), sf::Vector2f(viewWidth, viewHeight));
 	sf::Event event;
 
@@ -26,7 +27,7 @@ int main() {
 	smallFontTexture.setSmooth(false);
 	largeFontTexture.setSmooth(false);
 
-	State state = startScreenState;
+	State state = STATE_splashScreen;
 	State lastState = state;
 
 	std::vector<std::vector<MenuBox>> menu;
@@ -41,36 +42,16 @@ int main() {
 
 	bool paused  = false;
 
-	// loading textures
-	sf::Texture playerTexture;
-	sf::Texture playerDeathTexture;
-	sf::Texture offscreenCircleTexture;
-	sf::Texture tilesetTexture;
-	sf::Texture bulletTexture;
-	sf::Texture bulletExplosionTexture;
-	sf::Sprite  playerSprite;
-	sf::Sprite  playerDeathSprite;
-	sf::Sprite  offscreenCircleSprite;
-	sf::Sprite  tilesetSprite;
-	sf::Sprite  bulletSprite;
-	sf::Sprite  bulletExplosionSprite;
-	playerTexture         .loadFromFile("resources/textures/slimey.png");
-	playerDeathTexture    .loadFromFile("resources/textures/death.png");
-	offscreenCircleTexture.loadFromFile("resources/textures/offscreen-circle.png");
-	tilesetTexture        .loadFromFile("resources/textures/tileset.png");
-	bulletTexture         .loadFromFile("resources/textures/bullet.png");
-	bulletExplosionTexture.loadFromFile("resources/textures/bullet-explosion.png");
-	playerSprite          .setTexture(playerTexture);
-	playerDeathSprite     .setTexture(playerDeathTexture);
-	offscreenCircleSprite .setTexture(offscreenCircleTexture);
-	tilesetSprite         .setTexture(tilesetTexture);
-	bulletSprite          .setTexture(bulletTexture);
-	bulletExplosionSprite .setTexture(bulletExplosionTexture);
+	SettingsManager settingsManager;
+	SoundManager soundManager;
+	SpriteManager spriteManager;
 
 	Player player;
 	Map map;
 
-	Transition transition;
+	Transition transition(Transition::Type::fade);
+
+	sf::Clock beginningOfTime;
 
 	sf::Clock fpsClock;
 	float currentTime   = 0;
@@ -86,11 +67,26 @@ int main() {
 			}
 		}
 
-		if (window.hasFocus()) {
-			window.clear(backgroundColor);
+		window.clear(backgroundColor);
 
-			enter  = false;
-			escape = false;
+		if (state != lastState) {
+			lastState = state;
+			menu.clear();
+			menuSelection = sf::Vector2f(0, 0);
+			paused = false;
+		}
+
+		if (menuSelectionTimer > 0) {
+			menuSelectionTimer++;
+			if (menuSelectionTimer == menuSelectionTimerFrames) {
+				menuSelectionTimer = 0;
+			}
+		}
+
+		enter  = false;
+		escape = false;
+
+		if (window.hasFocus()) {
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
 				if (!entered) {
 					entered = true;
@@ -106,20 +102,6 @@ int main() {
 				}
 			} else {
 				escaped = false;
-			}
-
-			if (state != lastState) {
-				lastState = state;
-				menu.clear();
-				menuSelection = sf::Vector2f(0, 0);
-				paused = false;
-			}
-
-			if (menuSelectionTimer > 0) {
-				menuSelectionTimer++;
-				if (menuSelectionTimer == menuSelectionTimerFrames) {
-					menuSelectionTimer = 0;
-				}
 			}
 
 			if (menu.size() > 0 && menuSelectionTimer == 0 && !transition.ongoing) {
@@ -151,50 +133,89 @@ int main() {
 					menuSelection.y = menu.at(menuSelection.x).size() - 1;
 				}
 			}
+		}
 
-			if (transition.inwardComplete) {
-				state = transition.destination;
+		if (transition.inwardComplete) {
+			state = transition.destination;
+		}
+
+		switch (state) {
+			case STATE_splashScreen:
+				splashScreen(window, view, smallFont, largeFont, state, transition, enter, beginningOfTime);
+				break;
+			case STATE_startScreen:
+				startScreen (window, view, smallFont, largeFont, state, transition, menu, menuSelection, enter, escape                 , soundManager);
+				break;
+			case STATE_optionsMenu:
+				optionsMenu (window, view, smallFont, largeFont, state, transition, menu, menuSelection, enter, escape, settingsManager, soundManager);
+				break;
+			case STATE_levelSelect:
+				levelSelect (window, view, smallFont, largeFont, state, transition, menu, menuSelection, enter, escape                 , soundManager               , map, player);
+				break;
+			case STATE_levelClear:
+				levelClear  (window, view, smallFont, largeFont, state, transition, menu, menuSelection, enter, escape                 , soundManager               , map, player);
+				break;
+			case STATE_game:
+				game        (window, view, smallFont, largeFont, state, transition, menu, menuSelection, enter, escape, settingsManager, soundManager, spriteManager, map, player, paused);
+				break;
+			case STATE_exit:
+				exit        (window);
+				break;
+		}
+		window.setView(view);
+
+		if (settingsManager.music.active != soundManager.playMusic) {
+			if (settingsManager.music.active) {
+				soundManager.playMusic = true;
+			} else {
+				soundManager.playMusic = false;
 			}
-
-			switch (state) {
-				case startScreenState:
-					startScreen(window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape);
-					break;
-				case levelSelectState:
-					levelSelect(window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape, transition, map, player);
-					break;
-				case levelClearState:
-					levelClear (window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape, transition, map, player);
-					break;
-				case gameState:
-					game       (window, view, smallFont, largeFont, state, menu, menuSelection, enter, escape, transition, map, player, playerSprite, playerDeathSprite, offscreenCircleSprite, tilesetSprite, bulletSprite, bulletExplosionSprite, paused);
-					break;
+		}
+		if (settingsManager.SFX.active != soundManager.playSFX) {
+			if (settingsManager.SFX.active) {
+				soundManager.playSFX = true;
+			} else {
+				soundManager.playSFX = false;
 			}
-			window.setView(view);
+		}
 
+		if (state != STATE_splashScreen) {
+			if (soundManager.playMusic && soundManager.music.getStatus() != sf::SoundSource::Playing) {
+				soundManager.music.play();
+			} else if (!soundManager.playMusic && soundManager.music.getStatus() != sf::SoundSource::Paused) {
+				soundManager.music.pause();
+			}
+		}
+
+		if (settingsManager.FPS.active) { // show FPS
 			std::stringstream fpsString;
 			fpsString << "FPS: " << fpsCounter;
 			textBox(window, view, smallFont, smallFontSize, fpsString.str(), viewWidth - 10, 10, false, true, true, false, 0, 0, 5, textColor, sf::Color::Transparent, sf::Color::Transparent);
-
-			if (false) { // border around the view
-				sf::RectangleShape viewBorder(sf::Vector2f(viewWidth, viewHeight));
-				viewBorder.setPosition(view.getCenter().x - viewWidth / 2, view.getCenter().y - viewHeight / 2);
-				viewBorder.setFillColor(sf::Color::Transparent);
-				viewBorder.setOutlineColor(sf::Color::Red);
-				viewBorder.setOutlineThickness(1);
-				window.draw(viewBorder);
-			}
-
-			window.display();
-
-			fpsUpdateTimer++;
-			currentTime = fpsClock.restart().asSeconds();
-			if (fpsUpdateTimer == fpsUpdateFrames) {
-				fpsUpdateTimer = 0;
-				fpsCounter = std::ceil(1 / currentTime);
-			}
-			lastTime = currentTime;
 		}
+
+		if (settingsManager.crosshair.active) { // show crosshair
+			static const sf::Color color(255, 0, 0, 127);
+			static const int length    = 16;
+			static const int thickness = 2;
+			sf::RectangleShape hor(sf::Vector2f(length, thickness));
+			sf::RectangleShape ver(sf::Vector2f(thickness, length));
+			hor.setFillColor(color);
+			ver.setFillColor(color);
+			hor.setPosition(view.getCenter().x - length / 2, view.getCenter().y - thickness / 2);
+			ver.setPosition(view.getCenter().x - thickness / 2, view.getCenter().y - length / 2);
+			window.draw(hor);
+			window.draw(ver);
+		}
+
+		window.display();
+
+		fpsUpdateTimer++;
+		currentTime = fpsClock.restart().asSeconds();
+		if (fpsUpdateTimer == fpsUpdateFrames) {
+			fpsUpdateTimer = 0;
+			fpsCounter = std::ceil(1 / currentTime);
+		}
+		lastTime = currentTime;
 	}
 
 	return 0;

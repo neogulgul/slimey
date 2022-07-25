@@ -54,18 +54,21 @@ void Map::reset() {
 	}
 }
 
-void Map::update(sf::FloatRect playerRect, bool &playerDead) {
-	sawbladeTimer++;
-	if (sawbladeTimer == sawbladeFrames) {
-		sawbladeTimer = 0;
+void Map::update(sf::FloatRect playerRect, bool &playerDead, bool frozen, SoundManager &soundManager) {
+	this->sawbladeTimer++;
+	if (this->sawbladeTimer == this->sawbladeFrames) {
+		this->sawbladeTimer = 0;
 	}
 
-	if (!this->cleared) {
-		turretTimer++;
-		if (turretTimer == turretFrames) {
-			turretTimer = 0;
+	if (!frozen) {
+		this->turretTimer++;
+		if (this->turretTimer == this->turretFrames) {
+			this->turretTimer = 0;
 
 			for (Turret &turret : this->turretVector) {
+				if (soundManager.playSFX) {
+					soundManager.bulletShot.play();
+				}
 				turret.shoot(this->bulletVector);
 			}
 		}
@@ -77,12 +80,15 @@ void Map::update(sf::FloatRect playerRect, bool &playerDead) {
 
 	for (int i = 0; i < this->bulletVector.size(); i++) {
 		if (this->bulletVector.at(i).destroyed) {
+			if (soundManager.playSFX) {
+				soundManager.bulletHit.play();
+			}
 			this->bulletVector.at(i).destroy(this->bulletVector);
 		}
 	}
 }
 
-void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprite, sf::Sprite &bulletSprite, sf::Sprite &bulletExplosionSprite) {
+void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprite, sf::Sprite &bulletSprite, sf::Sprite &bulletExplosionSprite, bool drawHitbox) {
 	sf::Color pixel;
 	int xCrop, yCrop;
 
@@ -138,12 +144,21 @@ void Map::draw(sf::RenderWindow &window, sf::View view, sf::Sprite &tilesetSprit
 
 					tilesetSprite.setTextureRect(sf::IntRect(xCrop * tilesize, yCrop * tilesize, tilesize, tilesize));
 					window.draw(tilesetSprite);
+
+					if (pixel == sawblade && drawHitbox) {
+						sf::RectangleShape hitbox(sf::Vector2f(14, 14));
+						hitbox.setPosition(x * tilesize + 1, y * tilesize + 1);
+						hitbox.setFillColor(sf::Color::Transparent);
+						hitbox.setOutlineColor(sf::Color(255, 0, 0, 127));
+						hitbox.setOutlineThickness(-1);
+						window.draw(hitbox);
+					}
 				}
 			}
 		}
 	}
 
 	for (Bullet &bullet : this->bulletVector) {
-		bullet.draw(window, view, bulletSprite, bulletExplosionSprite);
+		bullet.draw(window, view, bulletSprite, bulletExplosionSprite, drawHitbox);
 	}
 }

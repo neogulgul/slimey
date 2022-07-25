@@ -1,7 +1,7 @@
 #pragma once
 
 // constants
-const int FPS = 60;
+const int targetFPS = 60;
 
 const float gravity = 0.16;
 
@@ -11,16 +11,26 @@ const float bulletVelocity = 1;
 const int tilesize        = 16;
 const int horizontalTiles = 16;
 const int verticalTiles   = 16;
-const int viewWidth       = tilesize * horizontalTiles;
-const int viewHeight      = tilesize * verticalTiles;
+const int viewWidth       = horizontalTiles * tilesize;
+const int viewHeight      = verticalTiles   * tilesize;
 const int windowScale     = 3;
+const int windowWidth     = viewWidth  * windowScale;
+const int windowHeight    = viewHeight * windowScale;
 
 const int smallFontSize = 8;
 const int largeFontSize = 16;
 
 enum Direction { up, down, left, right };
 
-enum State { startScreenState, levelSelectState, levelClearState, gameState };
+enum State {
+	STATE_splashScreen,
+	STATE_startScreen,
+	STATE_optionsMenu,
+	STATE_levelSelect,
+	STATE_levelClear,
+	STATE_game,
+	STATE_exit
+};
 
 // colors
 extern sf::Color backgroundColor;

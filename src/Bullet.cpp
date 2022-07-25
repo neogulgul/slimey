@@ -146,7 +146,7 @@ void Bullet::update(sf::Image &mapImage, sf::Vector2u &mapSize, sf::FloatRect pl
 	}
 }
 
-void Bullet::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &bulletSprite, sf::Sprite &bulletExplosionSprite) {
+void Bullet::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &bulletSprite, sf::Sprite &bulletExplosionSprite, bool drawHitbox) {
 	if (this->position.x + bulletRadius * 2 > view.getCenter().x - viewWidth  / 2 &&
 		this->position.x                    < view.getCenter().x + viewWidth  / 2 &&
 		this->position.y + bulletRadius * 2 > view.getCenter().y - viewHeight / 2 &&
@@ -154,6 +154,15 @@ void Bullet::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &bulletSp
 		if (!this->exploding) {
 			bulletSprite.setPosition(this->position);
 			window.draw(bulletSprite);
+
+			if (drawHitbox) {
+				sf::RectangleShape hitbox(sf::Vector2f(bulletRadius * 2, bulletRadius * 2));
+				hitbox.setPosition(this->position);
+				hitbox.setFillColor(sf::Color::Transparent);
+				hitbox.setOutlineColor(sf::Color(255, 0, 0, 127));
+				hitbox.setOutlineThickness(-1);
+				window.draw(hitbox);
+			}
 		} else if (!this->destroyed) {
 			int frame = std::floor(this->explosionTimer / this->explosionFramesDuration);
 			bulletExplosionSprite.setTextureRect(sf::IntRect(frame * 8, 0, 8, 8));

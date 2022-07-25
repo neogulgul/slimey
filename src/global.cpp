@@ -43,6 +43,7 @@ bool validCollisionTile(sf::Image mapImage, sf::Vector2u mapSize, int xCord, int
 }
 
 void textBox(sf::RenderWindow &window, sf::View &view, sf::Font font, int fontSize, std::string string, int x, int y, bool centerX, bool centerY, bool rightOrigin, bool bottomOrigin, int width, int height, int padding, sf::Color textColor, sf::Color backgroundColor, sf::Color outlineColor) {
+	// a bit janky but im to lazy to fix it
 	sf::Text text(string, font, fontSize);
 	text.setFillColor(textColor);
 	sf::FloatRect textRect = text.getGlobalBounds();

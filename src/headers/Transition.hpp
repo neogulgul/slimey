@@ -14,8 +14,10 @@ class Transition {
 		sf::RectangleShape square;
 
 		Direction direction;
-		enum Type { inward, outward };
-		Type type = inward;
+		enum Type { fade, spiral };
+		Type type;
+		enum Way { inward, outward };
+		Way way = inward;
 
 		State destination;
 
@@ -23,8 +25,11 @@ class Transition {
 		bool inwardComplete = false;
 		bool outwardComplete = false;
 
-		Transition();
+		Transition(Type type);
+		void changeType(Type type);
 		void to(State destination);
 		void reset();
+		void fadeAnimation(sf::RenderWindow &window, sf::View view);
+		void spiralAnimation(sf::RenderWindow &window, sf::View view);
 		void draw(sf::RenderWindow &window, sf::View view);
 };

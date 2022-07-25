@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Map.hpp"
+#include "SoundManager.hpp"
 
 class Player {
 	public:
@@ -12,12 +13,10 @@ class Player {
 		int height = 12;
 		float xVelocity = 0;
 		float yVelocity = 0;
-		float maxMoveVelocity = 2;
-		float maxVelocity     = 8;
+		float maxMoveVelocity  = 2;
+		float terminalVelocity = 8;
 		float acceleration = 0.2;
 		float deceleration = 0.3;
-
-		bool hitbox = false;
 
 		int animationFrames        = 4;
 		int animationFrameDuration = 8;
@@ -28,6 +27,7 @@ class Player {
 		int deathTimer          = 0;
 
 		bool alive = true;
+		bool aliveLastFrame = true;
 		bool resurrection = false;
 
 		bool up    = false;
@@ -63,6 +63,6 @@ class Player {
 		void death(Map &map);
 		void levelClear(Map &map);
 		void checkCollision(Map &map);
-		void update(Map &map, bool locked);
-		void draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, bool paused);
+		void update(Map &map, bool locked, SoundManager &soundManager);
+		void draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, bool paused, bool drawHitbox);
 };

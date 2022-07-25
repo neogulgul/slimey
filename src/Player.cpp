@@ -3,6 +3,7 @@
 #include "headers/global.hpp"
 #include "headers/Map.hpp"
 #include "headers/Player.hpp"
+#include "headers/SoundManager.hpp"
 
 Player::Player() {}
 
@@ -293,9 +294,19 @@ void Player::checkCollision(Map &map) {
 	}
 }
 
-void Player::update(Map &map, bool locked) {
+void Player::update(Map &map, bool locked, SoundManager &soundManager) {
 	if (!this->alive) {
+		if (this->aliveLastFrame) {
+			this->aliveLastFrame = false;
+			if (soundManager.playSFX) {
+				soundManager.playerDeath.play();
+			}
+		}
 		return;
+	}
+
+	if (!aliveLastFrame) {
+		aliveLastFrame = true;
 	}
 
 	if (!locked) {
@@ -322,6 +333,9 @@ void Player::update(Map &map, bool locked) {
 	///////////////////////
 	if (this->onGround) {
 		if (this->preJumpTimer > 0 && !this->jumped) {
+			if (soundManager.playSFX) {
+				soundManager.playerJump.play();
+			}
 			this->jumping();
 		} else {
 			this->jumped = false;
@@ -389,20 +403,20 @@ void Player::update(Map &map, bool locked) {
 	this->checkCollision(map);
 
 	// horizontal speed cap
-	if (this->xVelocity > this->maxVelocity) {
-		this->xVelocity = this->maxVelocity;
-	} else if (this->xVelocity < -this->maxVelocity) {
-		this->xVelocity = -this->maxVelocity;
+	if (this->xVelocity > this->terminalVelocity) {
+		this->xVelocity = this->terminalVelocity;
+	} else if (this->xVelocity < -this->terminalVelocity) {
+		this->xVelocity = -this->terminalVelocity;
 	}
 	// vertical speed cap
-	if (this->yVelocity > this->maxVelocity) {
-		this->yVelocity = this->maxVelocity;
-	} else if (this->yVelocity < -this->maxVelocity) {
-		this->yVelocity = -this->maxVelocity;
+	if (this->yVelocity > this->terminalVelocity) {
+		this->yVelocity = this->terminalVelocity;
+	} else if (this->yVelocity < -this->terminalVelocity) {
+		this->yVelocity = -this->terminalVelocity;
 	}
 }
 
-void Player::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, bool paused) {
+void Player::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &playerSprite, sf::Sprite &playerDeathSprite, sf::Sprite &offscreenCircleSprite, bool paused, bool drawHitbox) {
 	if (this->alive) {
 		int animation = 0;
 
@@ -449,16 +463,16 @@ void Player::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &playerSp
 		playerSprite.setPosition(xSpritePosition, ySpritePosition);
 		window.draw(playerSprite);
 
-		if (this->hitbox) {
+		if (drawHitbox) {
 			sf::RectangleShape hitbox(sf::Vector2f(this->width, this->height));
 			hitbox.setPosition(sf::Vector2f(this->x, this->y));
 			hitbox.setFillColor(sf::Color::Transparent);
-			hitbox.setOutlineColor(sf::Color::Red);
+			hitbox.setOutlineColor(sf::Color(255, 0, 0, 127));
 			hitbox.setOutlineThickness(-1);
 			window.draw(hitbox);
 		}
 
-		if (!paused) {
+		if (!paused && window.hasFocus()) {
 			animationTimer++;
 		}
 	} else {
@@ -481,7 +495,7 @@ void Player::draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &playerSp
 			playerDeathSprite.setPosition(this->x - (tilesize - this->width) / 2, this->y - (tilesize - this->height) / 2);
 			window.draw(playerDeathSprite);
 
-			if (!paused) {
+			if (!paused && window.hasFocus()) {
 				deathTimer++;
 			}
 		}

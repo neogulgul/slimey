@@ -17,5 +17,5 @@ class Bullet {
 		void destroy(std::vector<Bullet> &bulletVector);
 		bool checkCollision(sf::Image &mapImage, sf::Vector2u &mapSize, sf::FloatRect playerRect, bool &playerDead);
 		void update(sf::Image &mapImage, sf::Vector2u &mapSize, sf::FloatRect playerRect, bool &playerDead);
-		void draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &bulletSprite, sf::Sprite &bulletExplosionSprite);
+		void draw(sf::RenderWindow &window, sf::View &view, sf::Sprite &bulletSprite, sf::Sprite &bulletExplosionSprite, bool drawHitbox);
 };
