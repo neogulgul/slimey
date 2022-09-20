@@ -1,35 +1,34 @@
 #pragma once
 
-#include "global.hpp"
-#include "State.hpp"
+#include "Global.hpp"
 
-class Transition {
-	public:
-		int transitionSpeed       = 2;
-		int transitionTimer       = 0;
-		int transitionFrames      = 128;
-		int transitionDelayTimer  = 0;
-		int transitionDelayFrames = 32;
+struct Transition
+{
+	sf::RenderWindow *window;
 
-		sf::RectangleShape square;
+	sf::RectangleShape shape;
 
-		Direction direction;
-		enum Type { fade, spiral };
-		Type type;
-		enum Way { inward, outward };
-		Way way = inward;
+	State destination;
+	State *gameState;
 
-		State destination;
+	bool transitioning = false;
+	bool atDestination = false;
 
-		bool ongoing = false;
-		bool inwardComplete = false;
-		bool outwardComplete = false;
+	int alpha = 0;
 
-		Transition(Type type);
-		void changeType(Type type);
-		void to(State destination);
-		void reset();
-		void fadeAnimation(sf::RenderWindow &window, sf::View view);
-		void spiralAnimation(sf::RenderWindow &window, sf::View view);
-		void draw(sf::RenderWindow &window, sf::View view);
+	float opacity          = 0;
+	float opacityIncrement = 0.03;
+
+	// used in between transitions
+	int sleepTimer  = 0;
+	int sleepFrames = 15;
+	bool sleeping = false;
+
+	Transition();
+	Transition(sf::RenderWindow *_window, State &_gameState);
+	void to(State state);
+	void changeState();
+	void reset();
+	void update();
+	void draw();
 };
