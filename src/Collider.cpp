@@ -6,11 +6,6 @@
 
 #include <iostream>
 
-void printHitbox(sf::FloatRect hitbox)
-{
-	std::cout << "top: " << hitbox.top << ", left: " << hitbox.left << ", width: " << hitbox.width << ", height: " << hitbox.height << "\n";
-}
-
 Collider::Collider()
 {}
 
@@ -86,7 +81,7 @@ void Collider::checkCollision()
 			}
 
 			colliderPosition = position - delta;
-			colliderHitbox = sf::FloatRect((float)colliderPosition.x, (float)colliderPosition.y, (float)size.x, (float)size.y);
+			colliderHitbox = sf::FloatRect(colliderPosition.x, colliderPosition.y, size.x, size.y);
 			colliderCoord.x = std::floor(colliderPosition.x / tilesize);
 			colliderCoord.y = std::floor(colliderPosition.y / tilesize);
 			colliderIntersections.x = std::floor((colliderPosition.x + size.x) / tilesize) - colliderCoord.x;
@@ -99,20 +94,31 @@ void Collider::checkCollision()
 				{
 					tileCoord.x = colliderCoord.x + x;
 					tileCoord.y = colliderCoord.y;
-					tileHitbox = sf::FloatRect((float)tileCoord.x * (float)tilesize, (float)tileCoord.y * (float)tilesize, (float)tilesize, (float)tilesize);
-					// if (!colliderHitbox.intersects(tileHitbox)) { break; }
-					// if (colliderPosition.y + size.y > tileCoord.y * tilesize + tilesize && colliderHitbox.intersects(tileHitbox) && validCollisionTile(tileCoord))
-					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox)
-					    && colliderPosition.y + size.y >= tileCoord.y * tilesize + tilesize
-					    && colliderPosition.x < tileCoord.x * tilesize + tilesize)
+					tileHitbox = sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
+
+					if (tileCoord.x == 0)
 					{
-						// std::cout << "----- ----- ----- ----- -----" << "\n";
-						// std::cout << "Up" << "\n";
-						// printHitbox(colliderHitbox);
-						// printHitbox(tileHitbox);
-						// std::cout << (colliderHitbox.intersects(tileHitbox)) << "\n";
+						/*
+						fix for a stupid bug
+						*/
+						colliderHitbox.left += tilesize;
+						    tileHitbox.left += tilesize;
+					}
+
+					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
+					{
 						hitUp = true;
 						position.y = tileCoord.y * tilesize + tilesize;
+					}
+
+					if (tileCoord.x == 0)
+					{
+						/*
+						when the x-coord of the tile we're collision checking against is equal to zero some weird shit occurs
+						checking for an intersection between the collider and a tile returns true when it shouldn't
+						*/
+						colliderHitbox.left -= tilesize;
+						    tileHitbox.left -= tilesize;
 					}
 				}
 			}
@@ -123,24 +129,32 @@ void Collider::checkCollision()
 				{
 					tileCoord.x = colliderCoord.x + x;
 					tileCoord.y = colliderCoord.y + colliderIntersections.y;
-					tileHitbox = sf::FloatRect((float)tileCoord.x * (float)tilesize, (float)tileCoord.y * (float)tilesize, (float)tilesize, (float)tilesize);
-					// if (!colliderHitbox.intersects(tileHitbox)) { break; }
-					// if (colliderPosition.y < tileCoord.y * tilesize && colliderPosition.x < tileCoord.x * tilesize + tilesize && colliderHitbox.intersects(tileHitbox) && validCollisionTile(tileCoord))
-					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox)
-					    && colliderPosition.y < tileCoord.y * tilesize
-					    && ((float)colliderPosition.x < (float)tileCoord.x * (float)tilesize + (float)tilesize))
+					tileHitbox = sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
+
+					if (tileCoord.x == 0)
 					{
-						std::cout << (float)colliderPosition.x << " < " << (float)tileCoord.x * (float)tilesize + (float)tilesize << ": "
-						<< (         (float)colliderPosition.x      <      (float)tileCoord.x * (float)tilesize + (float)tilesize) << "\n";
-						std::cout << (float)colliderPosition.x << " == " << (float)tileCoord.x * (float)tilesize + (float)tilesize << ": "
-						<< (         (float)colliderPosition.x      ==      (float)tileCoord.x * (float)tilesize + (float)tilesize) << "\n";
-						// std::cout << "----- ----- ----- ----- -----" << "\n";
-						// std::cout << "Down" << "\n";
-						// printHitbox(colliderHitbox);
-						// printHitbox(tileHitbox);
-						// std::cout << (colliderHitbox.intersects(tileHitbox)) << "\n";
+						/*
+						i fixed it by moving the hitboxes a bit to the right (for the check) and then back again
+						the move distance doesn't matter as long as the x-coord doesn't stay zero
+						*/
+						colliderHitbox.left += tilesize;
+						    tileHitbox.left += tilesize;
+					}
+
+					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
+					{
 						hitDown = true;
 						position.y = tileCoord.y * tilesize - size.y;
+					}
+
+					if (tileCoord.x == 0)
+					{
+						/*
+						i was too stupid to figure out why this happens so i came up with this scuffed solution
+						in the end it works, so who am i to complain
+						*/
+						colliderHitbox.left -= tilesize;
+						    tileHitbox.left -= tilesize;
 					}
 				}
 			}
@@ -174,7 +188,7 @@ void Collider::checkCollision()
 			}
 
 			colliderPosition = position - delta;
-			colliderHitbox = sf::FloatRect((float)colliderPosition.x, (float)colliderPosition.y, (float)size.x, (float)size.y);
+			colliderHitbox = sf::FloatRect(colliderPosition.x, colliderPosition.y, size.x, size.y);
 			colliderCoord.x = std::floor(colliderPosition.x / tilesize);
 			colliderCoord.y = std::floor(colliderPosition.y / tilesize);
 			colliderIntersections.x = std::floor((colliderPosition.x + size.x) / tilesize) - colliderCoord.x;
@@ -187,17 +201,9 @@ void Collider::checkCollision()
 				{
 					tileCoord.x = colliderCoord.x;
 					tileCoord.y = colliderCoord.y + y;
-					tileHitbox = sf::FloatRect((float)tileCoord.x * (float)tilesize, (float)tileCoord.y * (float)tilesize, (float)tilesize, (float)tilesize);
-					// if (!colliderHitbox.intersects(tileHitbox)) { break; }
-					// if (colliderPosition.x + size.x > tileCoord.x * tilesize + tilesize && colliderHitbox.intersects(tileHitbox) && validCollisionTile(tileCoord))
-					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox)
-					    && colliderPosition.x > tileCoord.x * tilesize - size.x)
+					tileHitbox = sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
+					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
-						// std::cout << "----- ----- ----- ----- -----" << "\n";
-						// std::cout << "Left" << "\n";
-						// printHitbox(colliderHitbox);
-						// printHitbox(tileHitbox);
-						// std::cout << (colliderHitbox.intersects(tileHitbox)) << "\n";
 						hitLeft = true;
 						position.x = tileCoord.x * tilesize + tilesize;
 					}
@@ -210,17 +216,9 @@ void Collider::checkCollision()
 				{
 					tileCoord.x = colliderCoord.x + colliderIntersections.x;
 					tileCoord.y = colliderCoord.y + y;
-					tileHitbox = sf::FloatRect((float)tileCoord.x * (float)tilesize, (float)tileCoord.y * (float)tilesize, (float)tilesize, (float)tilesize);
-					// if (!colliderHitbox.intersects(tileHitbox)) { break; }
-					// if (colliderPosition.x < tileCoord.x * tilesize && colliderHitbox.intersects(tileHitbox) && validCollisionTile(tileCoord))
-					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox)
-					    && colliderPosition.x < tileCoord.x * tilesize)
+					tileHitbox = sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
+					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
-						// std::cout << "----- ----- ----- ----- -----" << "\n";
-						// std::cout << "Right" << "\n";
-						// printHitbox(colliderHitbox);
-						// printHitbox(tileHitbox);
-						// std::cout << (colliderHitbox.intersects(tileHitbox)) << "\n";
 						hitRight = true;
 						position.x = tileCoord.x * tilesize - size.x;
 					}
