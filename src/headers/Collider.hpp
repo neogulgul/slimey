@@ -23,10 +23,12 @@ struct Collider
 	Collider();
 	Collider(sf::Sprite *_sprite, mapVector *_map, sf::Vector2u _mapSize);
 
+	sf::FloatRect getHitbox();
+
 	virtual void updatePosition();
 	        bool validCollisionTile(sf::Vector2i coord);
 	        void checkCollision();
 	virtual void handleCollision();
 	        void update();
-	virtual void draw(sf::RenderWindow *window);
+	virtual void draw(sf::RenderWindow *window, sf::FloatRect viewPort);
 };

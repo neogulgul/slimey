@@ -11,11 +11,13 @@ Game::Game(sf::RenderWindow &_window, sf::View &_view)
 	window     = &_window;
 	view       = &_view;
 
-	level      = Level(window, &sprites);
+	level      = Level(window, view, &sprites);
 	text       = Text(window);
 	transition = Transition(window, state);
 
 	state = MainMenu;
+
+	rng.seed(std::random_device{}());
 }
 
 
@@ -53,8 +55,6 @@ void Game::createLevelboxes()
 
 	unsigned int lastRow = std::floor((float)defaultMaps.size() / levelboxColumns);
 
-	verticalPositionOfCustomSection = viewHeight / 4 + 48 * lastRow;
-
 	sf::Vector2f position;
 
 	for (unsigned int i = 0; i < defaultMaps.size(); i++)
@@ -68,14 +68,14 @@ void Game::createLevelboxes()
 
 		if (columns % 2 == 0) // even
 		{
-			position.x = viewWidth / 2 + (currentColumn -            columns / 2 ) * levelboxSpacing + levelboxSpacing / 2;
+			position.x = viewWidth * 0.5 + (currentColumn -            columns / 2 ) * levelboxSpacing + levelboxSpacing / 2;
 		}
 		else                  // odd
 		{
-			position.x = viewWidth / 2 + (currentColumn - std::floor(columns / 2)) * levelboxSpacing;
+			position.x = viewWidth * 0.5 + (currentColumn - std::floor(columns / 2)) * levelboxSpacing;
 		}
 
-		position.y = verticalPositionOfDefaultSection + 16 + levelboxSpacing * currentRow;
+		position.y = viewWidth * 0.25 + 48 + levelboxSpacing * currentRow;
 
 		menu.push_back(new Levelbox(level, i, position));
 
@@ -102,23 +102,25 @@ void Game::createMenu()
 		// 	break;
 
 		case MainMenu:
-			menu.push_back(new Menubox(LevelSelect, "Start"  , sf::Vector2f(60, 20), Center, Center, sf::Vector2f(viewHeight / 2, viewWidth / 2     )));
-			menu.push_back(new Menubox(Options    , "Options", sf::Vector2f(60, 20), Center, Center, sf::Vector2f(viewHeight / 2, viewWidth / 2 + 40)));
-			menu.push_back(new Menubox(ExitScreen , "Exit"   , sf::Vector2f(60, 20), Center, Center, sf::Vector2f(viewHeight / 2, viewWidth / 2 + 80)));
+			menu.push_back(new Menubox(StoryLevels , "Story"  , sf::Vector2f(60, 20), End   , End  , sf::Vector2f(viewHeight * 0.5 - (30 + 10), viewWidth * 0.75 - 5)));
+			menu.push_back(new Menubox(CustomLevels, "Custom" , sf::Vector2f(60, 20), Center, End  , sf::Vector2f(viewHeight * 0.5            , viewWidth * 0.75 - 5)));
+			menu.push_back(new Menubox(Editor      , "Editor" , sf::Vector2f(60, 20), Start , End  , sf::Vector2f(viewHeight * 0.5 + (30 + 10), viewWidth * 0.75 - 5)));
+			menu.push_back(new Menubox(Options     , "Options", sf::Vector2f(60, 20), End   , Start, sf::Vector2f(viewHeight * 0.5 - 5        , viewWidth * 0.75 + 5)));
+			menu.push_back(new Menubox(ExitScreen  , "Exit"   , sf::Vector2f(60, 20), Start , Start, sf::Vector2f(viewHeight * 0.5 + 5        , viewWidth * 0.75 + 5)));
 			break;
 
 		case Options:
 			menu.push_back(new Menubox(MainMenu, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
 			break;
 
-		case LevelSelect:
+		case StoryLevels:
 			menu.push_back(new Menubox(MainMenu, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
 
 			createLevelboxes();
 			break;
 
 		case LevelPlay:
-			menu.push_back(new Menubox(LevelSelect, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
+			menu.push_back(new Menubox(StoryLevels, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
 			break;
 
 		// case LevelClear:
@@ -128,7 +130,7 @@ void Game::createMenu()
 
 void Game::updateMenu()
 {
-	if (state != lastState)
+	if (changedState)
 	{
 		menu.clear();
 	}
@@ -198,7 +200,7 @@ moved these to States.cpp
 // { ... }
 // void Game::updateOptions()
 // { ... }
-// void Game::updateLevelSelect()
+// void Game::update()
 // { ... }
 // void Game::updateLevelPlay()
 // { ... }
@@ -215,7 +217,7 @@ moved these to States.cpp
 // { ... }
 // void Game::drawOptions()
 // { ... }
-// void Game::drawLevelSelect()
+// void Game::draw()
 // { ... }
 // void Game::drawLevelPlay()
 // { ... }
@@ -238,7 +240,16 @@ void Game::update()
 	updateState();
 	updateCursor();
 
-	if (state != lastState && lastState == LevelPlay)
+	if (state != lastState)
+	{
+		changedState = true;
+	}
+	else
+	{
+		changedState = false;
+	}
+
+	if (changedState && lastState == LevelPlay)
 	{
 		level.reset();
 	}

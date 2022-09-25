@@ -4,6 +4,8 @@
 
 struct Player : Collider
 {
+	sf::Sprite *offscreenCircle;
+
 	sf::Vector2i spawn;
 	sf::Vector2u exit;
 
@@ -22,9 +24,10 @@ struct Player : Collider
 	bool left  = false;
 	bool right = false;
 
-	float jumpForce    = 5;
+	float jumpForce    = 2.2;
 	bool jump          = false;
 	bool jumped        = false;
+	bool jumping       = false;
 	int jumpTimer      = 0;
 	int jumpFrames     = 11;
 	int preJumpTimer   = 0;
@@ -32,22 +35,31 @@ struct Player : Collider
 	int postJumpTimer  = 0;
 	int postJumpFrames = 5;
 
-	bool onGround   = false;
-	bool onIce      = false;
+	bool onGround = false;
+	bool onIce    = false;
 
 	bool alive = true;
 
+	enum AnimationState
+	{
+		Idle,
+		LookingUp,
+		CrouchingDown,
+		MovingLeft,
+		MovingRight,
+	};
+	AnimationState animationState;
+	Animation animation;
 	int animationFrameCount    = 2;
 	int animationFrameDuration = 15;
-	Animation animation;
 
 	Player();
-	Player(sf::Sprite *_sprite, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit);
+	Player(sf::Sprite *_sprite, sf::Sprite *_offscreenCircle, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit);
 
 	void place(int x, int y);
 	void updateInput();
 	void handleInput();
 	virtual void updatePosition();
 	virtual void handleCollision();
-	virtual void draw(sf::RenderWindow *window);
+	virtual void draw(sf::RenderWindow *window, sf::FloatRect viewPort);
 };

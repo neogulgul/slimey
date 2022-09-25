@@ -12,6 +12,7 @@ struct Menubox
 	std::string string;
 
 	sf::RectangleShape shape;
+	sf::RectangleShape border;
 	sf::FloatRect bounds;
 
 	Menubox(State _destination, std::string _string, sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position);

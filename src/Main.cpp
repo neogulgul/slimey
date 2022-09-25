@@ -5,7 +5,7 @@
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Slimey", sf::Style::Default);
-	sf::View view(sf::Vector2f(viewWidth / 2, viewHeight / 2), sf::Vector2f(viewWidth, viewHeight));
+	sf::View view(sf::Vector2f(viewWidth * 0.5, viewHeight / 2), sf::Vector2f(viewWidth, viewHeight));
 	sf::Event event;
 
 	window.setFramerateLimit(FPS);

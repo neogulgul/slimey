@@ -4,15 +4,24 @@
 
 Level::Level() {}
 
-Level::Level(sf::RenderWindow *_window, Sprites *_sprites)
+Level::Level(sf::RenderWindow *_window, sf::View *_view, Sprites *_sprites)
 {
 	window  = _window;
+	view    = _view;
 	sprites = _sprites;
 
 	pauseShape.setSize(sf::Vector2f(viewWidth, viewHeight));
 	pauseShape.setFillColor(pauseColor);
 
 	sawbladeAnimation = Animation(sawbladeFrameCount, sawbladeFrameDuration);
+}
+
+void Level::updateViewPort()
+{
+	viewPort.left   = view->getCenter().x - viewWidth  / 2;
+	viewPort.top    = view->getCenter().y - viewHeight / 2;
+	viewPort.width  = viewWidth;
+	viewPort.height = viewHeight;
 }
 
 void Level::reset()
@@ -48,7 +57,7 @@ void Level::loadMap(mapVector _map)
 		}
 	}
 
-	player = Player(&sprites->slimeyFrames, &map, mapSize, spawn, exit);
+	player = Player(&sprites->slimeyFrames, &sprites->offscreenCircle, &map, mapSize, spawn, exit);
 }
 
 void Level::drawMap()
@@ -86,9 +95,12 @@ void Level::drawMap()
 	}
 
 	// drawing exit sign
-	sprite = &sprites->exitSign;
-	sprite->setPosition(exit.x * tilesize, (exit.y - 1) * tilesize);
-	window->draw(*sprite);
+	if (exit.y != 0)
+	{
+		sprite = &sprites->exitSign;
+		sprite->setPosition(exit.x * tilesize, (exit.y - 1) * tilesize);
+		window->draw(*sprite);
+	}
 }
 
 void Level::update()
@@ -109,12 +121,13 @@ void Level::update()
 	if (paused) { return; }
 
 	player.update();
+	updateViewPort();
 }
 
 void Level::draw()
 {
 	if (!paused) { sawbladeAnimation.update(); }
 	drawMap();
-	player.draw(window);
+	player.draw(window, viewPort);
 	if (paused) { window->draw(pauseShape); }
 }

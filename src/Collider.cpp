@@ -4,8 +4,6 @@
 
 #include "headers/Collider.hpp"
 
-#include <iostream>
-
 Collider::Collider()
 {}
 
@@ -14,6 +12,11 @@ Collider::Collider(sf::Sprite *_sprite, mapVector *_map, sf::Vector2u _mapSize)
 	 sprite = _sprite;
 	    map = _map;
 	mapSize = _mapSize;
+}
+
+sf::FloatRect Collider::getHitbox()
+{
+	return sf::FloatRect(position.x, position.y, size.x, size.y);
 }
 
 void Collider::updatePosition()
@@ -243,8 +246,10 @@ void Collider::update()
 	handleCollision();
 }
 
-void Collider::draw(sf::RenderWindow *window)
+void Collider::draw(sf::RenderWindow *window, sf::FloatRect viewPort)
 {
+	if (!getHitbox().intersects(viewPort)) { return; }
+
 	sprite->setPosition(position);
 	window->draw(*sprite);
 }

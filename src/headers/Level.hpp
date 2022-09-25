@@ -9,6 +9,8 @@
 struct Level
 {
 	sf::RenderWindow *window;
+	sf::View *view;
+	sf::FloatRect viewPort;
 
 	Sprites *sprites;
 
@@ -32,8 +34,9 @@ struct Level
 	Animation sawbladeAnimation;
 
 	Level();
-	Level(sf::RenderWindow *_window, Sprites *_sprites);
+	Level(sf::RenderWindow *_window, sf::View *_view, Sprites *_sprites);
 
+	void updateViewPort();
 	void reset();
 	void loadMap(mapVector _map);
 	void drawMap();

@@ -5,10 +5,13 @@
 Player::Player()
 {}
 
-Player::Player(sf::Sprite *_sprite, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit) : Collider(_sprite, _map, _mapSize)
+Player::Player(sf::Sprite *_sprite, sf::Sprite *_offscreenCircle, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit)
+: Collider(_sprite, _map, _mapSize)
 {
+	offscreenCircle = _offscreenCircle;
+
 	spawn = _spawn;
-	 exit = _exit;
+	exit  = _exit;
 
 	size.x = width;
 	size.y = height;
@@ -55,6 +58,11 @@ void Player::updateInput()
 	else
 	{ right = false; }
 
+	if (pressing(key::J) || pressing(key::Space))
+	{ jump = true; }
+	else
+	{ jump = false; }
+
 	if (pressing(key::R))
 	{
 		place(spawn.x, spawn.y);
@@ -91,15 +99,57 @@ void Player::handleInput()
 		}
 	}
 
-	if (onGround && pressing(sf::Keyboard::Space))
+	if (preJumpTimer > 0)
 	{
-		velocity.y -= jumpForce; // todo: dynamic jump
+		preJumpTimer++;
+		if (preJumpTimer == preJumpFrames)
+		{
+			jumped = true;
+		}
+	}
+
+	if (jump)
+	{
+		if (onGround && !jumped)
+		{
+			jumped  = true;
+			jumping = true;
+		}
+		else if (preJumpTimer == 0)
+		{
+			preJumpTimer++;
+		}
+	}
+	else
+	{
+		jumping = false;
+		jumpTimer = 0;
+		preJumpTimer = 0;
+		if (onGround)
+		{
+			jumped = false;
+		}
+	}
+
+	if (jumping)
+	{
+		jumpTimer++;
+		if (jumpTimer == jumpFrames)
+		{
+			jumpTimer = 0;
+			jumping = false;
+		}
+		velocity.y = -jumpForce;
 	}
 
 	if (down)
-	{ velocity.y += GRAVITY * 2; }
+	{
+		velocity.y += GRAVITY * 2;
+	}
 	else
-	{ velocity.y += GRAVITY; }
+	{
+		velocity.y += GRAVITY;
+	}
 
 	velocity.x = std::clamp(velocity.x, -terminalVelocity.x, terminalVelocity.x);
 	velocity.y = std::clamp(velocity.y, -terminalVelocity.y, terminalVelocity.y);
@@ -114,11 +164,17 @@ void Player::updatePosition()
 
 void Player::handleCollision()
 {
-	onGround = false;
-
 	if (hitDown)
 	{
 		onGround = true;
+	}
+	else
+	{
+		if (onGround == true) // if onGround last frame
+		{
+			postJumpTimer = postJumpFrames;
+		}
+		onGround = false;
 	}
 
 	if (position.y > mapSize.y * tilesize)
@@ -147,30 +203,61 @@ void Player::handleCollision()
 	}
 }
 
-void Player::draw(sf::RenderWindow *window)
+void Player::draw(sf::RenderWindow *window, sf::FloatRect viewPort)
 {
 	animation.update();
 
-	int poo = 0;
+	animationState = Idle;
 
 	if (down)
 	{
-		poo = 2;
+		animationState = CrouchingDown;
 	}
 	else if (left && !right)
 	{
-		poo = 3;
+		animationState = MovingLeft;
 	}
 	else if (right && !left)
 	{
-		poo = 4;
+		animationState = MovingRight;
 	}
 	else if (up)
 	{
-		poo = 1;
+		animationState = LookingUp;
 	}
 
-	sprite->setTextureRect(sf::IntRect(size.x * animation.frame, size.y * poo, size.x, size.y));
+	sprite->setTextureRect(sf::IntRect(size.x * animation.frame, size.y * animationState, size.x, size.y));
 
-	Collider::draw(window);
+	if (!getHitbox().intersects(viewPort))
+	{
+		sf::Vector2f spritePosition = position;
+
+		if (position.y + size.y <= viewPort.top)
+		{
+			spritePosition.y = viewPort.top;
+		}
+		else if (position.y >= viewPort.top + viewPort.height)
+		{
+			spritePosition.y = viewPort.top + viewPort.height - size.y;
+		}
+		if (position.x + size.x <= viewPort.left)
+		{
+			spritePosition.x = viewPort.left;
+		}
+		else if (position.x >= viewPort.left + viewPort.width)
+		{
+			spritePosition.x = viewPort.left + viewPort.width - size.x;
+		}
+
+		offscreenCircle->setPosition(spritePosition.x - offscreenCircle->getTexture()->getSize().x / 2 + size.x / 2, spritePosition.y - offscreenCircle->getTexture()->getSize().y / 2 + size.y / 2);
+		window->draw(*offscreenCircle);
+
+		sprite->setPosition(spritePosition);
+	}
+	else
+	{
+		sprite->setPosition(position);
+	}
+
+	window->draw(*sprite);
 }

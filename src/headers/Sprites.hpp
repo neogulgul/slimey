@@ -4,7 +4,9 @@ struct Sprites
 {
 	// textures
 	sf::Texture slimeyTexture;
+	sf::Texture slimeyColorlessTexture;
 	sf::Texture slimeyFramesTexture;
+	sf::Texture offscreenCircleTexture;
 	sf::Texture tilesetNormalTexture;
 	sf::Texture tilesetIceTexture;
 	sf::Texture tilesetBounceTexture;
@@ -14,7 +16,9 @@ struct Sprites
 
 	// sprites
 	sf::Sprite slimey;
+	sf::Sprite slimeyColorless;
 	sf::Sprite slimeyFrames;
+	sf::Sprite offscreenCircle;
 	sf::Sprite tilesetNormal;
 	sf::Sprite tilesetIce;
 	sf::Sprite tilesetBounce;

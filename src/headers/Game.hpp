@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 #include "DefaultMaps.hpp"
 #include "Global.hpp"
 #include "Menubox.hpp"
@@ -13,8 +15,9 @@ struct Game
 {
 	sf::RenderWindow *window;
 	sf::View *view;
-
 	sf::Cursor cursor;
+
+	std::mt19937 rng;
 
 	Level level;
 	Sprites sprites;
@@ -32,14 +35,7 @@ struct Game
 
 	State lastState;
 	State     state;
-
-	/*
-	these are used when drawing some text in level select
-	couldn't come up with any good names for them
-	the second one can vary so it isn't assigned here
-	*/
-	float verticalPositionOfDefaultSection = viewHeight / 4 + 32;
-	float verticalPositionOfCustomSection;
+	bool changedState = false;
 
 	Game(sf::RenderWindow &_window, sf::View &_view);
 
@@ -57,7 +53,7 @@ struct Game
 	void updateExitScreen();
 	void updateMainMenu();
 	void updateOptions();
-	void updateLevelSelect();
+	void updateStoryLevels();
 	void updateLevelPlay();
 	void updateLevelClear();
 	void updateState();
@@ -66,7 +62,7 @@ struct Game
 	void drawExitScreen();
 	void drawMainMenu();
 	void drawOptions();
-	void drawLevelSelect();
+	void drawStoryLevels();
 	void drawLevelPlay();
 	void drawLevelClear();
 	void drawState();

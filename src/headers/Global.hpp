@@ -32,7 +32,9 @@ enum State
 	ExitScreen,
 	MainMenu,
 	Options,
-	LevelSelect,
+	Editor,
+	StoryLevels,
+	CustomLevels,
 	LevelPlay,
 	LevelClear
 };
