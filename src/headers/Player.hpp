@@ -15,7 +15,7 @@ struct Player : Collider
 	sf::Vector2f terminalVelocity;
 
 	float horizontalTerminalVelocity = 2.0;
-	float verticalTerminalVelocity   = 6.0;
+	float verticalTerminalVelocity   = 5.0;
 	float acceleration = 0.3;
 	float deceleration = 0.2;
 
@@ -28,8 +28,9 @@ struct Player : Collider
 	bool jump          = false;
 	bool jumped        = false;
 	bool jumping       = false;
+	bool jumpedEarly   = false;
 	int jumpTimer      = 0;
-	int jumpFrames     = 11;
+	int jumpFrames     = 12;
 	int preJumpTimer   = 0;
 	int preJumpFrames  = 10;
 	int postJumpTimer  = 0;
@@ -59,6 +60,7 @@ struct Player : Collider
 	void place(int x, int y);
 	void updateInput();
 	void handleInput();
+	void handleJump();
 	virtual void updatePosition();
 	virtual void handleCollision();
 	virtual void draw(sf::RenderWindow *window, sf::FloatRect viewPort);

@@ -2,6 +2,8 @@
 
 #include "headers/Player.hpp"
 
+#include <iostream>
+
 Player::Player()
 {}
 
@@ -99,48 +101,7 @@ void Player::handleInput()
 		}
 	}
 
-	if (preJumpTimer > 0)
-	{
-		preJumpTimer++;
-		if (preJumpTimer == preJumpFrames)
-		{
-			jumped = true;
-		}
-	}
-
-	if (jump)
-	{
-		if (onGround && !jumped)
-		{
-			jumped  = true;
-			jumping = true;
-		}
-		else if (preJumpTimer == 0)
-		{
-			preJumpTimer++;
-		}
-	}
-	else
-	{
-		jumping = false;
-		jumpTimer = 0;
-		preJumpTimer = 0;
-		if (onGround)
-		{
-			jumped = false;
-		}
-	}
-
-	if (jumping)
-	{
-		jumpTimer++;
-		if (jumpTimer == jumpFrames)
-		{
-			jumpTimer = 0;
-			jumping = false;
-		}
-		velocity.y = -jumpForce;
-	}
+	handleJump();
 
 	if (down)
 	{
@@ -155,6 +116,47 @@ void Player::handleInput()
 	velocity.y = std::clamp(velocity.y, -terminalVelocity.y, terminalVelocity.y);
 }
 
+void Player::handleJump()
+{
+	if (preJumpTimer > 0)
+	{
+		preJumpTimer--;
+		if (preJumpTimer == 0)
+		{
+			jumpedEarly = true;
+		}
+	}
+	if (postJumpTimer > 0)
+	{
+		postJumpTimer--;
+	}
+
+	std::cout << jumpedEarly << "\n";
+
+	if (jump)
+	{
+		if (onGround && !jumped && !jumpedEarly)
+		{
+			jumped = true;
+			// jumpedEarly = false;
+			jumpTimer = jumpFrames;
+		}
+		if (!onGround && !jumpedEarly && preJumpTimer == 0)
+		{
+			preJumpTimer = preJumpFrames;
+		}
+		if (jumpTimer > 0)
+		{
+			jumpTimer--;
+			velocity.y = -jumpForce;
+		}
+	}
+	else
+	{
+		jumpTimer = 0;
+	}
+}
+
 void Player::updatePosition()
 {
 	updateInput();
@@ -164,16 +166,24 @@ void Player::updatePosition()
 
 void Player::handleCollision()
 {
+	if (hitUp)
+	{
+		jumpTimer = 0;
+	}
 	if (hitDown)
 	{
 		onGround = true;
-	}
-	else
-	{
-		if (onGround == true) // if onGround last frame
+		preJumpTimer = 0;
+		postJumpTimer = 0;
+		if (!jump)
 		{
-			postJumpTimer = postJumpFrames;
+			jumped = false;
+			jumpedEarly = false;
 		}
+	}
+	else if (onGround == true) // if touched ground last frame
+	{
+		postJumpTimer = postJumpFrames;
 		onGround = false;
 	}
 

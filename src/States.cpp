@@ -76,19 +76,21 @@ void Game::drawExitScreen()
 {
 }
 
-struct Poop
+struct RainbowSlimey
 {
 	sf::Color color;
 	sf::Vector2f position;
+	float scale;
 	int rotation;
 	int speed;
 
-	bool flushed = false;
+	bool passed = false;
 
-	Poop(sf::Color _color, sf::Vector2f _position, int _rotation, int _speed)
+	RainbowSlimey(sf::Color _color, sf::Vector2f _position, float _scale, int _rotation, int _speed)
 	{
 		color    = _color;
 		position = _position;
+		scale    = _scale;
 		rotation = _rotation;
 		speed    = _speed;
 
@@ -116,44 +118,46 @@ void Game::drawMainMenu()
 		sf::Color(255, 174, 247, 63)
 	};
 
-	static std::vector<Poop> poopies;
+	static std::vector<RainbowSlimey> rainbowSlimeys;
 	static std::uniform_int_distribution<> position_dist(0, viewWidth - 1);
 	static std::uniform_int_distribution<> rotation_dist(0, 359);
 	static std::uniform_int_distribution<> speed_dist(1, 5);
 	static std::uniform_int_distribution<> color_dist(0, randomColors.size() - 1);
+	static std::uniform_int_distribution<> scale_dist(0.5 * 10, 2 * 10);
 
 	if (changedState)
 	{
-		poopies.clear();
+		rainbowSlimeys.clear();
 	}
 
-	while (poopies.size() < 100)
+	while (rainbowSlimeys.size() < 100)
 	{
-		poopies.push_back(Poop(randomColors.at(color_dist(rng)), sf::Vector2f(position_dist(rng), position_dist(rng)), rotation_dist(rng), speed_dist(rng)));
+		rainbowSlimeys.push_back(RainbowSlimey(randomColors.at(color_dist(rng)), sf::Vector2f(position_dist(rng), position_dist(rng)), scale_dist(rng) / 10.f, rotation_dist(rng), speed_dist(rng)));
 	}
 
 	sf::Color randomColor(color_dist(rng), color_dist(rng), color_dist(rng));
 
-	for (unsigned int i = 0; i < poopies.size(); i++)
+	for (unsigned int i = 0; i < rainbowSlimeys.size(); i++)
 	{
-		Poop &poop = poopies.at(i);
-		poop.update();
-		if (poop.position.x > viewWidth + 32)
+		RainbowSlimey &rainbowSlimey = rainbowSlimeys.at(i);
+		rainbowSlimey.update();
+		if (rainbowSlimey.position.x > viewWidth + sprites.slimeyColorlessTexture.getSize().x)
 		{
-			poop.flushed = true;
+			rainbowSlimey.passed = true;
 		}
-		sprites.slimeyColorless.setOrigin(7, 6);
-		sprites.slimeyColorless.setRotation(poop.rotation);
-		sprites.slimeyColorless.setPosition(poop.position);
-		sprites.slimeyColorless.setColor(poop.color);
+		sprites.slimeyColorless.setOrigin(sprites.slimeyColorlessTexture.getSize().x / 2, sprites.slimeyColorlessTexture.getSize().y / 2);
+		sprites.slimeyColorless.setRotation(rainbowSlimey.rotation);
+		sprites.slimeyColorless.setPosition(rainbowSlimey.position);
+		sprites.slimeyColorless.setColor(rainbowSlimey.color);
+		sprites.slimeyColorless.setScale(rainbowSlimey.scale, rainbowSlimey.scale);
 		window->draw(sprites.slimeyColorless);
 	}
 
-	for (unsigned int i = 0; i < poopies.size(); i++)
+	for (unsigned int i = 0; i < rainbowSlimeys.size(); i++)
 	{
-		if (poopies.at(i).flushed)
+		if (rainbowSlimeys.at(i).passed)
 		{
-			poopies.erase(poopies.begin() + i);
+			rainbowSlimeys.erase(rainbowSlimeys.begin() + i);
 		}
 	}
 
