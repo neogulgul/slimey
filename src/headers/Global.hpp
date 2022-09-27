@@ -26,6 +26,8 @@ enum Direction { Up, Down, Left, Right };
 
 enum Alignment { Start, Center, End };
 
+enum Tileset { Null, Normal, Ice, Bounce, Other };
+
 enum State
 {
 	SplashScreen,
@@ -50,4 +52,5 @@ extern sf::Color                pauseColor;
 void toggle(bool &boolean);
 bool pressing(sf::Keyboard::Key key);
 bool pressing(sf::Mouse::Button button);
+sf::Vector2f relativeViewPosition(sf::View view, sf::Vector2f position);
 sf::Vector2f align(sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position);

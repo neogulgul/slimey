@@ -11,7 +11,8 @@ void loadPixelatedFont(sf::Font &font, int fontSize, std::string fontPath)
 
 Text::Text() {}
 
-Text::Text(sf::RenderWindow *_window) {
+Text::Text(sf::RenderWindow *_window)
+{
 	window = _window;
 
 	loadPixelatedFont(font, fontSize, "assets/fonts/FiveByFive.ttf");

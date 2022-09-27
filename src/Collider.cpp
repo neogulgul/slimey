@@ -14,6 +14,12 @@ sf::FloatRect getTileHitbox(sf::Vector3i tile, sf::Vector2i tileCoord)
 	return sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
 }
 
+Collision::Collision(sf::Vector2i _position, Direction _direction)
+{
+	position  = _position;
+	direction = _direction;
+}
+
 Collider::Collider()
 {}
 
@@ -32,6 +38,11 @@ sf::Vector3i Collider::getTile(unsigned int x, unsigned int y)
 sf::FloatRect Collider::getHitbox()
 {
 	return sf::FloatRect(position.x, position.y, size.x, size.y);
+}
+
+sf::Vector2f Collider::getCenter()
+{
+	return sf::Vector2f(position.x + size.x / 2, position.y + size.y / 2);
 }
 
 void Collider::setPosition(float x, float y)
@@ -140,7 +151,7 @@ void Collider::checkCollision()
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
 						hitUp = true;
-						collisions.push_back(tileCoord);
+						collisions.push_back(Collision(tileCoord, Up));
 						position.y = tileCoord.y * tilesize + tilesize;
 					}
 
@@ -178,7 +189,7 @@ void Collider::checkCollision()
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
 						hitDown = true;
-						collisions.push_back(tileCoord);
+						collisions.push_back(Collision(tileCoord, Down));
 						position.y = tileCoord.y * tilesize - size.y;
 					}
 
@@ -242,7 +253,7 @@ void Collider::checkCollision()
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
 						hitLeft = true;
-						collisions.push_back(tileCoord);
+						collisions.push_back(Collision(tileCoord, Left));
 						position.x = tileCoord.x * tilesize + tilesize;
 					}
 				}
@@ -260,7 +271,7 @@ void Collider::checkCollision()
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
 						hitRight = true;
-						collisions.push_back(tileCoord);
+						collisions.push_back(Collision(tileCoord, Right));
 						position.x = tileCoord.x * tilesize - size.x;
 					}
 				}
@@ -287,13 +298,12 @@ void Collider::update()
 void Collider::updateSprite()
 {}
 
-void Collider::draw(sf::RenderWindow *window, sf::FloatRect viewPort, bool paused)
+void Collider::draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused)
 {
-	if (!getHitbox().intersects(viewPort)) { return; }
+	if (!getHitbox().intersects(viewport)) { return; }
 	if (!paused)
 	{
 		updateSprite();
 	}
-
 	window->draw(*sprite);
 }

@@ -5,14 +5,16 @@
 #include "Global.hpp"
 #include "Player.hpp"
 #include "Sprites.hpp"
+#include "Transition.hpp"
 
 struct Level
 {
 	sf::RenderWindow *window;
 	sf::View *view;
-	sf::FloatRect viewPort;
+	sf::FloatRect *viewport;
 
 	Sprites *sprites;
+	Transition *transition;
 
 	mapVector map;
 
@@ -26,6 +28,7 @@ struct Level
 	sf::RectangleShape pauseShape;
 	sf::Keyboard::Key  pause = sf::Keyboard::Escape;
 
+	bool loaded  = false;
 	bool cleared = false;
 
 	bool paused       = false;
@@ -36,9 +39,9 @@ struct Level
 	Animation sawbladeAnimation;
 
 	Level();
-	Level(sf::RenderWindow *_window, sf::View *_view, Sprites *_sprites);
+	Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Sprites *_sprites, Transition *_transition);
 
-	void updateViewPort();
+	void updateView(bool instant);
 	void reset();
 	void loadMap(mapVector _map);
 	void drawMap();

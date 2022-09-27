@@ -176,12 +176,12 @@ void Game::drawMainMenu()
 		window->draw(sprites.slimeyColorless);
 	}
 
-	text.draw("Slimey", Center, Center, sf::Vector2f(viewWidth * 0.5, viewHeight * 0.25), sf::Vector2f(2, 2));
+	text.draw("Slimey", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
 }
 
 void Game::drawOptions()
 {
-	text.draw("Options", Center, Center, sf::Vector2f(viewWidth * 0.5, viewHeight * 0.25), sf::Vector2f(2, 2));
+	text.draw("Options", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
 }
 
 void Game::drawEditor()
@@ -190,12 +190,12 @@ void Game::drawEditor()
 
 void Game::drawStoryLevels()
 {
-	text.draw("Story Levels", Center, Center, sf::Vector2f(viewWidth * 0.5, viewHeight * 0.25), sf::Vector2f(2, 2));
+	text.draw("Story Levels", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
 }
 
 void Game::drawCustomLevels()
 {
-	text.draw("Custom Levels", Center, Center, sf::Vector2f(viewWidth * 0.5, viewHeight * 0.25), sf::Vector2f(2, 2));
+	text.draw("Custom Levels", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
 }
 
 void Game::drawLevelPlay()
@@ -203,12 +203,13 @@ void Game::drawLevelPlay()
 	level.draw();
 	if (level.paused)
 	{
-		text.draw("Paused", Center, Center, sf::Vector2f(viewWidth * 0.5, viewHeight * 0.25), sf::Vector2f(2, 2));
+		text.draw("Paused", Center, Center, relativeViewPosition(*view, {viewWidth * 0.5, viewHeight * 0.25}), {2, 2});
 	}
 }
 
 void Game::drawLevelClear()
 {
+	text.draw("Level Cleared", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
 }
 
 void Game::drawState()

@@ -1,19 +1,17 @@
 #include <SFML/Graphics.hpp>
 
-#include "headers/Global.hpp"
 #include "headers/Menubox.hpp"
 
 #define borderSize 2
 
-Menubox::Menubox(State _destination, std::string _string, sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position)
+Menubox::Menubox(State _destination, std::string _string, sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f _position)
 {
 	destination = _destination;
 	string      = _string;
+	position    = align(size, horizontalAlignment, verticalAlignment, sf::Vector2f(_position.x + borderSize, _position.y + borderSize));
 	shape.setOutlineThickness(borderSize);
 	shape.setOutlineColor(sf::Color::Transparent);
 	shape.setSize(sf::Vector2f(size.x - borderSize * 2, size.y - borderSize * 2));
-	shape.setPosition(align(size, horizontalAlignment, verticalAlignment, sf::Vector2f(position.x + borderSize, position.y + borderSize)));
-	bounds = shape.getGlobalBounds();
 }
 
 void Menubox::action()
@@ -24,11 +22,14 @@ void Menubox::action()
 	*/
 }
 
-void Menubox::draw(sf::RenderWindow *window, Text *text)
+void Menubox::draw(sf::RenderWindow *window, sf::View *view, Text *text)
 {
-	sf::Vector2f center;
-	center.x = bounds.left + bounds.width / 2;
-	center.y = bounds.top + bounds.height / 2;
+	shape.setPosition(relativeViewPosition(*view, position));
+	bounds = shape.getGlobalBounds();
+
+	sf::Vector2f shapeCenter;
+	shapeCenter.x = bounds.left + bounds.width / 2;
+	shapeCenter.y = bounds.top + bounds.height / 2;
 
 	if (active)
 	{
@@ -43,11 +44,13 @@ void Menubox::draw(sf::RenderWindow *window, Text *text)
 
 	window->draw(shape);
 
-	if (active) {
-		text->draw(string, Center, Center, center, activeMenuboxForeground, sf::Vector2f(activeScale, activeScale));
+	if (active)
+	{
+		text->draw(string, Center, Center, shapeCenter, activeMenuboxForeground, sf::Vector2f(activeScale, activeScale));
 	}
-	else {
-		text->draw(string, Center, Center, center, inactiveMenuboxForeground);
+	else
+	{
+		text->draw(string, Center, Center, shapeCenter, inactiveMenuboxForeground);
 	}
 
 	// drawing border sides

@@ -6,18 +6,34 @@
 #define levelboxColumns 5
 #define levelboxSpacing 36
 
-Game::Game(sf::RenderWindow &_window, sf::View &_view)
+Game::Game(sf::RenderWindow *_window, sf::View *_view)
 {
-	window     = &_window;
-	view       = &_view;
+	window = _window;
+	view   = _view;
 
-	level      = Level(window, view, &sprites);
+	viewport.width  = viewWidth;
+	viewport.height = viewHeight;
+
+	level      = Level(window, view, &viewport, &sprites, &transition);
 	text       = Text(window);
-	transition = Transition(window, state);
+	transition = Transition(window, view, state);
 
 	state = MainMenu;
 
 	rng.seed(std::random_device{}());
+}
+
+
+
+void Game::resetView()
+{
+	view->setCenter(viewWidth * 0.5, viewHeight * 0.5);
+}
+
+void Game::updateViewport()
+{
+	viewport.left = view->getCenter().x - viewWidth  * 0.5;
+	viewport.top  = view->getCenter().y - viewHeight * 0.5;
 }
 
 
@@ -81,7 +97,8 @@ void Game::createLevelboxes()
 
 		currentColumn++;
 
-		if (currentColumn == levelboxColumns) {
+		if (currentColumn == levelboxColumns)
+		{
 			currentColumn = 0;
 			currentRow++;
 		}
@@ -175,7 +192,7 @@ void Game::drawMenu()
 
 	for (Menubox *box : menu)
 	{
-		box->draw(window, &text);
+		box->draw(window, view, &text);
 	}
 }
 
@@ -246,10 +263,15 @@ void Game::update()
 	updateMenu();
 	updateState();
 	updateCursor();
+	updateViewport();
 
 	if (state != lastState)
 	{
 		changedState = true;
+		if (state != Editor && state != LevelPlay)
+		{
+			resetView();
+		}
 	}
 	else
 	{

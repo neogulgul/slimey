@@ -30,6 +30,9 @@ struct Game
 {
 	sf::RenderWindow *window;
 	sf::View *view;
+
+	sf::FloatRect viewport;
+
 	sf::Cursor cursor;
 
 	std::mt19937 rng;
@@ -54,7 +57,10 @@ struct Game
 	State     state;
 	bool changedState = false;
 
-	Game(sf::RenderWindow &_window, sf::View &_view);
+	Game(sf::RenderWindow *_window, sf::View *_view);
+
+	void resetView();
+	void updateViewport();
 
 	void processKeyboardInput();
 	void processMouseInput();

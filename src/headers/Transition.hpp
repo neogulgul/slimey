@@ -5,6 +5,7 @@
 struct Transition
 {
 	sf::RenderWindow *window;
+	sf::View *view;
 
 	sf::RectangleShape shape;
 
@@ -25,7 +26,7 @@ struct Transition
 	bool sleeping = false;
 
 	Transition();
-	Transition(sf::RenderWindow *_window, State &_gameState);
+	Transition(sf::RenderWindow *_window, sf::View *_view, State &_gameState);
 	void to(State state);
 	void changeState();
 	void reset();

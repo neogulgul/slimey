@@ -5,9 +5,10 @@
 
 Transition::Transition() {}
 
-Transition::Transition(sf::RenderWindow *_window, State &_gameState)
+Transition::Transition(sf::RenderWindow *_window, sf::View *_view, State &_gameState)
 {
 	window    = _window;
+	view      = _view;
 	gameState = &_gameState;
 
 	shape.setSize(sf::Vector2f(viewWidth, viewHeight));
@@ -70,6 +71,7 @@ void Transition::update()
 
 void Transition::draw()
 {
+	shape.setPosition(relativeViewPosition(*view, {0, 0}));
 	shape.setFillColor(sf::Color(0, 0, 0, alpha));
 	window->draw(shape);
 }

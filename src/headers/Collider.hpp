@@ -4,6 +4,14 @@
 #include "DefaultMaps.hpp"
 #include "Global.hpp"
 
+struct Collision
+{
+	sf::Vector2i position;
+	Direction direction;
+
+	Collision(sf::Vector2i _position, Direction _direction);
+};
+
 struct Collider
 {
 	sf::Sprite *sprite;
@@ -15,7 +23,7 @@ struct Collider
 	sf::Vector2f position;
 	sf::Vector2f velocity;
 
-	std::vector<sf::Vector2i> collisions;
+	std::vector<Collision> collisions;
 
 	bool hitUp    = false;
 	bool hitDown  = false;
@@ -27,6 +35,7 @@ struct Collider
 
 	sf::Vector3i getTile(unsigned int x, unsigned int y);
 	sf::FloatRect getHitbox();
+	sf::Vector2f getCenter();
 
 	        void setPosition(float x, float y);
 	virtual void updatePosition();
@@ -36,5 +45,5 @@ struct Collider
 	virtual void handleCollision();
 	        void update();
 	virtual void updateSprite();
-	virtual void draw(sf::RenderWindow *window, sf::FloatRect viewPort, bool paused);
+	virtual void draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused);
 };

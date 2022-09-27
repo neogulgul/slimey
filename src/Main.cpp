@@ -1,6 +1,10 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 
 #include "headers/Game.hpp"
+
+#include <cmath>
+#include <sstream>
 
 int main()
 {
@@ -10,7 +14,15 @@ int main()
 
 	window.setFramerateLimit(FPS);
 
-	Game game(window, view);
+	sf::Music music;
+	music.openFromFile("assets/audio/rain.ogg");
+	music.setVolume(50);
+	music.play();
+
+	sf::Clock clock;
+	std::stringstream FPS;
+
+	Game game(&window, &view);
 
 	while (window.isOpen())
 	{
@@ -26,9 +38,14 @@ int main()
 
 		game.update();
 
+		FPS.str("");
+		FPS << "FPS: " << std::floor(1 / clock.restart().asSeconds());
+
 		window.setView(view);
 
 		game.draw();
+
+		game.text.draw(FPS.str(), Start, Start, {0, 0});
 
 		window.display();
 	}

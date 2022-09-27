@@ -4,11 +4,13 @@
 
 Level::Level() {}
 
-Level::Level(sf::RenderWindow *_window, sf::View *_view, Sprites *_sprites)
+Level::Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Sprites *_sprites, Transition *_transition)
 {
-	window  = _window;
-	view    = _view;
-	sprites = _sprites;
+	window     = _window;
+	view       = _view;
+	viewport   = _viewport;
+	sprites    = _sprites;
+	transition = _transition;
 
 	pauseShape.setSize(sf::Vector2f(viewWidth, viewHeight));
 	pauseShape.setFillColor(pauseColor);
@@ -16,18 +18,53 @@ Level::Level(sf::RenderWindow *_window, sf::View *_view, Sprites *_sprites)
 	sawbladeAnimation = Animation(sawbladeFrameCount, sawbladeFrameDuration);
 }
 
-void Level::updateViewPort()
+void Level::updateView(bool instant = false)
 {
-	viewPort.left   = view->getCenter().x - viewWidth  * 0.5;
-	viewPort.top    = view->getCenter().y - viewHeight * 0.5;
-	viewPort.width  = viewWidth;
-	viewPort.height = viewHeight;
+	if (instant)
+	{
+		view->setCenter(player.getCenter());
+	}
+	else
+	{
+		sf::Vector2f start       = view->getCenter();
+		sf::Vector2f target      = player.getCenter();
+		sf::Vector2f delta       = target - start;
+		sf::Vector2f distance    = {delta.x * 0.1f, delta.y * 0.1f};
+		sf::Vector2f destination = start + distance;
+
+		// limiting view horizontally
+		if (destination.x < viewWidth * 0.5)
+		{
+			destination.x = viewWidth * 0.5;
+		}
+		else
+		if (destination.x > mapSize.x * tilesize - viewWidth * 0.5)
+		{
+			destination.x = mapSize.x * tilesize - viewWidth * 0.5;
+		}
+		// limiting view vertically
+		if (destination.y < viewHeight * 0.5)
+		{
+			destination.y = viewHeight * 0.5;
+		}
+		else
+		if (destination.y > mapSize.y * tilesize - viewHeight * 0.5)
+		{
+			destination.y = mapSize.y * tilesize - viewHeight * 0.5;
+		}
+
+		view->setCenter(destination);
+	}
 }
 
 void Level::reset()
 {
-	spawn = { 0, 0 };
-	exit  = { 0, 0 };
+	spawn = {0, 0};
+	exit  = {0, 0};
+
+	loaded  = false;
+	cleared = false;
+
 	paused       = false;
 	pressedPause = false;
 }
@@ -57,7 +94,7 @@ void Level::loadMap(mapVector _map)
 		}
 	}
 
-	player = Player(&sprites->slimeyFrames, &sprites->offscreenCircle, &map, mapSize, spawn, exit);
+	player = Player(&sprites->slimeyFrames, &sprites->offscreenCircle, &cleared, &map, mapSize, spawn, exit);
 }
 
 void Level::drawMap()
@@ -103,6 +140,8 @@ void Level::drawMap()
 	}
 }
 
+#include <iostream>
+
 void Level::update()
 {
 	if (!window->hasFocus()) { return; }
@@ -123,13 +162,26 @@ void Level::update()
 	if (paused) { return; }
 
 	player.update();
-	updateViewPort();
+	if (!loaded)
+	{
+		loaded = true;
+		updateView(true);
+	}
+	updateView();
+	if (cleared && !transition->transitioning)
+	{
+		transition->to(StoryLevels);
+	}
 }
 
 void Level::draw()
 {
 	if (!paused) { sawbladeAnimation.update(); }
 	drawMap();
-	player.draw(window, viewPort, paused);
-	if (paused) { window->draw(pauseShape); }
+	player.draw(window, *viewport, paused);
+	if (paused)
+	{
+		pauseShape.setPosition(relativeViewPosition(*view, {0, 0}));
+		window->draw(pauseShape);
+	}
 }

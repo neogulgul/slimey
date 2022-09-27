@@ -2,15 +2,14 @@
 
 #include "headers/Player.hpp"
 
-#include <iostream>
-
 Player::Player()
 {}
 
-Player::Player(sf::Sprite *_sprite, sf::Sprite *_offscreenCircle, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit)
+Player::Player(sf::Sprite *_sprite, sf::Sprite *_offscreenCircle, bool *_levelCleared, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit)
 : Collider(_sprite, _map, _mapSize)
 {
 	offscreenCircle = _offscreenCircle;
+	levelCleared = _levelCleared;
 
 	spawn = _spawn;
 	exit  = _exit;
@@ -28,11 +27,6 @@ Player::Player(sf::Sprite *_sprite, sf::Sprite *_offscreenCircle, mapVector *_ma
 	place(spawn.x, spawn.y);
 }
 
-void Player::death()
-{
-	place(spawn.x, spawn.y);
-}
-
 void Player::place(int x, int y)
 {
 	position.x = x * (int)tilesize + 1;
@@ -41,8 +35,24 @@ void Player::place(int x, int y)
 	velocity.y = 0;
 }
 
+void Player::death()
+{
+	place(spawn.x, spawn.y);
+}
+
+void Player::levelClear()
+{
+	*levelCleared = true;
+	up    = false;
+	down  = false;
+	left  = false;
+	right = false;
+}
+
 void Player::updateInput()
 {
+	if (*levelCleared) { return; }
+
 	using key = sf::Keyboard;
 
 	if (pressing(key::W) || pressing(key::Up))
@@ -72,7 +82,7 @@ void Player::updateInput()
 
 	if (pressing(key::R))
 	{
-		place(spawn.x, spawn.y);
+		death();
 	}
 }
 
@@ -86,7 +96,7 @@ void Player::handleInput()
 	{
 		velocity.x += acceleration;
 	}
-	else
+	else if (onGround && !onIce)
 	{
 		if (velocity.x > 0)
 		{
@@ -150,14 +160,7 @@ void Player::handleJump()
 	if (jumpTimer > 0)
 	{
 		velocity.y = -jumpForce;
-		if (!jump)
-		{
-			jumpTimer = 0;
-		}
-		else
-		{
-			jumpTimer--;
-		}
+		jumpTimer--;
 	}
 
 	if (!jump)
@@ -177,32 +180,83 @@ void Player::updatePosition()
 
 void Player::handleCollision()
 {
+	onIce = false;
+
+	hitVerticalBounce   = false;
+	hitHorizontalBounce = false;
+
+	for (Collision collision : collisions)
+	{
+		sf::Vector3i tile = getTile(collision.position.x, collision.position.y);
+		int tileset = tile.x;
+		if (tile == sawbladeTile)
+		{
+			death();
+			return;
+		}
+		else if (tileset == Ice)
+		{
+			if (collision.direction == Down)
+			{
+				onIce = true;
+			}
+		}
+		else if (tileset == Bounce)
+		{
+			if (!hitVerticalBounce && (collision.direction == Up || collision.direction == Down))
+			{
+				if (collision.direction == Up && velocity.y > -baseBounce)
+				{
+					velocity.y = -baseBounce;
+				}
+				else if (collision.direction == Down && velocity.y < baseBounce)
+				{
+					velocity.y = baseBounce;
+				}
+				velocity.y *= -bounciness;
+				hitVerticalBounce = true;
+			}
+			else if (!hitHorizontalBounce && (collision.direction == Left || collision.direction == Right))
+			{
+				if (collision.direction == Left && velocity.x > -baseBounce)
+				{
+					velocity.x = -baseBounce;
+				}
+				else if (collision.direction == Right && velocity.x < baseBounce)
+				{
+					velocity.x = baseBounce;
+				}
+				velocity.x *= -bounciness;
+				hitHorizontalBounce = true;
+			}
+		}
+	}
+
 	if (hitUp)
 	{
 		jumpTimer = 0;
-	}
-	if (hitDown)
-	{
-		if (onGround)
+		preJumpTimer = 0;
+		postJumpTimer = 0;
+		if (jump)
 		{
+			jumped = true;
+			jumpedEarly = true;
+		}
+	}
+	if (hitDown && !hitVerticalBounce)
+	{
+		if (onGround) // if also touched ground last frame
+		{
+			jumpTimer = 0;
 			preJumpTimer = 0;
 			postJumpTimer = 0;
 		}
 		onGround = true;
 	}
-	else if (onGround == true) // if touched ground last frame but not current frame
+	else if (onGround) // if touched ground last frame but not current frame
 	{
 		postJumpTimer = postJumpFrames;
 		onGround = false;
-	}
-
-	for (sf::Vector2i collision : collisions)
-	{
-		if (getTile(collision.x, collision.y) == sawbladeTile)
-		{
-			death();
-			return;
-		}
 	}
 
 	if (position.y > mapSize.y * tilesize)
@@ -210,7 +264,7 @@ void Player::handleCollision()
 		death();
 		return;
 	}
-	else if (hitUp || hitDown)
+	else if (!hitVerticalBounce && (hitUp || hitDown))
 	{
 		velocity.y = 0;
 	}
@@ -226,16 +280,23 @@ void Player::handleCollision()
 		position.x = mapSize.x * tilesize - size.x;
 		velocity.x = 0;
 	}
-	else if (hitLeft || hitRight)
+	else if (!hitHorizontalBounce && (hitLeft || hitRight))
 	{
 		velocity.x = 0;
+	}
+
+	if (getTile(exit.x, exit.y) == exitTile
+	    &&
+	    getHitbox().intersects(sf::FloatRect(exit.x * tilesize + 6, exit.y * tilesize + 6, 4, 4)))
+	{
+		levelClear();
 	}
 }
 
 void Player::updateSprite()
 {}
 
-void Player::draw(sf::RenderWindow *window, sf::FloatRect viewPort, bool paused)
+void Player::draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused)
 {
 	animation.update();
 
@@ -260,25 +321,25 @@ void Player::draw(sf::RenderWindow *window, sf::FloatRect viewPort, bool paused)
 
 	sprite->setTextureRect(sf::IntRect(size.x * animation.frame, size.y * animationState, size.x, size.y));
 
-	if (!getHitbox().intersects(viewPort))
+	if (!getHitbox().intersects(viewport))
 	{
 		sf::Vector2f spritePosition = position;
 
-		if (position.y + size.y <= viewPort.top)
+		if (position.y + size.y <= viewport.top)
 		{
-			spritePosition.y = viewPort.top;
+			spritePosition.y = viewport.top;
 		}
-		else if (position.y >= viewPort.top + viewPort.height)
+		else if (position.y >= viewport.top + viewport.height)
 		{
-			spritePosition.y = viewPort.top + viewPort.height - size.y;
+			spritePosition.y = viewport.top + viewport.height - size.y;
 		}
-		if (position.x + size.x <= viewPort.left)
+		if (position.x + size.x <= viewport.left)
 		{
-			spritePosition.x = viewPort.left;
+			spritePosition.x = viewport.left;
 		}
-		else if (position.x >= viewPort.left + viewPort.width)
+		else if (position.x >= viewport.left + viewport.width)
 		{
-			spritePosition.x = viewPort.left + viewPort.width - size.x;
+			spritePosition.x = viewport.left + viewport.width - size.x;
 		}
 
 		offscreenCircle->setPosition(spritePosition.x - offscreenCircle->getTexture()->getSize().x / 2 + size.x / 2, spritePosition.y - offscreenCircle->getTexture()->getSize().y / 2 + size.y / 2);
