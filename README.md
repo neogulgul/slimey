@@ -1,1 +1,1 @@
-
+![](./assets/textures/slimey.png)

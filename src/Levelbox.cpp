@@ -30,7 +30,7 @@ void Levelbox::action()
 	}
 	else
 	{
-		int index = std::atoi(string.c_str());
+		int index = std::atoi(string.c_str()) - 1;
 		mapVector defaultMap = *defaultMaps[index];
 
 		level->loadMap(defaultMap);

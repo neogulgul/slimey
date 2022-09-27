@@ -28,6 +28,11 @@ Player::Player(sf::Sprite *_sprite, sf::Sprite *_offscreenCircle, mapVector *_ma
 	place(spawn.x, spawn.y);
 }
 
+void Player::death()
+{
+	place(spawn.x, spawn.y);
+}
+
 void Player::place(int x, int y)
 {
 	position.x = x * (int)tilesize + 1;
@@ -131,29 +136,35 @@ void Player::handleJump()
 		postJumpTimer--;
 	}
 
-	std::cout << jumpedEarly << "\n";
-
-	if (jump)
+	if (!onGround && jump && !jumpedEarly && preJumpTimer == 0)
 	{
-		if (onGround && !jumped && !jumpedEarly)
+		preJumpTimer = preJumpFrames;
+	}
+
+	if (onGround && (preJumpTimer > 0 || jump && !jumped && !jumpedEarly) || !onGround && jump && !jumped && postJumpTimer > 0)
+	{
+		jumped = true;
+		jumpTimer = jumpFrames;
+	}
+
+	if (jumpTimer > 0)
+	{
+		velocity.y = -jumpForce;
+		if (!jump)
 		{
-			jumped = true;
-			// jumpedEarly = false;
-			jumpTimer = jumpFrames;
+			jumpTimer = 0;
 		}
-		if (!onGround && !jumpedEarly && preJumpTimer == 0)
-		{
-			preJumpTimer = preJumpFrames;
-		}
-		if (jumpTimer > 0)
+		else
 		{
 			jumpTimer--;
-			velocity.y = -jumpForce;
 		}
 	}
-	else
+
+	if (!jump)
 	{
 		jumpTimer = 0;
+		jumped = false;
+		jumpedEarly = false;
 	}
 }
 
@@ -172,24 +183,32 @@ void Player::handleCollision()
 	}
 	if (hitDown)
 	{
-		onGround = true;
-		preJumpTimer = 0;
-		postJumpTimer = 0;
-		if (!jump)
+		if (onGround)
 		{
-			jumped = false;
-			jumpedEarly = false;
+			preJumpTimer = 0;
+			postJumpTimer = 0;
 		}
+		onGround = true;
 	}
-	else if (onGround == true) // if touched ground last frame
+	else if (onGround == true) // if touched ground last frame but not current frame
 	{
 		postJumpTimer = postJumpFrames;
 		onGround = false;
 	}
 
+	for (sf::Vector2i collision : collisions)
+	{
+		if (getTile(collision.x, collision.y) == sawbladeTile)
+		{
+			death();
+			return;
+		}
+	}
+
 	if (position.y > mapSize.y * tilesize)
 	{
-		// todo: death
+		death();
+		return;
 	}
 	else if (hitUp || hitDown)
 	{
@@ -213,7 +232,10 @@ void Player::handleCollision()
 	}
 }
 
-void Player::draw(sf::RenderWindow *window, sf::FloatRect viewPort)
+void Player::updateSprite()
+{}
+
+void Player::draw(sf::RenderWindow *window, sf::FloatRect viewPort, bool paused)
 {
 	animation.update();
 

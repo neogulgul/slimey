@@ -30,7 +30,7 @@ struct Player : Collider
 	bool jumping       = false;
 	bool jumpedEarly   = false;
 	int jumpTimer      = 0;
-	int jumpFrames     = 12;
+	int jumpFrames     = 11;
 	int preJumpTimer   = 0;
 	int preJumpFrames  = 10;
 	int postJumpTimer  = 0;
@@ -57,11 +57,13 @@ struct Player : Collider
 	Player();
 	Player(sf::Sprite *_sprite, sf::Sprite *_offscreenCircle, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit);
 
+	void death();
 	void place(int x, int y);
 	void updateInput();
 	void handleInput();
 	void handleJump();
 	virtual void updatePosition();
 	virtual void handleCollision();
-	virtual void draw(sf::RenderWindow *window, sf::FloatRect viewPort);
+	virtual void updateSprite();
+	virtual void draw(sf::RenderWindow *window, sf::FloatRect viewPort, bool paused);
 };

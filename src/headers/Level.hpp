@@ -26,6 +26,8 @@ struct Level
 	sf::RectangleShape pauseShape;
 	sf::Keyboard::Key  pause = sf::Keyboard::Escape;
 
+	bool cleared = false;
+
 	bool paused       = false;
 	bool pressedPause = false;
 

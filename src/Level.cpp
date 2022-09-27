@@ -18,8 +18,8 @@ Level::Level(sf::RenderWindow *_window, sf::View *_view, Sprites *_sprites)
 
 void Level::updateViewPort()
 {
-	viewPort.left   = view->getCenter().x - viewWidth  / 2;
-	viewPort.top    = view->getCenter().y - viewHeight / 2;
+	viewPort.left   = view->getCenter().x - viewWidth  * 0.5;
+	viewPort.top    = view->getCenter().y - viewHeight * 0.5;
 	viewPort.width  = viewWidth;
 	viewPort.height = viewHeight;
 }
@@ -105,6 +105,8 @@ void Level::drawMap()
 
 void Level::update()
 {
+	if (!window->hasFocus()) { return; }
+
 	if (pressing(pause))
 	{
 		if (!pressedPause)
@@ -128,6 +130,6 @@ void Level::draw()
 {
 	if (!paused) { sawbladeAnimation.update(); }
 	drawMap();
-	player.draw(window, viewPort);
+	player.draw(window, viewPort, paused);
 	if (paused) { window->draw(pauseShape); }
 }

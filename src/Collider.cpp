@@ -4,6 +4,16 @@
 
 #include "headers/Collider.hpp"
 
+sf::FloatRect getTileHitbox(sf::Vector3i tile, sf::Vector2i tileCoord)
+{
+	if (tile == sawbladeTile)
+	{
+		return sf::FloatRect(tileCoord.x * tilesize + 1, tileCoord.y * tilesize + 1, tilesize - 2, tilesize - 2);
+	}
+
+	return sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
+}
+
 Collider::Collider()
 {}
 
@@ -14,9 +24,20 @@ Collider::Collider(sf::Sprite *_sprite, mapVector *_map, sf::Vector2u _mapSize)
 	mapSize = _mapSize;
 }
 
+sf::Vector3i Collider::getTile(unsigned int x, unsigned int y)
+{
+	return map->at(x).at(y);
+}
+
 sf::FloatRect Collider::getHitbox()
 {
 	return sf::FloatRect(position.x, position.y, size.x, size.y);
+}
+
+void Collider::setPosition(float x, float y)
+{
+	position.x = x;
+	position.y = y;
 }
 
 void Collider::updatePosition()
@@ -24,15 +45,20 @@ void Collider::updatePosition()
 	position += velocity;
 }
 
-bool Collider::validCollisionTile(sf::Vector2i coord)
+bool Collider::validCoord(sf::Vector2i coord)
 {
-	if (coord.x < 0 || coord.x >= mapSize.x
-	    ||
-	    coord.y < 0 || coord.y >= mapSize.y)
+	if (coord.x >= 0 && coord.x < mapSize.x
+	    &&
+	    coord.y >= 0 && coord.y < mapSize.y)
 	{
-		return false;
+		return true;
 	}
 
+	return false;
+}
+
+bool Collider::validCollisionTile(sf::Vector2i coord)
+{
 	sf::Vector3i tile = map->at(coord.x).at(coord.y);
 	int tileset = tile.x;
 
@@ -58,6 +84,8 @@ void Collider::checkCollision()
 	hitDown  = false;
 	hitLeft  = false;
 	hitRight = false;
+
+	collisions.clear();
 
 	while (delta.x != 0 || delta.y != 0)
 	{
@@ -97,7 +125,8 @@ void Collider::checkCollision()
 				{
 					tileCoord.x = colliderCoord.x + x;
 					tileCoord.y = colliderCoord.y;
-					tileHitbox = sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
+					if (!validCoord(tileCoord)) { continue; }
+					tileHitbox = getTileHitbox(getTile(tileCoord.x, tileCoord.y), tileCoord);
 
 					if (tileCoord.x == 0)
 					{
@@ -111,6 +140,7 @@ void Collider::checkCollision()
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
 						hitUp = true;
+						collisions.push_back(tileCoord);
 						position.y = tileCoord.y * tilesize + tilesize;
 					}
 
@@ -132,7 +162,8 @@ void Collider::checkCollision()
 				{
 					tileCoord.x = colliderCoord.x + x;
 					tileCoord.y = colliderCoord.y + colliderIntersections.y;
-					tileHitbox = sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
+					if (!validCoord(tileCoord)) { continue; }
+					tileHitbox = getTileHitbox(getTile(tileCoord.x, tileCoord.y), tileCoord);
 
 					if (tileCoord.x == 0)
 					{
@@ -147,6 +178,7 @@ void Collider::checkCollision()
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
 						hitDown = true;
+						collisions.push_back(tileCoord);
 						position.y = tileCoord.y * tilesize - size.y;
 					}
 
@@ -204,10 +236,13 @@ void Collider::checkCollision()
 				{
 					tileCoord.x = colliderCoord.x;
 					tileCoord.y = colliderCoord.y + y;
-					tileHitbox = sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
+					if (!validCoord(tileCoord)) { continue; }
+					tileHitbox = getTileHitbox(getTile(tileCoord.x, tileCoord.y), tileCoord);
+
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
 						hitLeft = true;
+						collisions.push_back(tileCoord);
 						position.x = tileCoord.x * tilesize + tilesize;
 					}
 				}
@@ -219,10 +254,13 @@ void Collider::checkCollision()
 				{
 					tileCoord.x = colliderCoord.x + colliderIntersections.x;
 					tileCoord.y = colliderCoord.y + y;
-					tileHitbox = sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
+					if (!validCoord(tileCoord)) { continue; }
+					tileHitbox = getTileHitbox(getTile(tileCoord.x, tileCoord.y), tileCoord);
+
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
 						hitRight = true;
+						collisions.push_back(tileCoord);
 						position.x = tileCoord.x * tilesize - size.x;
 					}
 				}
@@ -246,10 +284,16 @@ void Collider::update()
 	handleCollision();
 }
 
-void Collider::draw(sf::RenderWindow *window, sf::FloatRect viewPort)
+void Collider::updateSprite()
+{}
+
+void Collider::draw(sf::RenderWindow *window, sf::FloatRect viewPort, bool paused)
 {
 	if (!getHitbox().intersects(viewPort)) { return; }
+	if (!paused)
+	{
+		updateSprite();
+	}
 
-	sprite->setPosition(position);
 	window->draw(*sprite);
 }

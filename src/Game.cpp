@@ -57,7 +57,7 @@ void Game::createLevelboxes()
 
 	sf::Vector2f position;
 
-	for (unsigned int i = 0; i < defaultMaps.size(); i++)
+	for (unsigned int i = 1; i <= defaultMaps.size(); i++)
 	{
 		unsigned int columns;
 
@@ -113,10 +113,17 @@ void Game::createMenu()
 			menu.push_back(new Menubox(MainMenu, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
 			break;
 
+		case Editor:
+			menu.push_back(new Menubox(MainMenu, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
+			break;
+
 		case StoryLevels:
 			menu.push_back(new Menubox(MainMenu, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
-
 			createLevelboxes();
+			break;
+		
+		case CustomLevels:
+			menu.push_back(new Menubox(MainMenu, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
 			break;
 
 		case LevelPlay:
