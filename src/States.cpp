@@ -2,6 +2,8 @@
 
 #include "headers/Game.hpp"
 
+#define amountOfRainbowSlimeys 100
+
 RainbowSlimey::RainbowSlimey(sf::Color _color, sf::Vector2f _position, float _scale, int _rotation, int _speed)
 {
 	color    = _color;
@@ -53,7 +55,7 @@ void Game::updateMainMenu()
 		rainbowSlimeys.clear();
 	}
 
-	while (rainbowSlimeys.size() < 100)
+	while (rainbowSlimeys.size() < amountOfRainbowSlimeys)
 	{
 		sf::Vector2f position(position_dist(rng), position_dist(rng));
 		if (!changedState)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <random>
+#include <sstream>
 
 #include "DefaultMaps.hpp"
 #include "Global.hpp"
@@ -34,6 +35,12 @@ struct Game
 	sf::FloatRect viewport;
 
 	sf::Cursor cursor;
+
+	float frameUpdateDelta = 0.1; // the time between FPS counter update, in seconds
+	sf::Clock frameUpdateClock;   // used to only update the FPS counter after a certain amount of time has passed, to make it more readable
+	sf::Clock frameClock;         // used to calculate FPS
+	sf::Clock displayClock;       // the time it takes the window to display everything drawn which is then subtracted when calculating FPS
+	std::stringstream FPS;
 
 	std::mt19937 rng;
 
@@ -71,6 +78,9 @@ struct Game
 	void drawMenu();
 
 	void updateCursor();
+
+	void updateFPS();
+	void drawFPS();
 
 	void updateSplashScreen();
 	void updateExitScreen();

@@ -104,6 +104,9 @@ void Level::drawMap()
 	{
 		for (unsigned int y = 0; y < mapSize.y; y++)
 		{
+			// only allowing tiles seen in view to be drawn
+			if (!viewport->intersects(sf::FloatRect(x * tilesize, y * tilesize, tilesize, tilesize))) { continue; }
+
 			sf::Vector3i tile = map.at(x).at(y);
 			int tileset = tile.x;
 			if (tileset != 0)

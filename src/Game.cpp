@@ -213,6 +213,23 @@ void Game::updateCursor()
 
 
 
+void Game::updateFPS()
+{
+	if (frameUpdateClock.getElapsedTime().asSeconds() >= frameUpdateDelta) {
+		frameUpdateClock.restart();
+		FPS.str("");
+		FPS << "FPS: " << std::floor(1 / (frameClock.getElapsedTime().asSeconds() - displayClock.getElapsedTime().asSeconds()));
+	}
+	frameClock.restart();
+}
+
+void Game::drawFPS()
+{
+	text.draw(FPS.str(), Start, Start, relativeViewPosition(*view, {0, 0}));
+}
+
+
+
 /*
 moved these to States.cpp
 */
@@ -254,6 +271,7 @@ moved these to States.cpp
 
 void Game::update()
 {
+	updateFPS();
 	processKeyboardInput();
 	processMouseInput();
 	if (transition.transitioning)
@@ -294,4 +312,6 @@ void Game::draw()
 	{
 		transition.draw();
 	}
+	drawFPS();
+	displayClock.restart();
 }

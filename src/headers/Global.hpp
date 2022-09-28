@@ -13,12 +13,13 @@ const unsigned int tilesize        = 16;
 const unsigned int horizontalTiles = 16;
 const unsigned int verticalTiles   = 16;
 
-const unsigned int viewWidth    = tilesize * horizontalTiles;
-const unsigned int viewHeight   = tilesize * verticalTiles;
-const unsigned int windowWidth  = viewWidth  * 2;
-const unsigned int windowHeight = viewHeight * 2;
+const unsigned int viewWidth       = tilesize * horizontalTiles;
+const unsigned int viewHeight      = tilesize * verticalTiles;
+const unsigned int windowViewScale = 2;
+const unsigned int windowWidth     = viewWidth  * windowViewScale;
+const unsigned int windowHeight    = viewHeight * windowViewScale;
 
-const unsigned int FPS = 60;
+const unsigned int targetFPS = 60;
 
 const float GRAVITY = 0.16;
 
