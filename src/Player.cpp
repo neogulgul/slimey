@@ -127,6 +127,9 @@ void Player::handleInput()
 		velocity.y += GRAVITY;
 	}
 
+	if (velocity.x > -0.1 && velocity.x < 0.1) { velocity.x = 0; }
+	if (velocity.y > -0.1 && velocity.y < 0.1) { velocity.y = 0; }
+
 	velocity.x = std::clamp(velocity.x, -terminalVelocity.x, terminalVelocity.x);
 	velocity.y = std::clamp(velocity.y, -terminalVelocity.y, terminalVelocity.y);
 }
@@ -146,12 +149,19 @@ void Player::handleJump()
 		postJumpTimer--;
 	}
 
-	if (!onGround && jump && !jumpedEarly && preJumpTimer == 0)
+	if (!onGround && jump && !jumped && !jumpedEarly && preJumpTimer == 0)
 	{
 		preJumpTimer = preJumpFrames;
 	}
 
-	if (onGround && (preJumpTimer > 0 || jump && !jumped && !jumpedEarly) || !onGround && jump && !jumped && postJumpTimer > 0)
+	if (!jump)
+	{
+		jumpTimer = 0;
+		jumped = false;
+		jumpedEarly = false;
+	}
+
+	if (onGround && (jump && !jumped && !jumpedEarly || preJumpTimer > 0) || !onGround && jump && !jumped && postJumpTimer > 0)
 	{
 		jumped = true;
 		jumpTimer = jumpFrames;
@@ -161,13 +171,6 @@ void Player::handleJump()
 	{
 		velocity.y = -jumpForce;
 		jumpTimer--;
-	}
-
-	if (!jump)
-	{
-		jumpTimer = 0;
-		jumped = false;
-		jumpedEarly = false;
 	}
 }
 
@@ -235,13 +238,6 @@ void Player::handleCollision()
 	if (hitUp)
 	{
 		jumpTimer = 0;
-		preJumpTimer = 0;
-		postJumpTimer = 0;
-		if (jump)
-		{
-			jumped = true;
-			jumpedEarly = true;
-		}
 	}
 	if (hitDown && !hitVerticalBounce)
 	{
@@ -255,7 +251,10 @@ void Player::handleCollision()
 	}
 	else if (onGround) // if touched ground last frame but not current frame
 	{
-		postJumpTimer = postJumpFrames;
+		if (!jump)
+		{
+			postJumpTimer = postJumpFrames;
+		}
 		onGround = false;
 	}
 

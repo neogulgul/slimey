@@ -4,11 +4,12 @@
 
 Level::Level() {}
 
-Level::Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Sprites *_sprites, Transition *_transition)
+Level::Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Audio *_audio, Sprites *_sprites, Transition *_transition)
 {
 	window     = _window;
 	view       = _view;
 	viewport   = _viewport;
+	audio      = _audio;
 	sprites    = _sprites;
 	transition = _transition;
 
@@ -143,8 +144,6 @@ void Level::drawMap()
 	}
 }
 
-#include <iostream>
-
 void Level::update()
 {
 	if (!window->hasFocus()) { return; }
@@ -164,7 +163,10 @@ void Level::update()
 
 	if (paused) { return; }
 
+	bool playerJumpedLastFrame = player.jumped;
 	player.update();
+	if (player.jumped && !playerJumpedLastFrame) { audio->jump.play(); }
+	if (player.hitVerticalBounce || player.hitHorizontalBounce) { audio->bounce.play(); }
 	if (!loaded)
 	{
 		loaded = true;

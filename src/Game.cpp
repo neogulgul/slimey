@@ -14,7 +14,7 @@ Game::Game(sf::RenderWindow *_window, sf::View *_view)
 	viewport.width  = viewWidth;
 	viewport.height = viewHeight;
 
-	level      = Level(window, view, &viewport, &sprites, &transition);
+	level      = Level(window, view, &viewport, &audio, &sprites, &transition);
 	text       = Text(window);
 	transition = Transition(window, view, state);
 
@@ -174,6 +174,7 @@ void Game::updateMenu()
 		{
 			if (leftClick)
 			{
+				audio.click.play();
 				box->action();
 				transition.to(box->destination);
 			}

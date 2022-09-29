@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Animation.hpp"
+#include "Audio.hpp"
 #include "DefaultMaps.hpp"
 #include "Global.hpp"
 #include "Player.hpp"
@@ -13,6 +14,7 @@ struct Level
 	sf::View *view;
 	sf::FloatRect *viewport;
 
+	Audio *audio;
 	Sprites *sprites;
 	Transition *transition;
 
@@ -39,7 +41,7 @@ struct Level
 	Animation sawbladeAnimation;
 
 	Level();
-	Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Sprites *_sprites, Transition *_transition);
+	Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Audio *_audio, Sprites *_sprites, Transition *_transition);
 
 	void updateView(bool instant);
 	void reset();

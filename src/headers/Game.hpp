@@ -3,6 +3,7 @@
 #include <random>
 #include <sstream>
 
+#include "Audio.hpp"
 #include "DefaultMaps.hpp"
 #include "Global.hpp"
 #include "Menubox.hpp"
@@ -44,6 +45,7 @@ struct Game
 
 	std::mt19937 rng;
 
+	Audio audio;
 	Level level;
 	Sprites sprites;
 	Text text;
@@ -103,7 +105,6 @@ struct Game
 	void drawLevelPlay();
 	void drawLevelClear();
 	void drawState();
-	
 
 	void update();
 	void draw();

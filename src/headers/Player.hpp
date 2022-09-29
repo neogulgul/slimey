@@ -32,9 +32,9 @@ struct Player : Collider
 	int jumpTimer      = 0;
 	int jumpFrames     = 11;
 	int preJumpTimer   = 0;
-	int preJumpFrames  = 10;
+	int preJumpFrames  = 10; /* jump buffer */
 	int postJumpTimer  = 0;
-	int postJumpFrames = 5;
+	int postJumpFrames = 5; /* coyote time */
 
 	bool onGround = false;
 	bool onIce    = false;
