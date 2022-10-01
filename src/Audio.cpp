@@ -11,9 +11,9 @@ Audio::Audio()
 
 	jumpBuffer.loadFromFile("assets/audio/sfx/jump.wav");
 	jump.setBuffer(jumpBuffer);
-	jump.setVolume(30);
+	jump.setVolume(20);
 
 	bounceBuffer.loadFromFile("assets/audio/sfx/bounce.wav");
 	bounce.setBuffer(bounceBuffer);
-	bounce.setVolume(60);
+	bounce.setVolume(10);
 }

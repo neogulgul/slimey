@@ -95,7 +95,7 @@ void Level::loadMap(mapVector _map)
 		}
 	}
 
-	player = Player(&sprites->slimeyFrames, &sprites->offscreenCircle, &cleared, &map, mapSize, spawn, exit);
+	player = Player(&sprites->slimeyFrames, &sprites->slimeyDeath, &sprites->offscreenCircle, &cleared, &map, mapSize, spawn, exit);
 }
 
 void Level::drawMap()

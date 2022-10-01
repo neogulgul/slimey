@@ -36,9 +36,9 @@ struct Level
 	bool paused       = false;
 	bool pressedPause = false;
 
-	int sawbladeFrameCount    = 8;
-	int sawbladeFrameDuration = 2;
 	Animation sawbladeAnimation;
+	int sawbladeFrameCount    = 8;
+	int sawbladeFrameDuration = 1;
 
 	Level();
 	Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Audio *_audio, Sprites *_sprites, Transition *_transition);

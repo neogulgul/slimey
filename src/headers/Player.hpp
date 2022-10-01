@@ -4,6 +4,7 @@
 
 struct Player : Collider
 {
+	sf::Sprite *slimeyDeath;
 	sf::Sprite *offscreenCircle;
 	bool *levelCleared;
 
@@ -13,10 +14,8 @@ struct Player : Collider
 	int width  = 14;
 	int height = 12;
 
-	sf::Vector2f terminalVelocity;
-
-	float horizontalTerminalVelocity = 2.0;
-	float verticalTerminalVelocity   = 10.0;
+	float maxMoveVelocity  = 2.0;
+	float terminalVelocity = 10.0;
 	float acceleration = 0.2;
 	float deceleration = 0.3;
 
@@ -31,10 +30,12 @@ struct Player : Collider
 	bool jumpedEarly   = false;
 	int jumpTimer      = 0;
 	int jumpFrames     = 11;
+	// jump buffer
 	int preJumpTimer   = 0;
-	int preJumpFrames  = 10; /* jump buffer */
+	int preJumpFrames  = 10;
+	// coyote time
 	int postJumpTimer  = 0;
-	int postJumpFrames = 5; /* coyote time */
+	int postJumpFrames = 5;
 
 	bool onGround = false;
 	bool onIce    = false;
@@ -43,8 +44,6 @@ struct Player : Collider
 	float baseBounce         = 2.0; // the minimum amount of velocity after bounce
 	bool hitVerticalBounce   = false;
 	bool hitHorizontalBounce = false;
-
-	bool alive = true;
 
 	enum AnimationState
 	{
@@ -56,11 +55,18 @@ struct Player : Collider
 	};
 	AnimationState animationState;
 	Animation animation;
-	int animationFrameCount    = 2;
-	int animationFrameDuration = 15;
+	unsigned int animationFrameCount    = 2;
+	unsigned int animationFrameDuration = 15;
+
+	Animation deathAnimation;
+	unsigned int deathAnimationFrameCount    = 8;
+	unsigned int deathAnimationFrameDuration = 3;
+
+	bool alive        = false;
+	bool resurrecting = false;
 
 	Player();
-	Player(sf::Sprite *_sprite, sf::Sprite *_offscreenCircle, bool *_levelCleared, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit);
+	Player(sf::Sprite *_sprite, sf::Sprite *_slimeyDeath, sf::Sprite *_offscreenCircle, bool *_levelCleared, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit);
 
 	void place(int x, int y);
 	void death();

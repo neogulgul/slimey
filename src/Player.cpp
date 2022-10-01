@@ -5,9 +5,10 @@
 Player::Player()
 {}
 
-Player::Player(sf::Sprite *_sprite, sf::Sprite *_offscreenCircle, bool *_levelCleared, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit)
+Player::Player(sf::Sprite *_sprite, sf::Sprite *_slimeyDeath, sf::Sprite *_offscreenCircle, bool *_levelCleared, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit)
 : Collider(_sprite, _map, _mapSize)
 {
+	slimeyDeath = _slimeyDeath;
 	offscreenCircle = _offscreenCircle;
 	levelCleared = _levelCleared;
 
@@ -17,14 +18,13 @@ Player::Player(sf::Sprite *_sprite, sf::Sprite *_offscreenCircle, bool *_levelCl
 	size.x = width;
 	size.y = height;
 
-	terminalVelocity.x = horizontalTerminalVelocity;
-	terminalVelocity.y =   verticalTerminalVelocity;
-
-	animation = Animation(animationFrameCount, animationFrameDuration);
+	animation      = Animation(animationFrameCount, animationFrameDuration);
+	deathAnimation = Animation(deathAnimationFrameCount, deathAnimationFrameDuration);
 
 	sprite->setTextureRect(sf::IntRect(0, 0, size.x, size.y));
 
 	place(spawn.x, spawn.y);
+	alive = true;
 }
 
 void Player::place(int x, int y)
@@ -37,7 +37,8 @@ void Player::place(int x, int y)
 
 void Player::death()
 {
-	place(spawn.x, spawn.y);
+	alive = false;
+	// place(spawn.x, spawn.y);
 }
 
 void Player::levelClear()
@@ -88,13 +89,15 @@ void Player::updateInput()
 
 void Player::handleInput()
 {
-	if (left && !right && !down)
+	if (left && !right && !down && velocity.x >= -maxMoveVelocity)
 	{
 		velocity.x -= acceleration;
+		if (velocity.x < -maxMoveVelocity) { velocity.x = -maxMoveVelocity; }
 	}
-	else if (right && !left && !down)
+	else if (right && !left && !down && velocity.x <= maxMoveVelocity)
 	{
 		velocity.x += acceleration;
+		if (velocity.x > maxMoveVelocity) { velocity.x = maxMoveVelocity; }
 	}
 	else if (onGround && !onIce)
 	{
@@ -127,11 +130,12 @@ void Player::handleInput()
 		velocity.y += GRAVITY;
 	}
 
+	// preventing unnecessarily small numbers
 	if (velocity.x > -0.1 && velocity.x < 0.1) { velocity.x = 0; }
 	if (velocity.y > -0.1 && velocity.y < 0.1) { velocity.y = 0; }
 
-	velocity.x = std::clamp(velocity.x, -terminalVelocity.x, terminalVelocity.x);
-	velocity.y = std::clamp(velocity.y, -terminalVelocity.y, terminalVelocity.y);
+	velocity.x = std::clamp(velocity.x, -terminalVelocity, terminalVelocity);
+	velocity.y = std::clamp(velocity.y, -terminalVelocity, terminalVelocity);
 }
 
 void Player::handleJump()
@@ -176,6 +180,7 @@ void Player::handleJump()
 
 void Player::updatePosition()
 {
+	if (!alive) { return; }
 	updateInput();
 	handleInput();
 	Collider::updatePosition();
@@ -260,6 +265,7 @@ void Player::handleCollision()
 
 	if (position.y > mapSize.y * tilesize)
 	{
+		position.y = mapSize.y * tilesize - size.y / 2;
 		death();
 		return;
 	}
@@ -293,63 +299,112 @@ void Player::handleCollision()
 }
 
 void Player::updateSprite()
-{}
-
-void Player::draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused)
 {
-	animation.update();
-
-	animationState = Idle;
-
-	if (down)
+	if (alive)
 	{
-		animationState = CrouchingDown;
-	}
-	else if (left && !right)
-	{
-		animationState = MovingLeft;
-	}
-	else if (right && !left)
-	{
-		animationState = MovingRight;
-	}
-	else if (up)
-	{
-		animationState = LookingUp;
-	}
+		animation.update();
 
-	sprite->setTextureRect(sf::IntRect(size.x * animation.frame, size.y * animationState, size.x, size.y));
+		animationState = Idle;
 
-	if (!getHitbox().intersects(viewport))
-	{
-		sf::Vector2f spritePosition = position;
-
-		if (position.y + size.y <= viewport.top)
+		if (down)
 		{
-			spritePosition.y = viewport.top;
+			animationState = CrouchingDown;
 		}
-		else if (position.y >= viewport.top + viewport.height)
+		else if (left && !right)
 		{
-			spritePosition.y = viewport.top + viewport.height - size.y;
+			animationState = MovingLeft;
 		}
-		if (position.x + size.x <= viewport.left)
+		else if (right && !left)
 		{
-			spritePosition.x = viewport.left;
+			animationState = MovingRight;
 		}
-		else if (position.x >= viewport.left + viewport.width)
+		else if (up)
 		{
-			spritePosition.x = viewport.left + viewport.width - size.x;
+			animationState = LookingUp;
 		}
 
-		offscreenCircle->setPosition(spritePosition.x - offscreenCircle->getTexture()->getSize().x / 2 + size.x / 2, spritePosition.y - offscreenCircle->getTexture()->getSize().y / 2 + size.y / 2);
-		window->draw(*offscreenCircle);
-
-		sprite->setPosition(spritePosition);
+		sprite->setTextureRect(sf::IntRect(size.x * animation.frame, size.y * animationState, size.x, size.y));
 	}
 	else
 	{
-		sprite->setPosition(position);
-	}
+		bool lastFrameLastFrame = (deathAnimation.frame == deathAnimation.frameCount - 1);
 
-	window->draw(*sprite);
+		deathAnimation.update();
+
+		bool firstFrameThisFrame = (deathAnimation.frame == 0);
+
+		if (lastFrameLastFrame && firstFrameThisFrame)
+		{
+			if (resurrecting)
+			{
+				resurrecting = false;
+				alive = true;
+			}
+			else
+			{
+				place(spawn.x, spawn.y);
+				resurrecting = true;
+			}
+		}
+
+		if (resurrecting)
+		{
+			slimeyDeath->setTextureRect(sf::IntRect((deathAnimationFrameCount - 1 - deathAnimation.frame) * tilesize, 0, tilesize, tilesize));
+		}
+		else
+		{
+			slimeyDeath->setTextureRect(sf::IntRect(deathAnimation.frame * tilesize, 0, tilesize, tilesize));
+		}
+
+		slimeyDeath->setPosition({position.x + size.x / 2 - tilesize / 2, position.y + size.y / 2 - tilesize / 2});
+
+		if (alive) { deathAnimation.reset(); }
+	}
+}
+
+void Player::draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused)
+{
+	if (!paused)
+	{
+		updateSprite();
+	}
+	if (alive)
+	{
+		if (!getHitbox().intersects(viewport))
+		{
+			sf::Vector2f spritePosition = position;
+
+			if (position.y + size.y <= viewport.top)
+			{
+				spritePosition.y = viewport.top;
+			}
+			else if (position.y >= viewport.top + viewport.height)
+			{
+				spritePosition.y = viewport.top + viewport.height - size.y;
+			}
+			if (position.x + size.x <= viewport.left)
+			{
+				spritePosition.x = viewport.left;
+			}
+			else if (position.x >= viewport.left + viewport.width)
+			{
+				spritePosition.x = viewport.left + viewport.width - size.x;
+			}
+
+			offscreenCircle->setPosition(spritePosition.x - offscreenCircle->getTexture()->getSize().x / 2 + size.x / 2, spritePosition.y - offscreenCircle->getTexture()->getSize().y / 2 + size.y / 2);
+			window->draw(*offscreenCircle);
+
+			sprite->setPosition(spritePosition);
+		}
+		else
+		{
+			sprite->setPosition(position);
+		}
+
+		window->draw(*sprite);
+	}
+	else if (!(resurrecting && *levelCleared))
+	{
+		window->draw(*slimeyDeath);
+	}
 }

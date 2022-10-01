@@ -10,5 +10,6 @@ struct Animation
 	Animation();
 	Animation(unsigned int _frameCount, unsigned int _frameDuration = 1);
 
+	void reset();
 	void update();
 };
