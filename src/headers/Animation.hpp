@@ -10,6 +10,7 @@ struct Animation
 	Animation();
 	Animation(unsigned int _frameCount, unsigned int _frameDuration = 1);
 
+	bool onLastFrame();
 	void reset();
 	void update();
 };

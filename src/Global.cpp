@@ -20,18 +20,12 @@ void toggle(bool &boolean)
 
 bool pressing(sf::Keyboard::Key key)
 {
-	if (sf::Keyboard::isKeyPressed(key))
-	{ return true; }
-
-	return false;
+	return (sf::Keyboard::isKeyPressed(key));
 }
 
 bool pressing(sf::Mouse::Button button)
 {
-	if (sf::Mouse::isButtonPressed(button))
-	{ return true; }
-
-	return false;
+	return (sf::Mouse::isButtonPressed(button));
 }
 
 sf::Vector2f relativeViewPosition(sf::View view, sf::Vector2f position)

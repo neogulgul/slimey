@@ -297,11 +297,6 @@ void Game::update()
 		changedState = false;
 	}
 
-	if (changedState && lastState == LevelPlay)
-	{
-		level.reset();
-	}
-
 	lastState = state;
 }
 

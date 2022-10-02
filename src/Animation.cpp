@@ -11,6 +11,11 @@ Animation::Animation(unsigned int _frameCount, unsigned int _frameDuration)
 	if (frameDuration < 1) { frameDuration = 1; }
 }
 
+bool Animation::onLastFrame()
+{
+	return (frame == frameCount - 1 && timer == frameDuration - 1);
+}
+
 void Animation::reset()
 {
 	timer = 0;
@@ -20,13 +25,13 @@ void Animation::reset()
 void Animation::update()
 {
 	timer++;
-	if (timer % frameDuration == 0)
+	if (timer == frameDuration)
 	{
+		timer = 0;
 		frame++;
 	}
 	if (frame == frameCount)
 	{
-		timer = 0;
 		frame = 0;
 	}
 }

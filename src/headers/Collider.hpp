@@ -6,10 +6,10 @@
 
 struct Collision
 {
-	sf::Vector2i position;
 	Direction direction;
+	sf::Vector2i position;
 
-	Collision(sf::Vector2i _position, Direction _direction);
+	Collision(Direction _direction, sf::Vector2i _position);
 };
 
 struct Collider

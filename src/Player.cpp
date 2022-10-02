@@ -8,9 +8,9 @@ Player::Player()
 Player::Player(sf::Sprite *_sprite, sf::Sprite *_slimeyDeath, sf::Sprite *_offscreenCircle, bool *_levelCleared, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit)
 : Collider(_sprite, _map, _mapSize)
 {
-	slimeyDeath = _slimeyDeath;
+	slimeyDeath     = _slimeyDeath;
 	offscreenCircle = _offscreenCircle;
-	levelCleared = _levelCleared;
+	levelCleared    = _levelCleared;
 
 	spawn = _spawn;
 	exit  = _exit;
@@ -38,7 +38,6 @@ void Player::place(int x, int y)
 void Player::death()
 {
 	alive = false;
-	// place(spawn.x, spawn.y);
 }
 
 void Player::levelClear()
@@ -180,6 +179,11 @@ void Player::handleJump()
 
 void Player::updatePosition()
 {
+	if (resurrected)
+	{
+		alive       = true;
+		resurrected = false;
+	}
 	if (!alive) { return; }
 	updateInput();
 	handleInput();
@@ -338,7 +342,7 @@ void Player::updateSprite()
 			if (resurrecting)
 			{
 				resurrecting = false;
-				alive = true;
+				resurrected  = true;
 			}
 			else
 			{
@@ -355,8 +359,6 @@ void Player::updateSprite()
 		{
 			slimeyDeath->setTextureRect(sf::IntRect(deathAnimation.frame * tilesize, 0, tilesize, tilesize));
 		}
-
-		slimeyDeath->setPosition({position.x + size.x / 2 - tilesize / 2, position.y + size.y / 2 - tilesize / 2});
 
 		if (alive) { deathAnimation.reset(); }
 	}
@@ -400,11 +402,11 @@ void Player::draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused)
 		{
 			sprite->setPosition(position);
 		}
-
 		window->draw(*sprite);
 	}
 	else if (!(resurrecting && *levelCleared))
 	{
+		slimeyDeath->setPosition({position.x + size.x / 2 - tilesize / 2, position.y + size.y / 2 - tilesize / 2});
 		window->draw(*slimeyDeath);
 	}
 }

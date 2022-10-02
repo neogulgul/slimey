@@ -19,46 +19,16 @@ Level::Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewpor
 	sawbladeAnimation = Animation(sawbladeFrameCount, sawbladeFrameDuration);
 }
 
-void Level::updateView(bool instant = false)
+void Level::reset()
 {
-	if (instant)
+	turretTimer = 0;
+	for (Bullet &bullet : bullets)
 	{
-		view->setCenter(player.getCenter());
-	}
-	else
-	{
-		sf::Vector2f start       = view->getCenter();
-		sf::Vector2f target      = player.getCenter();
-		sf::Vector2f delta       = target - start;
-		sf::Vector2f distance    = {delta.x * 0.1f, delta.y * 0.1f};
-		sf::Vector2f destination = start + distance;
-
-		// limiting view horizontally
-		if (destination.x < viewWidth * 0.5)
-		{
-			destination.x = viewWidth * 0.5;
-		}
-		else
-		if (destination.x > mapSize.x * tilesize - viewWidth * 0.5)
-		{
-			destination.x = mapSize.x * tilesize - viewWidth * 0.5;
-		}
-		// limiting view vertically
-		if (destination.y < viewHeight * 0.5)
-		{
-			destination.y = viewHeight * 0.5;
-		}
-		else
-		if (destination.y > mapSize.y * tilesize - viewHeight * 0.5)
-		{
-			destination.y = mapSize.y * tilesize - viewHeight * 0.5;
-		}
-
-		view->setCenter(destination);
+		bullet.explode();
 	}
 }
 
-void Level::reset()
+void Level::loadMap(mapVector _map)
 {
 	spawn = {0, 0};
 	exit  = {0, 0};
@@ -68,10 +38,12 @@ void Level::reset()
 
 	paused       = false;
 	pressedPause = false;
-}
 
-void Level::loadMap(mapVector _map)
-{
+	turretTimer = 0;
+
+	turrets.clear();
+	bullets.clear();
+
 	map = _map;
 
 	mapSize.x = map.size();
@@ -91,6 +63,22 @@ void Level::loadMap(mapVector _map)
 			{
 				exit.x = x;
 				exit.y = y;
+			}
+			else if (tile == turretUp)
+			{
+				turrets.push_back(Turret(Up, {x, y}));
+			}
+			else if (tile == turretDown)
+			{
+				turrets.push_back(Turret(Down, {x, y}));
+			}
+			else if (tile == turretLeft)
+			{
+				turrets.push_back(Turret(Left, {x, y}));
+			}
+			else if (tile == turretRight)
+			{
+				turrets.push_back(Turret(Right, {x, y}));
 			}
 		}
 	}
@@ -144,9 +132,95 @@ void Level::drawMap()
 	}
 }
 
+void Level::updateTurrets()
+{
+	turretTimer++;
+	if (turretTimer >= turretFrames)
+	{
+		turretTimer = 0;
+		for (Turret &turret : turrets)
+		{
+			turret.shoot(&bullets, &sprites->bullet, &map, mapSize, &sprites->bulletExplosion, &player);
+		}
+	}
+}
+
+void Level::updateBullets()
+{
+	for (Bullet &bullet : bullets)
+	{
+		bullet.update();
+	}
+}
+
+void Level::drawBullets()
+{
+	for (Bullet &bullet : bullets)
+	{
+		bullet.draw(window, *viewport, paused);
+	}
+}
+
+void Level::destroyBullets()
+{
+	unsigned int  numberOfBullets = bullets.size();
+	unsigned int destroyedBullets = 0;
+
+	for (unsigned int i = 0; i < numberOfBullets; i++)
+	{
+		unsigned int realIndex = i - destroyedBullets;
+		if (bullets.at(realIndex).destroyed)
+		{
+			bullets.erase(bullets.begin() + realIndex);
+			destroyedBullets++;
+		}
+	}
+}
+
+void Level::updateView(bool instant = false)
+{
+	if (instant)
+	{
+		view->setCenter(player.getCenter());
+	}
+	else
+	{
+		sf::Vector2f start       = view->getCenter();
+		sf::Vector2f target      = player.getCenter();
+		sf::Vector2f delta       = target - start;
+		sf::Vector2f distance    = {delta.x * 0.1f, delta.y * 0.1f};
+		sf::Vector2f destination = start + distance;
+
+		// limiting view horizontally
+		if (destination.x < viewWidth * 0.5)
+		{
+			destination.x = viewWidth * 0.5;
+		}
+		else
+		if (destination.x > mapSize.x * tilesize - viewWidth * 0.5)
+		{
+			destination.x = mapSize.x * tilesize - viewWidth * 0.5;
+		}
+		// limiting view vertically
+		if (destination.y < viewHeight * 0.5)
+		{
+			destination.y = viewHeight * 0.5;
+		}
+		else
+		if (destination.y > mapSize.y * tilesize - viewHeight * 0.5)
+		{
+			destination.y = mapSize.y * tilesize - viewHeight * 0.5;
+		}
+
+		view->setCenter(destination);
+	}
+}
+
 void Level::update()
 {
 	if (!window->hasFocus()) { return; }
+
+	if (!cleared && transition->transitioning) { return; }
 
 	if (pressing(pause))
 	{
@@ -163,26 +237,40 @@ void Level::update()
 
 	if (paused) { return; }
 
+	updateTurrets();
+	updateBullets();
+	destroyBullets();
+
 	bool playerJumpedLastFrame = player.jumped;
 	player.update();
+
 	if (player.jumped && !playerJumpedLastFrame) { audio->jump.play(); }
 	if (player.hitVerticalBounce || player.hitHorizontalBounce) { audio->bounce.play(); }
+
 	if (!loaded)
 	{
 		loaded = true;
 		updateView(true);
 	}
+
 	updateView();
+
 	if (cleared && !transition->transitioning)
 	{
 		transition->to(StoryLevels);
 	}
+
+	if (!cleared && !player.alive) { reset(); }
 }
 
 void Level::draw()
 {
-	if (!paused) { sawbladeAnimation.update(); }
+	if (!paused)
+	{
+		sawbladeAnimation.update();
+	}
 	drawMap();
+	drawBullets();
 	player.draw(window, *viewport, paused);
 	if (paused)
 	{

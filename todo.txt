@@ -1,6 +1,7 @@
 [x] death animation
 [x] bouncy terminal velocity in both directions
-[] bullets
+[x] bullets
+[] options
 [] editor integration
 	[] save custom levels
 	[] load custom levels

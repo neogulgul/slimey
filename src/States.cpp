@@ -75,10 +75,10 @@ void Game::updateMainMenu()
 		}
 	}
 
-	unsigned int sizeOfVector  = rainbowSlimeys.size();
-	unsigned int passedSlimeys = 0;
+	unsigned int numberOfSlimeys = rainbowSlimeys.size();
+	unsigned int   passedSlimeys = 0;
 
-	for (unsigned int i = 0; i < sizeOfVector; i++)
+	for (unsigned int i = 0; i < numberOfSlimeys; i++)
 	{
 		unsigned int realIndex = i - passedSlimeys;
 		if (rainbowSlimeys.at(realIndex).passed)
