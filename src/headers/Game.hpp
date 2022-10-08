@@ -86,7 +86,8 @@ struct Game
 	void processKeyboardInput();
 	void processMouseInput();
 
-	void createLevelboxes();
+	void createStoryLevelboxes();
+	void createCustomLevelboxes();
 	void createMenu();
 	void updateMenu();
 	void drawMenu();

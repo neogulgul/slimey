@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #define mapVector std::vector<std::vector<sf::Vector3i>>
 
 #define emptyTile    sf::Vector3i(0, 0, 0)
@@ -10,6 +12,8 @@
 #define turretDown   sf::Vector3i(4, 1, 2)
 #define turretLeft   sf::Vector3i(4, 1, 3)
 #define turretRight  sf::Vector3i(4, 1, 4)
+
+namespace fs = std::filesystem;
 
 const unsigned int tilesize        = 16;
 const unsigned int horizontalTiles = 16;

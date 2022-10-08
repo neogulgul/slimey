@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <cmath>
+#include <fstream>
 
 #include "headers/Editor.hpp"
 
@@ -23,6 +24,11 @@ Input::Input(sf::Vector2f _position, sf::Vector2f _size, unsigned int _maxLength
 int Input::getValue()
 {
 	return std::atoi(value.str().c_str());
+}
+
+std::string Input::getString()
+{
+	return value.str();
 }
 
 Editor::Editor() {}
@@ -55,9 +61,16 @@ Editor::Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewp
 	mapWidthInput ->value << mapSize.x;
 	mapHeightInput->value << mapSize.y;
 
+	buttons = {
+		Button("Save", {35, 20}, End, End, {viewWidth - 5, viewHeight - 30}),
+		Button("Load", {35, 20}, End, End, {viewWidth - 5, viewHeight - 5})
+	};
+	saveButton = &buttons.at(0);
+	loadButton = &buttons.at(1);
+
 	tileDimension = {tilesize, tilesize};
 
-	mapRect.setSize(sf::Vector2f(mapSize.x * tilesize, mapSize.y * tilesize));
+	mapRect.setSize({(float)mapSize.x * tilesize, (float)mapSize.y * tilesize});
 	mapRect.setOrigin(mapRect.getSize().x / 2, mapRect.getSize().y / 2);
 	mapRect.setPosition(viewWidth / 2, viewHeight / 2);
 	mapRect.setFillColor(sf::Color::Transparent);
@@ -149,7 +162,10 @@ void Editor::processKeyboardInput()
 	// save
 	handlePress(pressingControl && pressing(sf::Keyboard::S), saveMapPress, saveMapPressed);
 
-	handleKeyboardInput();
+	if (!inputSelected)
+	{
+		handleKeyboardInput();
+	}
 }
 
 void Editor::handleKeyboardInput()
@@ -239,12 +255,12 @@ void Editor::updateSelectionTilesetBounds()
 
 sf::Vector2f Editor::relativeMapPosition(float x, float y)
 {
-	return sf::Vector2f(mapBounds.left + (mapOutlineThickness + x) * zoom, mapBounds.top + (mapOutlineThickness + y) * zoom);
+	return {mapBounds.left + (mapOutlineThickness + x) * zoom, mapBounds.top + (mapOutlineThickness + y) * zoom};
 }
 
 sf::Vector2f Editor::relativeSelectionTilesetPosition(float x, float y)
 {
-	return sf::Vector2f(selectionTilesetBounds.left + selectionTilesetOutlineThickness + x, selectionTilesetBounds.top + selectionTilesetOutlineThickness + y);
+	return {selectionTilesetBounds.left + selectionTilesetOutlineThickness + x, selectionTilesetBounds.top + selectionTilesetOutlineThickness + y};
 }
 
 sf::FloatRect Editor::getSelectionTilesetMouseBounds()
@@ -280,7 +296,40 @@ void Editor::clearMap()
 
 void Editor::saveMap()
 {
-	// todo: this
+	std::stringstream mapStream;
+
+	mapStream << "{\n\t{ ";
+	for (unsigned int x = 0; x < mapSize.x; x++)
+	{
+		for (unsigned int y = 0; y < mapSize.y; y++)
+		{
+			sf::Vector3i tile = getTile(x, y);
+			mapStream << "{" << tile.x << "," << tile.y << "," << tile.z << "}";
+
+			if (y == mapSize.y - 1)
+			{
+				mapStream << " },\n";
+				if (x < mapSize.x - 1)
+				{
+					mapStream << "\t{ ";
+				}
+			}
+			else
+			{
+				mapStream << ", ";
+			}
+		}
+	}
+	mapStream << "};";
+
+	if (!fs::exists("custom_maps"))
+	{
+		fs::create_directory("custom_maps");
+	}
+
+	std::ofstream output("custom_maps/" + mapNameInput->getString() + ".txt");
+	output << mapStream.str();
+	output.close();
 }
 
 void Editor::changeMapSize(unsigned int newWidth, unsigned int newHeight)
@@ -290,7 +339,7 @@ void Editor::changeMapSize(unsigned int newWidth, unsigned int newHeight)
 
 	mapSize.x = newWidth;
 	mapSize.y = newHeight;
-	mapRect.setSize(sf::Vector2f(mapSize.x * tilesize, mapSize.y * tilesize));
+	mapRect.setSize({(float)mapSize.x * tilesize, (float)mapSize.y * tilesize});
 	mapRect.setOrigin(mapRect.getSize().x / 2, mapRect.getSize().y / 2);
 
 	updateMapBounds();
@@ -745,12 +794,12 @@ void Editor::drawMapGhostTiles()
 void Editor::drawMapCrosshair()
 {
 	// horizontal
-	mapCrosshair.setSize(sf::Vector2f(mapSize.x * tilesize, mapOutlineThickness));
+	mapCrosshair.setSize({(float)mapSize.x * tilesize, mapOutlineThickness});
 	mapCrosshair.setOrigin(0, mapOutlineThickness / 2);
 	mapCrosshair.setPosition(relativeMapPosition(0, mapSize.y / 2 * tilesize));
 	window->draw(mapCrosshair);
 	// vertical
-	mapCrosshair.setSize(sf::Vector2f(mapOutlineThickness, mapSize.y * tilesize));
+	mapCrosshair.setSize({mapOutlineThickness, (float)mapSize.y * tilesize});
 	mapCrosshair.setOrigin(mapOutlineThickness / 2, 0);
 	mapCrosshair.setPosition(relativeMapPosition(mapSize.x / 2 * tilesize, 0));
 	window->draw(mapCrosshair);
@@ -762,7 +811,7 @@ void Editor::drawMap()
 	drawMapCheckers();
 	drawMapTiles();
 	drawMapRestrictedAreas();
-	if (mouseOnMap)
+	if (mouseOnMap && !(inputHovering || buttonHovering))
 	{
 		drawMapGhostTiles();
 	}
@@ -866,9 +915,9 @@ void Editor::updateSizeInputs()
 		{
 			inputHovering = true;
 
-			input->shape.setFillColor(activeMenuboxForeground);
-			input->shape.setOutlineColor(activeMenuboxBackground);
-			input->textColor = activeMenuboxBackground;
+			input->shape.setFillColor(activeMenuboxBackground);
+			input->shape.setOutlineColor(activeMenuboxForeground);
+			input->textColor = activeMenuboxForeground;
 
 			if (pressing(sf::Mouse::Left))
 			{
@@ -879,9 +928,9 @@ void Editor::updateSizeInputs()
 
 		if (inputSelected && selectedInput == input)
 		{
-			input->shape.setFillColor(activeMenuboxBackground);
-			input->shape.setOutlineColor(activeMenuboxForeground);
-			input->textColor = activeMenuboxForeground;
+			input->shape.setFillColor(activeMenuboxForeground);
+			input->shape.setOutlineColor(activeMenuboxBackground);
+			input->textColor = activeMenuboxBackground;
 		}
 	}
 }
@@ -891,13 +940,38 @@ void Editor::drawSizeInputs()
 	for (Input *input : sizeInputs)
 	{
 		window->draw(input->shape);
-		text->draw(input->value.str(), Start, Center, sf::Vector2f(input->bounds.left + 3.5, input->bounds.top + input->bounds.height / 2), input->textColor);
+		text->draw(input->value.str(), Start, Center, {input->bounds.left + 3.5f, input->bounds.top + input->bounds.height / 2}, input->textColor);
 	}
 
 	text->draw("Name of your map", Center, Center, {mapNameInput->bounds.left + mapNameInput->bounds.width / 2, mapNameInput->bounds.top - 6});
 	text->draw("Size", Center, Center, {mapWidthInput->bounds.left + mapWidthInput->bounds.width / 2, mapWidthInput->bounds.top - 6});
 	text->draw("x", Center, Center, {mapWidthInput->bounds.left - 6, mapWidthInput->bounds.top + mapWidthInput->bounds.height / 2});
 	text->draw("y", Center, Center, {mapHeightInput->bounds.left - 6, mapHeightInput->bounds.top + mapHeightInput->bounds.height / 2});
+}
+
+
+
+void Editor::updateButtons()
+{
+	buttonHovering = false;
+	for (Button &button : buttons)
+	{
+		button.active = false;
+		if (button.bounds.contains(*mousePosition))
+		{
+			button.active = true;
+			buttonHovering = true;
+			activeButton = &button;
+		}
+	}
+}
+
+void Editor::drawButtons()
+{
+	for (Button &button : buttons)
+	{
+		button.draw(window, view, text);
+	}
 }
 
 
@@ -913,8 +987,21 @@ void Editor::update()
 	}
 
 	updateSizeInputs();
+	updateButtons();
 
-	if (!inputHovering)
+	if (buttonHovering && pressing(sf::Mouse::Left))
+	{
+		if (activeButton == saveButton)
+		{
+			saveMap();
+		}
+		else if (activeButton == loadButton)
+		{
+			// todo: this
+		}
+	}
+
+	if (!inputHovering && !buttonHovering)
 	{
 		if (method == Fill && mouseOnMap)
 		{
@@ -950,7 +1037,7 @@ void Editor::update()
 
 	sawbladeAnimation.update();
 
-	if (inputHovering || mouseOnSelectionTileset || mouseOnMap)
+	if (inputHovering || buttonHovering || mouseOnSelectionTileset || mouseOnMap)
 	{
 		*handyCursor = true;
 	}
@@ -961,4 +1048,5 @@ void Editor::draw()
 	drawMap();
 	drawSelectionTileset();
 	drawSizeInputs();
+	drawButtons();
 }

@@ -14,6 +14,6 @@ struct Text
 	Text();
 	Text(sf::RenderWindow *_window);
 
-	void draw(std::string string, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position, sf::Color color = foreground, sf::Vector2f scale = sf::Vector2f(1, 1));
+	void draw(std::string string, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position, sf::Color color = foreground, sf::Vector2f scale = {1, 1});
 	void draw(std::string string, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position, sf::Vector2f scale);
 };

@@ -11,7 +11,7 @@ Transition::Transition(sf::RenderWindow *_window, sf::View *_view, State &_gameS
 	view      = _view;
 	gameState = &_gameState;
 
-	shape.setSize(sf::Vector2f(viewWidth, viewHeight));
+	shape.setSize({viewWidth, viewHeight});
 }
 
 void Transition::to(State state)

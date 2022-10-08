@@ -5,7 +5,7 @@
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Slimey", sf::Style::Default);
-	sf::View view(sf::Vector2f(viewWidth * 0.5, viewHeight * 0.5), sf::Vector2f(viewWidth, viewHeight));
+	sf::View view({viewWidth * 0.5, viewHeight * 0.5}, {viewWidth, viewHeight});
 	sf::Event event;
 
 	window.setFramerateLimit(targetFPS);
@@ -25,6 +25,10 @@ int main()
 				if (game.state == LevelEditor)
 				{
 					game.editor.handleZoom(event);
+				}
+				else if (game.state == CustomLevels)
+				{
+					// todo: this
 				}
 			}
 			else if (event.type == sf::Event::TextEntered)

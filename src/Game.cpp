@@ -21,7 +21,7 @@ Game::Game(sf::RenderWindow *_window, sf::View *_view)
 
 	state = MainMenu;
 
-	pauseShape.setSize(sf::Vector2f(viewWidth, viewHeight));
+	pauseShape.setSize({viewWidth, viewHeight});
 	pauseShape.setFillColor(pauseColor);
 
 	rng.seed(std::random_device{}());
@@ -62,7 +62,7 @@ void Game::processMouseInput()
 
 
 
-void Game::createLevelboxes()
+void Game::createStoryLevelboxes()
 {
 	unsigned int currentColumn = 0;
 	unsigned int currentRow    = 0;
@@ -89,7 +89,7 @@ void Game::createLevelboxes()
 			position.x = viewWidth * 0.5 + (currentColumn - std::floor(columns / 2)) * levelboxSpacing;
 		}
 
-		position.y = viewWidth * 0.25 + 48 + levelboxSpacing * currentRow;
+		position.y = viewHeight * 0.25 + 48 + levelboxSpacing * currentRow;
 
 		menu.push_back(new Levelbox(level, i, position));
 
@@ -100,6 +100,24 @@ void Game::createLevelboxes()
 			currentColumn = 0;
 			currentRow++;
 		}
+	}
+}
+
+void Game::createCustomLevelboxes()
+{
+	unsigned int count = 0;
+	for (fs::directory_entry entry : fs::directory_iterator("custom_maps"))
+	{
+		std::stringstream conversionStream;
+		conversionStream << entry;
+		std::string mapName = conversionStream.str();
+		mapName.replace(mapName.find("custom_maps"), sizeof("custom_maps"), "");
+		mapName.replace(mapName.find(".txt"), sizeof(".txt"), "");
+		mapName.replace(mapName.find('"'), sizeof('"'), "");
+
+		menu.push_back(new Levelbox(level, mapName, {viewWidth / 2, viewHeight * 0.25f + 48.f + levelboxSpacing * count}));
+
+		count++;
 	}
 }
 
@@ -117,32 +135,33 @@ void Game::createMenu()
 		// 	break;
 
 		case MainMenu:
-			menu.push_back(new Menubox(StoryLevels , "Story"  , sf::Vector2f(60, 20), End   , End  , sf::Vector2f(viewHeight * 0.5 - (30 + 10), viewWidth * 0.75 - 5)));
-			menu.push_back(new Menubox(CustomLevels, "Custom" , sf::Vector2f(60, 20), Center, End  , sf::Vector2f(viewHeight * 0.5            , viewWidth * 0.75 - 5)));
-			menu.push_back(new Menubox(LevelEditor  , "Editor" , sf::Vector2f(60, 20), Start , End  , sf::Vector2f(viewHeight * 0.5 + (30 + 10), viewWidth * 0.75 - 5)));
-			menu.push_back(new Menubox(Options     , "Options", sf::Vector2f(60, 20), End   , Start, sf::Vector2f(viewHeight * 0.5 - 5        , viewWidth * 0.75 + 5)));
-			menu.push_back(new Menubox(ExitScreen  , "Exit"   , sf::Vector2f(60, 20), Start , Start, sf::Vector2f(viewHeight * 0.5 + 5        , viewWidth * 0.75 + 5)));
+			menu.push_back(new Menubox(StoryLevels , "Story"  , {60, 20}, End   , End  , {viewHeight * 0.5 - (30 + 10), viewWidth * 0.75 - 5}));
+			menu.push_back(new Menubox(CustomLevels, "Custom" , {60, 20}, Center, End  , {viewHeight * 0.5            , viewWidth * 0.75 - 5}));
+			menu.push_back(new Menubox(LevelEditor , "Editor" , {60, 20}, Start , End  , {viewHeight * 0.5 + (30 + 10), viewWidth * 0.75 - 5}));
+			menu.push_back(new Menubox(Options     , "Options", {60, 20}, End   , Start, {viewHeight * 0.5 - 5        , viewWidth * 0.75 + 5}));
+			menu.push_back(new Menubox(ExitScreen  , "Exit"   , {60, 20}, Start , Start, {viewHeight * 0.5 + 5        , viewWidth * 0.75 + 5}));
 			break;
 
 		case Options:
-			menu.push_back(new Menubox(MainMenu, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
+			menu.push_back(new Menubox(MainMenu, "Back", {60, 20}, Start, Start, {10, 10}));
 			break;
 
 		case LevelEditor:
-			menu.push_back(new Menubox(MainMenu, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
+			menu.push_back(new Menubox(MainMenu, "Back", {60, 20}, Start, Start, {10, 10}));
 			break;
 
 		case StoryLevels:
-			menu.push_back(new Menubox(MainMenu, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
-			createLevelboxes();
+			menu.push_back(new Menubox(MainMenu, "Back", {60, 20}, Start, Start, {10, 10}));
+			createStoryLevelboxes();
 			break;
 		
 		case CustomLevels:
-			menu.push_back(new Menubox(MainMenu, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
+			menu.push_back(new Menubox(MainMenu, "Back", {60, 20}, Start, Start, {10, 10}));
+			createCustomLevelboxes();
 			break;
 
 		case LevelPlay:
-			menu.push_back(new Menubox(StoryLevels, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
+			menu.push_back(new Menubox(StoryLevels, "Back", {60, 20}, Start, Start, {10, 10}));
 			break;
 
 		// case LevelClear:
@@ -154,7 +173,7 @@ void Game::updateMenu()
 {
 	if (changedState)
 	{
-		// avoiding a memory leak by deleting the pointers in the vector
+		// avoiding a memory leak by deleting the pointers in this vector
 		for (Menubox *menubox : menu)
 		{
 			delete menubox;

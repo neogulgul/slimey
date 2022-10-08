@@ -41,7 +41,7 @@ sf::FloatRect Collider::getHitbox()
 
 sf::Vector2f Collider::getCenter()
 {
-	return sf::Vector2f(position.x + size.x / 2, position.y + size.y / 2);
+	return {position.x + size.x / 2, position.y + size.y / 2};
 }
 
 void Collider::setPosition(float x, float y)

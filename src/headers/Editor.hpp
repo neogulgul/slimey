@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "Animation.hpp"
+#include "Button.hpp"
 #include "Global.hpp"
 #include "Sprites.hpp"
 #include "Text.hpp"
@@ -24,6 +25,7 @@ struct Input
 	Input(sf::Vector2f _position, sf::Vector2f _size, unsigned int _maxLength, bool _numbersOnly = false);
 
 	int getValue();
+	std::string getString();
 };
 
 struct Region
@@ -66,10 +68,16 @@ struct Editor
 	Input *mapNameInput;
 	Input *mapWidthInput;
 	Input *mapHeightInput;
-	std::vector<Input *> sizeInputs;
 	Input *selectedInput;
+	std::vector<Input *> sizeInputs;
 	bool inputHovering = false;
 	bool inputSelected = false;
+
+	Button *saveButton;
+	Button *loadButton;
+	Button *activeButton;
+	std::vector<Button> buttons;
+	bool buttonHovering = false;
 
 	std::vector<Region> regions;
 
@@ -193,6 +201,9 @@ struct Editor
 	void clampSizeInputs();
 	void updateSizeInputs();
 	void drawSizeInputs();
+
+	void updateButtons();
+	void drawButtons();
 
 	void update();
 	void draw();
