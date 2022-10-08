@@ -1,6 +1,6 @@
 #pragma once
 
-#define mapVector std::vector<std::vector<sf::Vector3i>>
+#include "Global.hpp"
 
 extern std::vector<mapVector*> defaultMaps;
 extern mapVector map1;

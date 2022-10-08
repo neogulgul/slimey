@@ -20,6 +20,8 @@ struct Level
 	Sprites *sprites;
 	Transition *transition;
 
+	bool *paused;
+
 	mapVector map;
 
 	sf::Vector2u mapSize;
@@ -35,21 +37,14 @@ struct Level
 	unsigned int turretTimer  = 0;
 	unsigned int turretFrames = 120;
 
-	sf::RectangleShape pauseShape;
-	sf::Keyboard::Key  pause = sf::Keyboard::Escape;
-
 	bool loaded  = false;
 	bool cleared = false;
 
-	bool paused       = false;
-	bool pressedPause = false;
-
 	Animation sawbladeAnimation;
-	int sawbladeFrameCount    = 8;
-	int sawbladeFrameDuration = 1;
 
 	Level();
-	Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Audio *_audio, Sprites *_sprites, Transition *_transition);
+	Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport,
+	      Audio *_audio, Sprites *_sprites, Transition *_transition, bool *_paused);
 
 	void reset();
 	void loadMap(mapVector _map);

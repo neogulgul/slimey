@@ -5,6 +5,7 @@
 
 #include "Audio.hpp"
 #include "DefaultMaps.hpp"
+#include "Editor.hpp"
 #include "Global.hpp"
 #include "Menubox.hpp"
 #include "Level.hpp"
@@ -32,7 +33,6 @@ struct Game
 {
 	sf::RenderWindow *window;
 	sf::View *view;
-
 	sf::FloatRect viewport;
 
 	sf::Cursor cursor;
@@ -46,6 +46,7 @@ struct Game
 	std::mt19937 rng;
 
 	Audio audio;
+	Editor editor;
 	Level level;
 	Sprites sprites;
 	Text text;
@@ -56,8 +57,12 @@ struct Game
 	sf::Vector2f mousePosition;
 
 	// mouse
-	bool leftClick   = false;
-	bool leftClicked = false;
+	bool leftClick     = false;
+	bool leftClicked   = false;
+	bool middleClick   = false;
+	bool middleClicked = false;
+	bool rightClick    = false;
+	bool rightClicked  = false;
 
 	std::vector<Menubox *> menu;
 	bool hoveringMenubox = false;
@@ -65,6 +70,13 @@ struct Game
 	State lastState;
 	State     state;
 	bool changedState = false;
+
+	// pause
+	sf::RectangleShape pauseShape;
+	sf::Keyboard::Key pause = sf::Keyboard::Escape;
+	bool paused       = false;
+	bool pausePress   = false;
+	bool pausePressed = false;
 
 	Game(sf::RenderWindow *_window, sf::View *_view);
 
@@ -88,7 +100,7 @@ struct Game
 	void updateExitScreen();
 	void updateMainMenu();
 	void updateOptions();
-	void updateEditor();
+	void updateLevelEditor();
 	void updateStoryLevels();
 	void updateCustomLevels();
 	void updateLevelPlay();
@@ -99,7 +111,7 @@ struct Game
 	void drawExitScreen();
 	void drawMainMenu();
 	void drawOptions();
-	void drawEditor();
+	void drawLevelEditor();
 	void drawStoryLevels();
 	void drawCustomLevels();
 	void drawLevelPlay();

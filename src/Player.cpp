@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <algorithm>
 
 #include "headers/Player.hpp"
 
@@ -38,6 +39,7 @@ void Player::place(int x, int y)
 void Player::death()
 {
 	alive = false;
+	velocity = {0, 0};
 }
 
 void Player::levelClear()

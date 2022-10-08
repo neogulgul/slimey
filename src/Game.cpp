@@ -14,11 +14,15 @@ Game::Game(sf::RenderWindow *_window, sf::View *_view)
 	viewport.width  = viewWidth;
 	viewport.height = viewHeight;
 
-	level      = Level(window, view, &viewport, &audio, &sprites, &transition);
+	editor     = Editor(window, view, &viewport, &sprites, &text, &mousePosition, &paused);
+	level      = Level(window, view, &viewport, &audio, &sprites, &transition, &paused);
 	text       = Text(window);
 	transition = Transition(window, view, state);
 
 	state = MainMenu;
+
+	pauseShape.setSize(sf::Vector2f(viewWidth, viewHeight));
+	pauseShape.setFillColor(pauseColor);
 
 	rng.seed(std::random_device{}());
 }
@@ -40,26 +44,20 @@ void Game::updateViewport()
 
 void Game::processKeyboardInput()
 {
+	if ((state == LevelEditor || state == LevelPlay) && !transition.transitioning)
+	{
+		handlePress(pressing(pause), pausePress, pausePressed);
+		if (pausePress) { toggle(paused); }
+	}
 }
 
 void Game::processMouseInput()
 {
 	mousePosition = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
 
-	leftClick = false;
-
-	if (pressing(sf::Mouse::Left))
-	{
-		if (!leftClicked)
-		{
-			leftClicked = true;
-			leftClick = true;
-		}
-	}
-	else
-	{
-		leftClicked = false;
-	}
+	handlePress(pressing(sf::Mouse::Left  ),   leftClick,   leftClicked);
+	handlePress(pressing(sf::Mouse::Middle), middleClick, middleClicked);
+	handlePress(pressing(sf::Mouse::Right ),  rightClick,  rightClicked);
 }
 
 
@@ -121,7 +119,7 @@ void Game::createMenu()
 		case MainMenu:
 			menu.push_back(new Menubox(StoryLevels , "Story"  , sf::Vector2f(60, 20), End   , End  , sf::Vector2f(viewHeight * 0.5 - (30 + 10), viewWidth * 0.75 - 5)));
 			menu.push_back(new Menubox(CustomLevels, "Custom" , sf::Vector2f(60, 20), Center, End  , sf::Vector2f(viewHeight * 0.5            , viewWidth * 0.75 - 5)));
-			menu.push_back(new Menubox(Editor      , "Editor" , sf::Vector2f(60, 20), Start , End  , sf::Vector2f(viewHeight * 0.5 + (30 + 10), viewWidth * 0.75 - 5)));
+			menu.push_back(new Menubox(LevelEditor  , "Editor" , sf::Vector2f(60, 20), Start , End  , sf::Vector2f(viewHeight * 0.5 + (30 + 10), viewWidth * 0.75 - 5)));
 			menu.push_back(new Menubox(Options     , "Options", sf::Vector2f(60, 20), End   , Start, sf::Vector2f(viewHeight * 0.5 - 5        , viewWidth * 0.75 + 5)));
 			menu.push_back(new Menubox(ExitScreen  , "Exit"   , sf::Vector2f(60, 20), Start , Start, sf::Vector2f(viewHeight * 0.5 + 5        , viewWidth * 0.75 + 5)));
 			break;
@@ -130,7 +128,7 @@ void Game::createMenu()
 			menu.push_back(new Menubox(MainMenu, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
 			break;
 
-		case Editor:
+		case LevelEditor:
 			menu.push_back(new Menubox(MainMenu, "Back", sf::Vector2f(60, 20), Start, Start, sf::Vector2f(10, 10)));
 			break;
 
@@ -164,9 +162,11 @@ void Game::updateMenu()
 		createMenu();
 	}
 
-	if (transition.transitioning || state == LevelPlay && !level.paused) { return; }
-
 	hoveringMenubox = false;
+
+	// disallowing presses
+	if (transition.transitioning || (state == LevelEditor || state == LevelPlay) && !paused) { return; }
+
 	for (Menubox *box : menu)
 	{
 		box->active = false;
@@ -189,8 +189,7 @@ void Game::updateMenu()
 
 void Game::drawMenu()
 {
-	if (state == LevelPlay && !level.paused) { return; }
-
+	if ((state == LevelEditor || state == LevelPlay) && !paused) { return; }
 	for (Menubox *box : menu)
 	{
 		box->draw(window, view, &text);
@@ -287,7 +286,7 @@ void Game::update()
 	if (state != lastState)
 	{
 		changedState = true;
-		if (state != Editor && state != LevelPlay)
+		if (state != LevelEditor && state != LevelPlay)
 		{
 			resetView();
 		}
@@ -297,12 +296,30 @@ void Game::update()
 		changedState = false;
 	}
 
+	if (changedState)
+	{
+		paused       = false;
+		pausePress   = false;
+		pausePressed = false;
+
+		if (lastState == LevelEditor)
+		{
+			sprites.resetScale();
+		}
+	}
+
 	lastState = state;
 }
 
 void Game::draw()
 {
 	drawState();
+	if (paused)
+	{
+		pauseShape.setPosition(relativeViewPosition(*view, {0, 0}));
+		window->draw(pauseShape);
+		text.draw("Paused", Center, Center, relativeViewPosition(*view, {viewWidth * 0.5, viewHeight * 0.25}), {2, 2});
+	}
 	drawMenu();
 	if (transition.transitioning)
 	{

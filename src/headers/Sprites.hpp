@@ -35,4 +35,5 @@ struct Sprites
 	std::vector<sf::Sprite *> tilesets;
 
 	Sprites();
+	void resetScale();
 };

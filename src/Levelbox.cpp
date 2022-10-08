@@ -7,12 +7,14 @@
 #define horizontalAlignment Center
 #define   verticalAlignment Center
 
-Levelbox::Levelbox(Level &_level, unsigned int index, sf::Vector2f position) : Menubox(destination, std::to_string(index), size, horizontalAlignment, verticalAlignment, position)
+Levelbox::Levelbox(Level &_level, unsigned int index, sf::Vector2f position)
+: Menubox(destination, std::to_string(index), size, horizontalAlignment, verticalAlignment, position)
 {
 	level = &_level;
 }
 
-Levelbox::Levelbox(Level &_level, std::string string, sf::Vector2f position) : Menubox(destination, string, size, horizontalAlignment, verticalAlignment, position)
+Levelbox::Levelbox(Level &_level, std::string string, sf::Vector2f position)
+: Menubox(destination, string, size, horizontalAlignment, verticalAlignment, position)
 {
 	level = &_level;
 	custom = true;

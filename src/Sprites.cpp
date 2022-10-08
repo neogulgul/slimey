@@ -41,3 +41,20 @@ Sprites::Sprites()
 		&tilesetOther
 	};
 }
+
+void Sprites::resetScale()
+{
+	slimey         .setScale(1, 1);
+	slimeyColorless.setScale(1, 1);
+	slimeyFrames   .setScale(1, 1);
+	slimeyDeath    .setScale(1, 1);
+	offscreenCircle.setScale(1, 1);
+	tilesetNormal  .setScale(1, 1);
+	tilesetIce     .setScale(1, 1);
+	tilesetBounce  .setScale(1, 1);
+	tilesetOther   .setScale(1, 1);
+	exitSign       .setScale(1, 1);
+	sawblade       .setScale(1, 1);
+	bullet         .setScale(1, 1);
+	bulletExplosion.setScale(1, 1);
+}

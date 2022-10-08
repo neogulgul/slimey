@@ -1,5 +1,7 @@
 #pragma once
 
+#define mapVector std::vector<std::vector<sf::Vector3i>>
+
 #define emptyTile    sf::Vector3i(0, 0, 0)
 #define spawnTile    sf::Vector3i(4, 0, 3)
 #define exitTile     sf::Vector3i(4, 0, 4)
@@ -21,6 +23,9 @@ const unsigned int windowHeight    = viewHeight * windowViewScale;
 
 const unsigned int targetFPS = 60;
 
+const unsigned int sawbladeFrameCount    = 8;
+const unsigned int sawbladeFrameDuration = 1;
+
 const float GRAVITY = 0.16;
 
 enum Direction { Up, Down, Left, Right };
@@ -35,7 +40,7 @@ enum State
 	ExitScreen,
 	MainMenu,
 	Options,
-	Editor,
+	LevelEditor,
 	StoryLevels,
 	CustomLevels,
 	LevelPlay,
@@ -49,9 +54,21 @@ extern sf::Color   activeMenuboxBackground;
 extern sf::Color inactiveMenuboxForeground;
 extern sf::Color   activeMenuboxForeground;
 extern sf::Color                pauseColor;
+// editor
+extern sf::Color     mapOutlineColor;
+extern sf::Color mapCheckerEvenColor;
+extern sf::Color  mapCheckerOddColor;
+extern sf::Color   mapCrosshairColor;
+extern sf::Color  mapRestrictedColor;
+extern sf::Color          placeColor;
+extern sf::Color          eraseColor;
+extern sf::Color       selectionTilesetBackgroundColor;
+extern sf::Color          selectionTilesetOutlineColor;
+extern sf::Color selectionTilesetSelectionOutlineColor;
 
 void toggle(bool &boolean);
 bool pressing(sf::Keyboard::Key key);
 bool pressing(sf::Mouse::Button button);
+void handlePress(bool pressing, bool &press, bool &pressed);
 sf::Vector2f relativeViewPosition(sf::View view, sf::Vector2f position);
 sf::Vector2f align(sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position);

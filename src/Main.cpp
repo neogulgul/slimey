@@ -20,6 +20,20 @@ int main()
 			{
 				window.close();
 			}
+			else if (event.type == sf::Event::MouseWheelMoved)
+			{
+				if (game.state == LevelEditor)
+				{
+					game.editor.handleZoom(event);
+				}
+			}
+			else if (event.type == sf::Event::TextEntered)
+			{
+				if (game.state == LevelEditor)
+				{
+					game.editor.handleTextEntered(event);
+				}
+			}
 		}
 
 		window.clear(background);

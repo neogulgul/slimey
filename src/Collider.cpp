@@ -1,5 +1,4 @@
 #include <SFML/Graphics.hpp>
-#include <algorithm>
 #include <cmath>
 
 #include "headers/Collider.hpp"

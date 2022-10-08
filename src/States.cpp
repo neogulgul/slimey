@@ -93,8 +93,9 @@ void Game::updateOptions()
 {
 }
 
-void Game::updateEditor()
+void Game::updateLevelEditor()
 {
+	editor.update();
 }
 
 void Game::updateStoryLevels()
@@ -134,8 +135,8 @@ void Game::updateState()
 			updateOptions();
 			break;
 
-		case Editor:
-			updateEditor();
+		case LevelEditor:
+			updateLevelEditor();
 			break;
 
 		case StoryLevels:
@@ -186,8 +187,9 @@ void Game::drawOptions()
 	text.draw("Options", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
 }
 
-void Game::drawEditor()
+void Game::drawLevelEditor()
 {
+	editor.draw();
 }
 
 void Game::drawStoryLevels()
@@ -203,10 +205,6 @@ void Game::drawCustomLevels()
 void Game::drawLevelPlay()
 {
 	level.draw();
-	if (level.paused)
-	{
-		text.draw("Paused", Center, Center, relativeViewPosition(*view, {viewWidth * 0.5, viewHeight * 0.25}), {2, 2});
-	}
 }
 
 void Game::drawLevelClear()
@@ -234,8 +232,8 @@ void Game::drawState()
 			drawOptions();
 			break;
 
-		case Editor:
-			drawEditor();
+		case LevelEditor:
+			drawLevelEditor();
 			break;
 
 		case StoryLevels:

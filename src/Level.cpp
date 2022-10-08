@@ -4,7 +4,8 @@
 
 Level::Level() {}
 
-Level::Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Audio *_audio, Sprites *_sprites, Transition *_transition)
+Level::Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport,
+             Audio *_audio, Sprites *_sprites, Transition *_transition, bool *_paused)
 {
 	window     = _window;
 	view       = _view;
@@ -12,9 +13,7 @@ Level::Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewpor
 	audio      = _audio;
 	sprites    = _sprites;
 	transition = _transition;
-
-	pauseShape.setSize(sf::Vector2f(viewWidth, viewHeight));
-	pauseShape.setFillColor(pauseColor);
+	paused     = _paused;
 
 	sawbladeAnimation = Animation(sawbladeFrameCount, sawbladeFrameDuration);
 }
@@ -35,9 +34,6 @@ void Level::loadMap(mapVector _map)
 
 	loaded  = false;
 	cleared = false;
-
-	paused       = false;
-	pressedPause = false;
 
 	turretTimer = 0;
 
@@ -157,7 +153,7 @@ void Level::drawBullets()
 {
 	for (Bullet &bullet : bullets)
 	{
-		bullet.draw(window, *viewport, paused);
+		bullet.draw(window, *viewport, *paused);
 	}
 }
 
@@ -179,9 +175,10 @@ void Level::destroyBullets()
 
 void Level::updateView(bool instant = false)
 {
+	sf::Vector2f destination;
 	if (instant)
 	{
-		view->setCenter(player.getCenter());
+		destination = player.getCenter();
 	}
 	else
 	{
@@ -189,53 +186,44 @@ void Level::updateView(bool instant = false)
 		sf::Vector2f target      = player.getCenter();
 		sf::Vector2f delta       = target - start;
 		sf::Vector2f distance    = {delta.x * 0.1f, delta.y * 0.1f};
-		sf::Vector2f destination = start + distance;
-
-		// limiting view horizontally
-		if (destination.x < viewWidth * 0.5)
-		{
-			destination.x = viewWidth * 0.5;
-		}
-		else
-		if (destination.x > mapSize.x * tilesize - viewWidth * 0.5)
-		{
-			destination.x = mapSize.x * tilesize - viewWidth * 0.5;
-		}
-		// limiting view vertically
-		if (destination.y < viewHeight * 0.5)
-		{
-			destination.y = viewHeight * 0.5;
-		}
-		else
-		if (destination.y > mapSize.y * tilesize - viewHeight * 0.5)
-		{
-			destination.y = mapSize.y * tilesize - viewHeight * 0.5;
-		}
-
-		view->setCenter(destination);
+		destination = start + distance;
 	}
+	// limiting view horizontally
+	if (destination.x < viewWidth * 0.5)
+	{
+		destination.x = viewWidth * 0.5;
+	}
+	else
+	if (destination.x > mapSize.x * tilesize - viewWidth * 0.5)
+	{
+		destination.x = mapSize.x * tilesize - viewWidth * 0.5;
+	}
+	// limiting view vertically
+	if (destination.y < viewHeight * 0.5)
+	{
+		destination.y = viewHeight * 0.5;
+	}
+	else
+	if (destination.y > mapSize.y * tilesize - viewHeight * 0.5)
+	{
+		destination.y = mapSize.y * tilesize - viewHeight * 0.5;
+	}
+	view->setCenter(destination);
 }
 
 void Level::update()
 {
 	if (!window->hasFocus()) { return; }
 
+	if (!loaded)
+	{
+		loaded = true;
+		updateView(true);
+	}
+
 	if (!cleared && transition->transitioning) { return; }
 
-	if (pressing(pause))
-	{
-		if (!pressedPause)
-		{
-			pressedPause = true;
-			toggle(paused);
-		}
-	}
-	else
-	{
-		pressedPause = false;
-	}
-
-	if (paused) { return; }
+	if (*paused) { return; }
 
 	updateTurrets();
 	updateBullets();
@@ -246,12 +234,6 @@ void Level::update()
 
 	if (player.jumped && !playerJumpedLastFrame) { audio->jump.play(); }
 	if (player.hitVerticalBounce || player.hitHorizontalBounce) { audio->bounce.play(); }
-
-	if (!loaded)
-	{
-		loaded = true;
-		updateView(true);
-	}
 
 	updateView();
 
@@ -265,16 +247,11 @@ void Level::update()
 
 void Level::draw()
 {
-	if (!paused)
+	if (!*paused)
 	{
 		sawbladeAnimation.update();
 	}
 	drawMap();
 	drawBullets();
-	player.draw(window, *viewport, paused);
-	if (paused)
-	{
-		pauseShape.setPosition(relativeViewPosition(*view, {0, 0}));
-		window->draw(pauseShape);
-	}
+	player.draw(window, *viewport, *paused);
 }

@@ -9,6 +9,17 @@ sf::Color   activeMenuboxBackground( 90, 197,  79);
 sf::Color inactiveMenuboxForeground(101, 115, 146);
 sf::Color   activeMenuboxForeground( 12,  46,  68);
 sf::Color                pauseColor(  0,   0,   0, 191);
+// editor
+sf::Color          mapOutlineColor(0x306bbdff);
+sf::Color      mapCheckerEvenColor(0x53a5d9ff);
+sf::Color       mapCheckerOddColor(0x73b6dfff);
+sf::Color        mapCrosshairColor(0x306bbdaa);
+sf::Color       mapRestrictedColor(255,  23,  68, 191);
+sf::Color               placeColor(  0, 255,   0,  63);
+sf::Color               eraseColor(255,   0,   0,  63);
+sf::Color       selectionTilesetBackgroundColor(0xd9c797ff);
+sf::Color          selectionTilesetOutlineColor(0xdaba87ff);
+sf::Color selectionTilesetSelectionOutlineColor(0x5ac54faa);
 
 void toggle(bool &boolean)
 {
@@ -20,13 +31,32 @@ void toggle(bool &boolean)
 
 bool pressing(sf::Keyboard::Key key)
 {
-	return (sf::Keyboard::isKeyPressed(key));
+	return sf::Keyboard::isKeyPressed(key);
 }
 
 bool pressing(sf::Mouse::Button button)
 {
-	return (sf::Mouse::isButtonPressed(button));
+	return sf::Mouse::isButtonPressed(button);
 }
+
+void handlePress(bool pressing, bool &press, bool &pressed)
+{
+	press = false;
+
+	if (pressing)
+	{
+		if (!pressed)
+		{
+			pressed = true;
+			press = true;
+		}
+	}
+	else
+	{
+		pressed = false;
+	}
+}
+
 
 sf::Vector2f relativeViewPosition(sf::View view, sf::Vector2f position)
 {
