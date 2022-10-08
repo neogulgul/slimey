@@ -36,6 +36,7 @@ struct Game
 	sf::FloatRect viewport;
 
 	sf::Cursor cursor;
+	bool handyCursor = false;
 
 	float frameUpdateDelta = 0.1; // the time between FPS counter update, in seconds
 	sf::Clock frameUpdateClock;   // used to only update the FPS counter after a certain amount of time has passed, to make it more readable
@@ -65,7 +66,6 @@ struct Game
 	bool rightClicked  = false;
 
 	std::vector<Menubox *> menu;
-	bool hoveringMenubox = false;
 
 	State lastState;
 	State     state;

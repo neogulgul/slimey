@@ -14,7 +14,7 @@ Game::Game(sf::RenderWindow *_window, sf::View *_view)
 	viewport.width  = viewWidth;
 	viewport.height = viewHeight;
 
-	editor     = Editor(window, view, &viewport, &sprites, &text, &mousePosition, &paused);
+	editor     = Editor(window, view, &viewport, &sprites, &text, &mousePosition, &handyCursor, &paused);
 	level      = Level(window, view, &viewport, &audio, &sprites, &transition, &paused);
 	text       = Text(window);
 	transition = Transition(window, view, state);
@@ -154,6 +154,11 @@ void Game::updateMenu()
 {
 	if (changedState)
 	{
+		// avoiding a memory leak by deleting the pointers in the vector
+		for (Menubox *menubox : menu)
+		{
+			delete menubox;
+		}
 		menu.clear();
 	}
 
@@ -161,8 +166,6 @@ void Game::updateMenu()
 	{
 		createMenu();
 	}
-
-	hoveringMenubox = false;
 
 	// disallowing presses
 	if (transition.transitioning || (state == LevelEditor || state == LevelPlay) && !paused) { return; }
@@ -181,7 +184,7 @@ void Game::updateMenu()
 			else
 			{
 				box->active = true;
-				hoveringMenubox = true;
+				handyCursor = true;
 			}
 		}
 	}
@@ -200,7 +203,7 @@ void Game::drawMenu()
 
 void Game::updateCursor()
 {
-	if (hoveringMenubox)
+	if (handyCursor)
 	{
 		cursor.loadFromSystem(sf::Cursor::Hand);
 	}
@@ -208,7 +211,10 @@ void Game::updateCursor()
 	{
 		cursor.loadFromSystem(sf::Cursor::Arrow);
 	}
+
 	window->setMouseCursor(cursor);
+
+	handyCursor = false;
 }
 
 
@@ -272,8 +278,11 @@ moved these to States.cpp
 void Game::update()
 {
 	updateFPS();
-	processKeyboardInput();
-	processMouseInput();
+	if (window->hasFocus())
+	{
+		processKeyboardInput();
+		processMouseInput();
+	}
 	if (transition.transitioning)
 	{
 		transition.update();

@@ -7,10 +7,28 @@
 #define mapOutlineThickness 4
 #define selectionTilesetOutlineThickness 2
 
+Input::Input() {}
+
+Input::Input(sf::Vector2f _position, sf::Vector2f _size, unsigned int _maxLength, bool _numbersOnly)
+{
+	position = _position;
+	size     = _size;
+	shape.setSize(size);
+	shape.setOutlineThickness(-1);
+
+	maxLength      = _maxLength;
+	numbersOnly = _numbersOnly;
+}
+
+int Input::getValue()
+{
+	return std::atoi(value.str().c_str());
+}
+
 Editor::Editor() {}
 
 Editor::Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Sprites *_sprites, Text *_text,
-               sf::Vector2f *_mousePosition, bool *_paused)
+               sf::Vector2f *_mousePosition, bool *_handyCursor, bool *_paused)
 {
 	window        = _window;
 	view          = _view;
@@ -18,12 +36,24 @@ Editor::Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewp
 	sprites       = _sprites;
 	text          = _text;
 	mousePosition = _mousePosition;
+	handyCursor   = _handyCursor;
 	paused        = _paused;
 	
 	declareRegions();
 
 	mapSize = {initialMapWidth, initialMapHeight};
 	clearMap();
+
+	sizeInputs = {
+		new Input({viewWidth / 2 - 96 / 2, viewHeight - 24}, {96, 12}, 15),
+		new Input({16, viewHeight - 32}, {24 ,12}, 3, true),
+		new Input({16, viewHeight - 16}, {24 ,12}, 3, true)
+	};
+	mapNameInput   = sizeInputs.at(0);
+	mapWidthInput  = sizeInputs.at(1);
+	mapHeightInput = sizeInputs.at(2);
+	mapWidthInput ->value << mapSize.x;
+	mapHeightInput->value << mapSize.y;
 
 	tileDimension = {tilesize, tilesize};
 
@@ -752,7 +782,7 @@ void Editor::selectTile()
 
 void Editor::drawSelectionTileset()
 {
-	selectionTilesetRect.setPosition(relativeViewPosition(*view, {selectionTilesetOutlineThickness, selectionTilesetOutlineThickness}));
+	selectionTilesetRect.setPosition(relativeViewPosition(*view, {(float)viewWidth - (float)sprites->tilesetOtherTexture.getSize().x - selectionTilesetOutlineThickness, selectionTilesetOutlineThickness}));
 	updateSelectionTilesetBounds();
 	window->draw(selectionTilesetRect);
 
@@ -767,21 +797,107 @@ void Editor::drawSelectionTileset()
 
 
 
-void Editor::handleTextEntered(sf::Event event)
+void removeLastCharFromStringstream(std::stringstream &stringstream)
 {
-	if (*paused) { return; }
+	if (stringstream.str().empty()) { return; }
+	std::string newString = stringstream.str();
+	newString.pop_back();
+	stringstream.str(newString);
+	stringstream.seekp(stringstream.str().length());
 }
 
-void Editor::updateSizeInputs()
+void Editor::handleTextEntered(sf::Event event)
 {
+	if (*paused || !inputSelected) { return; }
+
+	char character = static_cast<char>(event.text.unicode);
+
+	if ((int)character == 8) // backspace to delete
+	{
+		removeLastCharFromStringstream(selectedInput->value);
+	}
+	else if (!selectedInput->numbersOnly && (
+	         	(int)character >= (int)'0' && (int)character <= (int)'9'
+	         	||
+	         	(int)character >= (int)'A' && (int)character <= (int)'Z'
+	         	||
+	         	(int)character >= (int)'a' && (int)character <= (int)'z'
+	         )
+	         ||
+	         selectedInput->numbersOnly && (int)character >= (int)'0' && (int)character <= (int)'9')
+	{
+		if (selectedInput->value.str().length() == selectedInput->maxLength)
+		{
+			removeLastCharFromStringstream(selectedInput->value);
+		}
+		selectedInput->value << character;
+	}
 }
 
 void Editor::clampSizeInputs()
 {
+	// clamp width
+	int width = std::atoi(mapWidthInput->value.str().c_str());         // string to int
+	width = std::clamp((unsigned int)width, minMapSize, maxMapSize);
+	mapWidthInput->value.str(std::to_string(width));                   // int to string
+	mapWidthInput->value.seekp(mapWidthInput->value.str().length());
+
+	// clamp height
+	int height = std::atoi(mapHeightInput->value.str().c_str());       // string to int
+	height = std::clamp((unsigned int)height, minMapSize, maxMapSize);
+	mapHeightInput->value.str(std::to_string(height));                 // int to string
+	mapHeightInput->value.seekp(mapHeightInput->value.str().length());
+}
+
+void Editor::updateSizeInputs()
+{
+	inputHovering = false;
+
+	for (Input *input : sizeInputs)
+	{
+		input->shape.setPosition(relativeViewPosition(*view, input->position));
+		input->bounds = input->shape.getGlobalBounds();
+
+		input->shape.setFillColor(inactiveMenuboxBackground);
+		input->shape.setOutlineColor(inactiveMenuboxForeground);
+		input->textColor = inactiveMenuboxForeground;
+
+		if (input->bounds.contains(*mousePosition))
+		{
+			inputHovering = true;
+
+			input->shape.setFillColor(activeMenuboxForeground);
+			input->shape.setOutlineColor(activeMenuboxBackground);
+			input->textColor = activeMenuboxBackground;
+
+			if (pressing(sf::Mouse::Left))
+			{
+				inputSelected = true;
+				selectedInput = input;
+			}
+		}
+
+		if (inputSelected && selectedInput == input)
+		{
+			input->shape.setFillColor(activeMenuboxBackground);
+			input->shape.setOutlineColor(activeMenuboxForeground);
+			input->textColor = activeMenuboxForeground;
+		}
+	}
 }
 
 void Editor::drawSizeInputs()
 {
+	for (Input *input : sizeInputs)
+	{
+		window->draw(input->shape);
+		text->draw(input->value.str(), Start, Center, sf::Vector2f(input->bounds.left + 3.5, input->bounds.top + input->bounds.height / 2), input->textColor);
+	}
+
+	text->draw("Name of your map", Center, Center, {mapNameInput->bounds.left + mapNameInput->bounds.width / 2, mapNameInput->bounds.top - 6});
+	text->draw("Size", Center, Center, {mapWidthInput->bounds.left + mapWidthInput->bounds.width / 2, mapWidthInput->bounds.top - 6});
+	text->draw("x", Center, Center, {mapWidthInput->bounds.left - 6, mapWidthInput->bounds.top + mapWidthInput->bounds.height / 2});
+	text->draw("y", Center, Center, {mapHeightInput->bounds.left - 6, mapHeightInput->bounds.top + mapHeightInput->bounds.height / 2});
 }
 
 
@@ -790,12 +906,15 @@ void Editor::update()
 {
 	if (*paused) { return; }
 
-	processKeyboardInput();
-	processMouseInput();
+	if (window->hasFocus())
+	{
+		processKeyboardInput();
+		processMouseInput();
+	}
 
 	updateSizeInputs();
 
-	if (true/*!inputHovering*/)
+	if (!inputHovering)
 	{
 		if (method == Fill && mouseOnMap)
 		{
@@ -804,12 +923,12 @@ void Editor::update()
 
 		if (pressing(sf::Mouse::Left))
 		{
-			// if (inputSelected)
-			// {
-			// 	inputSelected = false;
-			// 	clampSizeInputs();
-			// 	changeMapSize(mapWidthInput.getValue(), mapHeightInput.getValue());
-			// }
+			if (inputSelected)
+			{
+				inputSelected = false;
+				clampSizeInputs();
+				changeMapSize(mapWidthInput->getValue(), mapHeightInput->getValue());
+			}
 
 			if (pressing(sf::Keyboard::LAlt) || pressing(sf::Keyboard::RAlt))
 			{
@@ -830,6 +949,11 @@ void Editor::update()
 	}
 
 	sawbladeAnimation.update();
+
+	if (inputHovering || mouseOnSelectionTileset || mouseOnMap)
+	{
+		*handyCursor = true;
+	}
 }
 
 void Editor::draw()

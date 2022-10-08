@@ -7,6 +7,9 @@ Controls:
 		Pause - Escape
 
 	Editor:
+		Place / Erase    - Left Click
+		Move view        - Middle Click + Move Mouse
+		Eyedropper       - Alt + Left Click
 		Equip Brush      - B
 		Equip Fill       - F
 		Toggle Erase     - E

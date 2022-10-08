@@ -1,9 +1,30 @@
 #pragma once
 
+#include <sstream>
+
 #include "Animation.hpp"
 #include "Global.hpp"
 #include "Sprites.hpp"
 #include "Text.hpp"
+
+struct Input
+{
+	sf::Vector2f position;
+	sf::Vector2f size;
+	sf::RectangleShape shape;
+	sf::FloatRect bounds;
+	sf::Color textColor;
+	std::stringstream value;
+	bool selected = false;
+
+	unsigned int maxLength;
+	bool numbersOnly;
+
+	Input();
+	Input(sf::Vector2f _position, sf::Vector2f _size, unsigned int _maxLength, bool _numbersOnly = false);
+
+	int getValue();
+};
 
 struct Region
 {
@@ -22,6 +43,7 @@ struct Editor
 	Sprites *sprites;
 	Text *text;
 
+	bool *handyCursor;
 	bool *paused;
 
 	mapVector map;
@@ -40,6 +62,14 @@ struct Editor
 	unsigned int initialMapWidth  = minMapSize;
 	unsigned int initialMapHeight = minMapSize;
 	sf::Vector2u mapSize;
+
+	Input *mapNameInput;
+	Input *mapWidthInput;
+	Input *mapHeightInput;
+	std::vector<Input *> sizeInputs;
+	Input *selectedInput;
+	bool inputHovering = false;
+	bool inputSelected = false;
 
 	std::vector<Region> regions;
 
@@ -108,7 +138,7 @@ struct Editor
 
 	Editor();
 	Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Sprites *_sprites, Text *_text,
-	       sf::Vector2f *_mousePosition, bool *_paused);
+	       sf::Vector2f *_mousePosition, bool *_handyCursor, bool *_paused);
 
 	void declareRegions();
 
@@ -160,8 +190,8 @@ struct Editor
 	void drawSelectionTileset();
 
 	void handleTextEntered(sf::Event event);
-	void updateSizeInputs();
 	void clampSizeInputs();
+	void updateSizeInputs();
 	void drawSizeInputs();
 
 	void update();
