@@ -27,8 +27,10 @@ void Level::reset()
 	}
 }
 
-void Level::loadMap(mapVector _map)
+void Level::loadMap(mapVector _map, bool _custom)
 {
+	custom = _custom;
+
 	spawn = {0, 0};
 	exit  = {0, 0};
 
@@ -239,7 +241,14 @@ void Level::update()
 
 	if (cleared && !transition->transitioning)
 	{
-		transition->to(StoryLevels);
+		if (custom)
+		{
+			transition->to(CustomLevels);
+		}
+		else
+		{
+			transition->to(StoryLevels);
+		}
 	}
 
 	if (!cleared && !player.alive) { reset(); }

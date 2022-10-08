@@ -16,5 +16,8 @@ Controls:
 		Toggle Crosshair - C
 		Reset View       - R
 		Clear Map        - Ctrl + Shift + R
-		Save Map         - Ctrl + S
+		Save Map         - Ctrl + S || Hit the save button
+		Load Map         - Ctrl + L || Hit the load button
 		Pause            - Escape
+
+		*The load function will parse the name of the map to load from the "name of map" input

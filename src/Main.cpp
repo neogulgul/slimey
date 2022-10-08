@@ -28,7 +28,7 @@ int main()
 				}
 				else if (game.state == CustomLevels)
 				{
-					// todo: this
+					game.handleCustomLevelsScroll(event);
 				}
 			}
 			else if (event.type == sf::Event::TextEntered)

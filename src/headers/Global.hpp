@@ -21,7 +21,7 @@ const unsigned int verticalTiles   = 16;
 
 const unsigned int viewWidth       = tilesize * horizontalTiles;
 const unsigned int viewHeight      = tilesize * verticalTiles;
-const unsigned int windowViewScale = 2;
+const unsigned int windowViewScale = 3;
 const unsigned int windowWidth     = viewWidth  * windowViewScale;
 const unsigned int windowHeight    = viewHeight * windowViewScale;
 
@@ -33,6 +33,8 @@ const unsigned int sawbladeFrameDuration = 1;
 const float GRAVITY = 0.16;
 
 enum Direction { Up, Down, Left, Right };
+
+enum MouseWheel { Forward = 1, Backward = -1 };
 
 enum Alignment { Start, Center, End };
 
@@ -76,3 +78,4 @@ bool pressing(sf::Mouse::Button button);
 void handlePress(bool pressing, bool &press, bool &pressed);
 sf::Vector2f relativeViewPosition(sf::View view, sf::Vector2f position);
 sf::Vector2f align(sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position);
+mapVector getCustomMapVector(std::string mapName);

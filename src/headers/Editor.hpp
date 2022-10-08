@@ -114,7 +114,6 @@ struct Editor
 
 	bool crosshair = false;
 
-	enum MouseWheel { Up = 1, Down = -1 };
 	float zoom     = 1.0;
 	float zoomStep = 0.1;
 	float minZoom  = 0.1;
@@ -141,6 +140,9 @@ struct Editor
 	// Control + S
 	bool saveMapPress   = false;
 	bool saveMapPressed = false;
+	// Control + L
+	bool loadMapPress   = false;
+	bool loadMapPressed = false;
 
 	Animation sawbladeAnimation;
 
@@ -168,6 +170,7 @@ struct Editor
 
 	void clearMap(); // also works for initializing the map
 	void saveMap();
+	void loadMap();
 	void changeMapSize(unsigned int newWidth, unsigned int newHeight);
 
 	sf::Vector3i determineTile(sf::Vector2i mapCoord, int tileset);

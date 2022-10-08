@@ -6,6 +6,8 @@
 #define levelboxColumns 5
 #define levelboxSpacing 36
 
+#define customLevelsScrollDelta 30
+
 Game::Game(sf::RenderWindow *_window, sf::View *_view)
 {
 	window = _window;
@@ -62,6 +64,44 @@ void Game::processMouseInput()
 
 
 
+void Game::handleCustomLevelsScroll(sf::Event event)
+{
+	sf::Vector2f viewPosition = view->getCenter();
+
+	if (event.mouseWheel.delta == MouseWheel::Forward)
+	{
+		viewPosition.y -= customLevelsScrollDelta;
+	}
+	else if (event.mouseWheel.delta == MouseWheel::Backward)
+	{
+		viewPosition.y += customLevelsScrollDelta;
+	}
+
+	// limiting the view
+	if (viewPosition.y < viewHeight / 2)
+	{
+		viewPosition.y = viewHeight / 2;
+	}
+	if (lastCustomMapVerticalPosition + 24 > viewHeight)
+	{
+		if (viewPosition.y > lastCustomMapVerticalPosition + 24 - viewHeight / 2)
+		{
+			viewPosition.y = lastCustomMapVerticalPosition + 24 - viewHeight / 2;
+		}
+	}
+	else
+	{
+		if (viewPosition.y > viewHeight / 2)
+		{
+			viewPosition.y = viewHeight / 2;
+		}
+	}
+
+	view->setCenter(viewPosition);
+}
+
+
+
 void Game::createStoryLevelboxes()
 {
 	unsigned int currentColumn = 0;
@@ -105,7 +145,9 @@ void Game::createStoryLevelboxes()
 
 void Game::createCustomLevelboxes()
 {
+	lastCustomMapVerticalPosition = 0;
 	unsigned int count = 0;
+	if (!fs::is_directory("custom_maps")) { return; }
 	for (fs::directory_entry entry : fs::directory_iterator("custom_maps"))
 	{
 		std::stringstream conversionStream;
@@ -115,7 +157,11 @@ void Game::createCustomLevelboxes()
 		mapName.replace(mapName.find(".txt"), sizeof(".txt"), "");
 		mapName.replace(mapName.find('"'), sizeof('"'), "");
 
-		menu.push_back(new Levelbox(level, mapName, {viewWidth / 2, viewHeight * 0.25f + 48.f + levelboxSpacing * count}));
+		float verticalPosition = viewHeight * 0.25 + 48 + levelboxSpacing * count;
+
+		menu.push_back(new Levelbox(level, mapName, {viewWidth / 2, verticalPosition}));
+
+		lastCustomMapVerticalPosition = verticalPosition;
 
 		count++;
 	}
@@ -161,7 +207,16 @@ void Game::createMenu()
 			break;
 
 		case LevelPlay:
-			menu.push_back(new Menubox(StoryLevels, "Back", {60, 20}, Start, Start, {10, 10}));
+			State returnState;
+			if (level.custom)
+			{
+				returnState = CustomLevels;
+			}
+			else
+			{
+				returnState = StoryLevels;
+			}
+			menu.push_back(new Menubox(returnState, "Back", {60, 20}, Start, Start, {10, 10}));
 			break;
 
 		// case LevelClear:

@@ -8,6 +8,7 @@ struct Levelbox : Menubox
 {
 	Level *level;
 
+	std::string customMapName; // only used if custom
 	bool custom = false;
 
 	Levelbox(Level &_level, unsigned int index, sf::Vector2f position);

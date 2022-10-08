@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <fstream>
 
 #include "headers/Global.hpp"
 
@@ -96,4 +97,48 @@ sf::Vector2f align(sf::Vector2f size, Alignment horizontalAlignment, Alignment v
 	}
 
 	return position;
+}
+
+mapVector getCustomMapVector(std::string mapName)
+{
+	mapVector customMap;
+
+	std::ifstream mapStream;
+	mapStream.open("custom_maps/" + mapName + ".txt");
+	std::stringstream stream;
+	int currentRow = 0;
+	char character;
+	/*
+		i wrote this code a long time ago but had to revisit it and change some stuff
+		added some additional comments to try and make sense of the code i had previously written
+	*/
+	while (mapStream.get(character))
+	{
+		// reseting the string stream whenever we hit a left-facing curly bracket
+		if (character == '{')
+		{
+			stream.str("");
+		}
+		stream << character;
+		// pushing a new vector whenever we come across a left-facing curly bracket plus a blank space right after
+		if (stream.str() == "{ ")
+		{
+			customMap.push_back({});
+		}
+		// keeping track of which row we are on
+		else if (stream.str() == " }")
+		{
+			currentRow++;
+		}
+		// seeing if we have come across a pattern like {x,x,x} where x can be any digit (0-9)
+		// this represents one tile on the map and so we push that as a sf::Vector3i
+		// to the vector at the position of the row we are currently on
+		else if (stream.str().length() > 6 && stream.str()[0] == '{' && stream.str()[6] == '}')
+		{
+			customMap.at(currentRow).push_back(sf::Vector3i(stream.str()[1] - '0', stream.str()[3] - '0', stream.str()[5] - '0'));
+			stream.str("");
+		}
+	}
+
+	return customMap;
 }

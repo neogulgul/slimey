@@ -7,10 +7,11 @@
 
 Button::Button() {}
 
-Button::Button(std::string _string, sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f _position)
+Button::Button(std::string _string, sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f _position, bool _relativeToView)
 {
 	string   = _string;
 	position = align(size, horizontalAlignment, verticalAlignment, {_position.x + borderSize, _position.y + borderSize});
+	relativeToView = _relativeToView;
 	shape.setOutlineThickness(borderSize);
 	shape.setOutlineColor(sf::Color::Transparent);
 	shape.setSize({size.x - borderSize * 2, size.y - borderSize * 2});
@@ -18,7 +19,14 @@ Button::Button(std::string _string, sf::Vector2f size, Alignment horizontalAlign
 
 void Button::draw(sf::RenderWindow *window, sf::View *view, Text *text)
 {
-	shape.setPosition(relativeViewPosition(*view, position));
+	if (relativeToView)
+	{
+		shape.setPosition(relativeViewPosition(*view, position));
+	}
+	else
+	{
+		shape.setPosition(position);
+	}
 	bounds = shape.getGlobalBounds();
 
 	sf::Vector2f shapeCenter;

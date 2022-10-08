@@ -112,11 +112,11 @@ void Editor::handleZoom(sf::Event event)
 {
 	if (*paused) { return; }
 
-	if (event.mouseWheel.delta == MouseWheel::Up)
+	if (event.mouseWheel.delta == MouseWheel::Forward)
 	{
 		zoom += zoomStep;
 	}
-	else if (event.mouseWheel.delta == MouseWheel::Down)
+	else if (event.mouseWheel.delta == MouseWheel::Backward)
 	{
 		zoom -= zoomStep;
 	}
@@ -161,6 +161,8 @@ void Editor::processKeyboardInput()
 	handlePress(pressingControl && pressingShift && pressing(sf::Keyboard::R), clearMapPress, clearMapPressed);
 	// save
 	handlePress(pressingControl && pressing(sf::Keyboard::S), saveMapPress, saveMapPressed);
+	// load
+	handlePress(pressingControl && pressing(sf::Keyboard::L), loadMapPress, loadMapPressed);
 
 	if (!inputSelected)
 	{
@@ -192,6 +194,10 @@ void Editor::handleKeyboardInput()
 	if (saveMapPress)
 	{
 		saveMap();
+	}
+	else if (loadMapPress)
+	{
+		loadMap();
 	}
 	else if (clearMapPress)
 	{
@@ -330,6 +336,22 @@ void Editor::saveMap()
 	std::ofstream output("custom_maps/" + mapNameInput->getString() + ".txt");
 	output << mapStream.str();
 	output.close();
+}
+
+void Editor::loadMap()
+{
+	if (fs::exists("custom_maps/" + mapNameInput->getString() + ".txt"))
+	{
+		map = getCustomMapVector(mapNameInput->getString());
+
+		mapSize.x = map.size();
+		mapSize.y = map.at(0).size();
+
+		mapWidthInput ->value.str("");
+		mapHeightInput->value.str("");
+		mapWidthInput ->value << mapSize.x;
+		mapHeightInput->value << mapSize.y;
+	}
 }
 
 void Editor::changeMapSize(unsigned int newWidth, unsigned int newHeight)
@@ -943,7 +965,7 @@ void Editor::drawSizeInputs()
 		text->draw(input->value.str(), Start, Center, {input->bounds.left + 3.5f, input->bounds.top + input->bounds.height / 2}, input->textColor);
 	}
 
-	text->draw("Name of your map", Center, Center, {mapNameInput->bounds.left + mapNameInput->bounds.width / 2, mapNameInput->bounds.top - 6});
+	text->draw("Name of map", Center, Center, {mapNameInput->bounds.left + mapNameInput->bounds.width / 2, mapNameInput->bounds.top - 6});
 	text->draw("Size", Center, Center, {mapWidthInput->bounds.left + mapWidthInput->bounds.width / 2, mapWidthInput->bounds.top - 6});
 	text->draw("x", Center, Center, {mapWidthInput->bounds.left - 6, mapWidthInput->bounds.top + mapWidthInput->bounds.height / 2});
 	text->draw("y", Center, Center, {mapHeightInput->bounds.left - 6, mapHeightInput->bounds.top + mapHeightInput->bounds.height / 2});
@@ -997,8 +1019,15 @@ void Editor::update()
 		}
 		else if (activeButton == loadButton)
 		{
-			// todo: this
+			loadMap();
 		}
+	}
+
+	if (inputSelected && (pressing(sf::Keyboard::Enter) || (pressing(sf::Mouse::Left) && !inputHovering)))
+	{
+		inputSelected = false;
+		clampSizeInputs();
+		changeMapSize(mapWidthInput->getValue(), mapHeightInput->getValue());
 	}
 
 	if (!inputHovering && !buttonHovering)
@@ -1010,13 +1039,6 @@ void Editor::update()
 
 		if (pressing(sf::Mouse::Left))
 		{
-			if (inputSelected)
-			{
-				inputSelected = false;
-				clampSizeInputs();
-				changeMapSize(mapWidthInput->getValue(), mapHeightInput->getValue());
-			}
-
 			if (pressing(sf::Keyboard::LAlt) || pressing(sf::Keyboard::RAlt))
 			{
 				eyedropper();

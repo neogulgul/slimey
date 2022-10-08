@@ -22,6 +22,8 @@ struct Level
 
 	bool *paused;
 
+	bool custom = false;
+
 	mapVector map;
 
 	sf::Vector2u mapSize;
@@ -47,7 +49,7 @@ struct Level
 	      Audio *_audio, Sprites *_sprites, Transition *_transition, bool *_paused);
 
 	void reset();
-	void loadMap(mapVector _map);
+	void loadMap(mapVector _map, bool _custom = false);
 	void drawMap();
 
 	void updateTurrets();

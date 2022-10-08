@@ -65,6 +65,8 @@ struct Game
 	bool rightClick    = false;
 	bool rightClicked  = false;
 
+	float lastCustomMapVerticalPosition;
+
 	std::vector<Menubox *> menu;
 
 	State lastState;
@@ -85,6 +87,8 @@ struct Game
 
 	void processKeyboardInput();
 	void processMouseInput();
+
+	void handleCustomLevelsScroll(sf::Event event);
 
 	void createStoryLevelboxes();
 	void createCustomLevelboxes();
