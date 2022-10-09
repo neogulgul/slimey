@@ -1,6 +1,0 @@
-[] options
-	[] toggle music
-	[] toggle sfx
-	[] toggle fps
-	[] toggle collisions
-	[] toggle debug mode

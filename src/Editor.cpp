@@ -232,7 +232,7 @@ void Editor::processMouseInput()
 
 void Editor::handleDragging()
 {
-	if (pressing(sf::Mouse::Middle))
+	if (pressing(sf::Mouse::Middle) || pressing(sf::Keyboard::Space))
 	{
 		if (!dragging)
 		{

@@ -8,7 +8,8 @@ Controls:
 
 	Editor:
 		Place / Erase    - Left Click
-		Move view        - Middle Click + Move Mouse
+		Move view        - (Middle Click || Space) + Move Mouse
+		Zoom view        - Scrollwheel
 		Eyedropper       - Alt + Left Click
 		Equip Brush      - B
 		Equip Fill       - F
