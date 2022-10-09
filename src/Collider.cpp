@@ -13,14 +13,13 @@ sf::FloatRect getTileHitbox(sf::Vector3i tile, sf::Vector2i tileCoord)
 	return sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
 }
 
-Collision::Collision(Direction _direction, sf::Vector2i _position)
+Collision::Collision(Direction _direction, sf::Vector2i _coord)
 {
 	direction = _direction;
-	position  = _position;
+	coord     = _coord;
 }
 
-Collider::Collider()
-{}
+Collider::Collider() {}
 
 Collider::Collider(sf::Sprite *_sprite, mapVector *_map, sf::Vector2u _mapSize)
 {
@@ -29,19 +28,19 @@ Collider::Collider(sf::Sprite *_sprite, mapVector *_map, sf::Vector2u _mapSize)
 	mapSize = _mapSize;
 }
 
-sf::Vector3i Collider::getTile(unsigned int x, unsigned int y)
+sf::Vector3i Collider::getTile(sf::Vector2i coord)
 {
-	return map->at(x).at(y);
-}
-
-sf::FloatRect Collider::getHitbox()
-{
-	return sf::FloatRect(position.x, position.y, size.x, size.y);
+	return map->at(coord.x).at(coord.y);
 }
 
 sf::Vector2f Collider::getCenter()
 {
 	return {position.x + size.x / 2, position.y + size.y / 2};
+}
+
+sf::FloatRect Collider::getHitbox()
+{
+	return sf::FloatRect(position.x, position.y, size.x, size.y);
 }
 
 void Collider::setPosition(float x, float y)
@@ -126,32 +125,13 @@ void Collider::checkCollision()
 					tileCoord.x = colliderCoord.x + x;
 					tileCoord.y = colliderCoord.y;
 					if (!validCoord(tileCoord)) { continue; }
-					tileHitbox = getTileHitbox(getTile(tileCoord.x, tileCoord.y), tileCoord);
-
-					if (tileCoord.x == 0)
-					{
-						/*
-						fix for a stupid bug
-						*/
-						colliderHitbox.left += tilesize;
-						    tileHitbox.left += tilesize;
-					}
+					tileHitbox = getTileHitbox(getTile(tileCoord), tileCoord);
 
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
 						hitUp = true;
 						collisions.push_back(Collision(Up, tileCoord));
 						position.y = tileCoord.y * tilesize + tilesize;
-					}
-
-					if (tileCoord.x == 0)
-					{
-						/*
-						when the x-coord of the tile we're collision checking against is equal to zero some weird shit occurs
-						checking for an intersection between the collider and a tile returns true when it shouldn't
-						*/
-						colliderHitbox.left -= tilesize;
-						    tileHitbox.left -= tilesize;
 					}
 				}
 			}
@@ -163,33 +143,13 @@ void Collider::checkCollision()
 					tileCoord.x = colliderCoord.x + x;
 					tileCoord.y = colliderCoord.y + colliderIntersections.y;
 					if (!validCoord(tileCoord)) { continue; }
-					tileHitbox = getTileHitbox(getTile(tileCoord.x, tileCoord.y), tileCoord);
-
-					if (tileCoord.x == 0)
-					{
-						/*
-						i fixed it by moving the hitboxes a bit to the right (for the check) and then back again
-						the move distance doesn't matter as long as the x-coord doesn't stay zero
-						*/
-						colliderHitbox.left += tilesize;
-						    tileHitbox.left += tilesize;
-					}
+					tileHitbox = getTileHitbox(getTile(tileCoord), tileCoord);
 
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
 						hitDown = true;
 						collisions.push_back(Collision(Down, tileCoord));
 						position.y = tileCoord.y * tilesize - size.y;
-					}
-
-					if (tileCoord.x == 0)
-					{
-						/*
-						i was too stupid to figure out why this happens so i came up with this scuffed solution
-						in the end it works, so who am i to complain
-						*/
-						colliderHitbox.left -= tilesize;
-						    tileHitbox.left -= tilesize;
 					}
 				}
 			}
@@ -237,7 +197,7 @@ void Collider::checkCollision()
 					tileCoord.x = colliderCoord.x;
 					tileCoord.y = colliderCoord.y + y;
 					if (!validCoord(tileCoord)) { continue; }
-					tileHitbox = getTileHitbox(getTile(tileCoord.x, tileCoord.y), tileCoord);
+					tileHitbox = getTileHitbox(getTile(tileCoord), tileCoord);
 
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
@@ -255,7 +215,7 @@ void Collider::checkCollision()
 					tileCoord.x = colliderCoord.x + colliderIntersections.x;
 					tileCoord.y = colliderCoord.y + y;
 					if (!validCoord(tileCoord)) { continue; }
-					tileHitbox = getTileHitbox(getTile(tileCoord.x, tileCoord.y), tileCoord);
+					tileHitbox = getTileHitbox(getTile(tileCoord), tileCoord);
 
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
@@ -272,10 +232,43 @@ void Collider::checkCollision()
 			}
 		}
 	}
+
+	// removing any vertical collisions that a collider is no longer intersecting in the x-axis
+	for (Collision &collision : collisions)
+	{
+		if (collision.direction == Up || collision.direction == Down)
+		{
+			tileHitbox = getTileHitbox(getTile(collision.coord), collision.coord);
+			if (position.x + size.x < tileHitbox.left
+			    ||
+			    position.x > tileHitbox.left + tileHitbox.width)
+			{
+				collision.invalid = true;
+			}
+		}
+	}
+
+	unsigned int numberOfCollisions = collisions.size();
+	unsigned int removedCollisions  = 0;
+
+	for (unsigned int i = 0; i < numberOfCollisions; i++)
+	{
+		unsigned int realIndex = i - removedCollisions;
+		if (collisions.at(realIndex).invalid)
+		{
+			collisions.erase(collisions.begin() + realIndex);
+			removedCollisions++;
+		}
+	}
 }
 
 void Collider::handleCollision()
-{}
+{
+	/*
+	empty by default
+	used by derived structs
+	*/
+}
 
 void Collider::update()
 {
@@ -286,11 +279,18 @@ void Collider::update()
 
 void Collider::updateSprite()
 {
+	/*
+	empty by default
+	used by derived structs
+	*/
 }
 
 void Collider::draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused)
 {
-	updateSprite();
+	if (!paused && window->hasFocus())
+	{
+		updateSprite();
+	}
 	if (!getHitbox().intersects(viewport)) { return; }
 	sprite->setPosition(position);
 	window->draw(*sprite);

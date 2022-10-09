@@ -1,7 +1,6 @@
 #include "headers/Animation.hpp"
 
-Animation::Animation()
-{}
+Animation::Animation() {}
 
 Animation::Animation(unsigned int _frameCount, unsigned int _frameDuration)
 {

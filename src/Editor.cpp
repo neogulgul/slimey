@@ -8,6 +8,8 @@
 #define mapOutlineThickness 4
 #define selectionTilesetOutlineThickness 2
 
+#define backspace 8
+
 Input::Input() {}
 
 Input::Input(sf::Vector2f _position, sf::Vector2f _size, unsigned int _maxLength, bool _numbersOnly)
@@ -877,29 +879,38 @@ void removeLastCharFromStringstream(std::stringstream &stringstream)
 	stringstream.seekp(stringstream.str().length());
 }
 
+char uppercaseToLowercase(char character)
+{
+	return character + 'a' - 'A';
+}
+
 void Editor::handleTextEntered(sf::Event event)
 {
 	if (*paused || !inputSelected) { return; }
 
 	char character = static_cast<char>(event.text.unicode);
 
-	if ((int)character == 8) // backspace to delete
+	if (character == backspace) // backspace to delete
 	{
 		removeLastCharFromStringstream(selectedInput->value);
 	}
 	else if (!selectedInput->numbersOnly && (
-	         	(int)character >= (int)'0' && (int)character <= (int)'9'
+	         	character >= '0' && character <= '9'
 	         	||
-	         	(int)character >= (int)'A' && (int)character <= (int)'Z'
+	         	character >= 'A' && character <= 'Z'
 	         	||
-	         	(int)character >= (int)'a' && (int)character <= (int)'z'
+	         	character >= 'a' && character <= 'z'
 	         )
 	         ||
-	         selectedInput->numbersOnly && (int)character >= (int)'0' && (int)character <= (int)'9')
+	         selectedInput->numbersOnly && character >= '0' && character <= '9')
 	{
 		if (selectedInput->value.str().length() == selectedInput->maxLength)
 		{
 			removeLastCharFromStringstream(selectedInput->value);
+		}
+		if (character >= 'A' && character <= 'Z')
+		{
+			character = uppercaseToLowercase(character);
 		}
 		selectedInput->value << character;
 	}
@@ -1000,13 +1011,10 @@ void Editor::drawButtons()
 
 void Editor::update()
 {
-	if (*paused) { return; }
+	if (*paused || !window->hasFocus()) { return; }
 
-	if (window->hasFocus())
-	{
-		processKeyboardInput();
-		processMouseInput();
-	}
+	processKeyboardInput();
+	processMouseInput();
 
 	updateSizeInputs();
 	updateButtons();

@@ -29,7 +29,7 @@ struct Level
 	sf::Vector2u mapSize;
 
 	sf::Vector2i spawn;
-	sf::Vector2u exit;
+	sf::Vector2i exit;
 
 	Player player;
 

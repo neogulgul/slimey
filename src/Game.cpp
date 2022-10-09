@@ -351,14 +351,14 @@ moved these to States.cpp
 void Game::update()
 {
 	updateFPS();
+	if (transition.transitioning)
+	{
+		transition.update();
+	}
 	if (window->hasFocus())
 	{
 		processKeyboardInput();
 		processMouseInput();
-	}
-	if (transition.transitioning)
-	{
-		transition.update();
 	}
 	updateMenu();
 	updateState();

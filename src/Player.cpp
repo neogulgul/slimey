@@ -3,10 +3,9 @@
 
 #include "headers/Player.hpp"
 
-Player::Player()
-{}
+Player::Player() {}
 
-Player::Player(sf::Sprite *_sprite, sf::Sprite *_slimeyDeath, sf::Sprite *_offscreenCircle, bool *_levelCleared, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit)
+Player::Player(sf::Sprite *_sprite, sf::Sprite *_slimeyDeath, sf::Sprite *_offscreenCircle, bool *_levelCleared, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2i _exit)
 : Collider(_sprite, _map, _mapSize)
 {
 	slimeyDeath     = _slimeyDeath;
@@ -201,7 +200,7 @@ void Player::handleCollision()
 
 	for (Collision collision : collisions)
 	{
-		sf::Vector3i tile = getTile(collision.position.x, collision.position.y);
+		sf::Vector3i tile = getTile(collision.coord);
 		int tileset = tile.x;
 		if (tile == sawbladeTile)
 		{
@@ -296,7 +295,7 @@ void Player::handleCollision()
 		velocity.x = 0;
 	}
 
-	if (getTile(exit.x, exit.y) == exitTile
+	if (getTile(exit) == exitTile
 	    &&
 	    getHitbox().intersects(sf::FloatRect(exit.x * tilesize + 6, exit.y * tilesize + 6, 4, 4)))
 	{
@@ -368,7 +367,7 @@ void Player::updateSprite()
 
 void Player::draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused)
 {
-	if (!paused)
+	if (!paused && window->hasFocus())
 	{
 		updateSprite();
 	}

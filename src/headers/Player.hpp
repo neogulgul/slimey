@@ -9,7 +9,7 @@ struct Player : Collider
 	bool *levelCleared;
 
 	sf::Vector2i spawn;
-	sf::Vector2u exit;
+	sf::Vector2i exit;
 
 	int width  = 14;
 	int height = 12;
@@ -67,7 +67,7 @@ struct Player : Collider
 	bool resurrected  = false;
 
 	Player();
-	Player(sf::Sprite *_sprite, sf::Sprite *_slimeyDeath, sf::Sprite *_offscreenCircle, bool *_levelCleared, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2u _exit);
+	Player(sf::Sprite *_sprite, sf::Sprite *_slimeyDeath, sf::Sprite *_offscreenCircle, bool *_levelCleared, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2i _exit);
 
 	void place(int x, int y);
 	void death();

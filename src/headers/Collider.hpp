@@ -7,9 +7,10 @@
 struct Collision
 {
 	Direction direction;
-	sf::Vector2i position;
+	sf::Vector2i coord;
+	bool invalid = false;
 
-	Collision(Direction _direction, sf::Vector2i _position);
+	Collision(Direction _direction, sf::Vector2i _coord);
 };
 
 struct Collider
@@ -33,9 +34,9 @@ struct Collider
 	Collider();
 	Collider(sf::Sprite *_sprite, mapVector *_map, sf::Vector2u _mapSize);
 
-	sf::Vector3i getTile(unsigned int x, unsigned int y);
-	sf::FloatRect getHitbox();
+	sf::Vector3i getTile(sf::Vector2i coord);
 	sf::Vector2f getCenter();
+	sf::FloatRect getHitbox();
 
 	        void setPosition(float x, float y);
 	virtual void updatePosition();

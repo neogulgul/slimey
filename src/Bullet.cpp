@@ -57,7 +57,7 @@ void Bullet::updateSprite()
 
 void Bullet::draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused)
 {
-	if (!paused)
+	if (!paused && window->hasFocus())
 	{
 		updateSprite();
 	}

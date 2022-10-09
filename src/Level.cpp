@@ -216,7 +216,6 @@ void Level::updateView(bool instant = false)
 void Level::update()
 {
 	if (!window->hasFocus()) { return; }
-
 	if (!loaded)
 	{
 		loaded = true;
@@ -227,7 +226,10 @@ void Level::update()
 
 	if (*paused) { return; }
 
-	updateTurrets();
+	if (!cleared && player.alive)
+	{
+		updateTurrets();
+	}
 	updateBullets();
 	destroyBullets();
 
@@ -252,14 +254,12 @@ void Level::update()
 	}
 
 	if (!cleared && !player.alive) { reset(); }
+
+	sawbladeAnimation.update();
 }
 
 void Level::draw()
 {
-	if (!*paused)
-	{
-		sawbladeAnimation.update();
-	}
 	drawMap();
 	drawBullets();
 	player.draw(window, *viewport, *paused);
