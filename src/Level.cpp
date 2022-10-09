@@ -1,19 +1,24 @@
-#include <SFML/Graphics.hpp>
-
 #include "headers/Level.hpp"
 
 Level::Level() {}
 
 Level::Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport,
-             Audio *_audio, Sprites *_sprites, Transition *_transition, bool *_paused)
+             Audio *_audio, Sprites *_sprites, Text *_text, Transition *_transition, bool *_paused, bool *_debug)
 {
 	window     = _window;
 	view       = _view;
 	viewport   = _viewport;
 	audio      = _audio;
 	sprites    = _sprites;
+	text       = _text;
 	transition = _transition;
 	paused     = _paused;
+	debug      = _debug;
+
+	collisionRect.setSize({tilesize, tilesize});
+	collisionRect.setFillColor(sf::Color::Transparent);
+	collisionRect.setOutlineColor(collisionColor);
+	collisionRect.setOutlineThickness(-2);
 
 	sawbladeAnimation = Animation(sawbladeFrameCount, sawbladeFrameDuration);
 }
@@ -139,6 +144,7 @@ void Level::updateTurrets()
 		for (Turret &turret : turrets)
 		{
 			turret.shoot(&bullets, &sprites->bullet, &map, mapSize, &sprites->bulletExplosion, &player);
+			audio->shoot.play();
 		}
 	}
 }
@@ -147,7 +153,10 @@ void Level::updateBullets()
 {
 	for (Bullet &bullet : bullets)
 	{
+		bool bulletExplodingLastFrame = bullet.exploding;
 		bullet.update();
+		if (bullet.exploding && !bulletExplodingLastFrame)
+		{ audio->explosion.play(); }
 	}
 }
 
@@ -172,6 +181,15 @@ void Level::destroyBullets()
 			bullets.erase(bullets.begin() + realIndex);
 			destroyedBullets++;
 		}
+	}
+}
+
+void Level::drawPlayerCollisions()
+{
+	for (Collision collision : player.collisions)
+	{
+		collisionRect.setPosition(collision.coord.x * tilesize, collision.coord.y * tilesize);
+		window->draw(collisionRect);
 	}
 }
 
@@ -226,6 +244,9 @@ void Level::update()
 
 	if (*paused) { return; }
 
+	bool playerJumpedLastFrame = player.jumped;
+	bool playerAliveLastFrame  = player.alive;
+
 	if (!cleared && player.alive)
 	{
 		updateTurrets();
@@ -233,11 +254,17 @@ void Level::update()
 	updateBullets();
 	destroyBullets();
 
-	bool playerJumpedLastFrame = player.jumped;
 	player.update();
 
-	if (player.jumped && !playerJumpedLastFrame) { audio->jump.play(); }
-	if (player.hitVerticalBounce || player.hitHorizontalBounce) { audio->bounce.play(); }
+	// playing some audio
+	if (player.jumped && !playerJumpedLastFrame)
+	{ audio->jump.play(); }
+	if (player.hitVerticalBounce || player.hitHorizontalBounce)
+	{ audio->bounce.play(); }
+	if (!player.alive && playerAliveLastFrame)
+	{ audio->hurt.play(); }
+	if (player.alive && !playerAliveLastFrame)
+	{ audio->spawn.play(); }
 
 	updateView();
 
@@ -263,4 +290,25 @@ void Level::draw()
 	drawMap();
 	drawBullets();
 	player.draw(window, *viewport, *paused);
+	if (*debug)
+	{
+		drawPlayerCollisions();
+
+		std::stringstream stream;
+		stream << "pos.x:" << player.position.x;
+		text->draw(stream.str(), Start, End, relativeViewPosition(*view, {0, viewHeight - 30}));
+
+		stream.str("");
+		stream << "pos.y:" << player.position.y;
+		text->draw(stream.str(), Start, End, relativeViewPosition(*view, {0, viewHeight - 20}));
+
+		stream.str("");
+		stream << "vel.x:" << player.velocity.x;
+		text->draw(stream.str(), Start, End, relativeViewPosition(*view, {0, viewHeight - 10}));
+
+		stream.str("");
+		stream << "vel.y:" << player.velocity.y;
+		text->draw(stream.str(), Start, End, relativeViewPosition(*view, {0, viewHeight     }));
+
+	}
 }

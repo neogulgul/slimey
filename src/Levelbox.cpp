@@ -1,5 +1,3 @@
-#include <SFML/Graphics.hpp>
-
 #include "headers/Levelbox.hpp"
 
 #define         destination LevelPlay

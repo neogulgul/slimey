@@ -1,5 +1,3 @@
-#include <SFML/Graphics.hpp>
-
 #include "headers/Button.hpp"
 
 #define activeScale 1.2

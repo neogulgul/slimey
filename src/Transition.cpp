@@ -1,4 +1,3 @@
-#include <SFML/Graphics.hpp>
 #include <cmath>
 
 #include "headers/Transition.hpp"

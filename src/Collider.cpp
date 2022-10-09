@@ -1,4 +1,3 @@
-#include <SFML/Graphics.hpp>
 #include <cmath>
 
 #include "headers/Collider.hpp"
@@ -233,7 +232,7 @@ void Collider::checkCollision()
 		}
 	}
 
-	// removing any vertical collisions that a collider is no longer intersecting in the x-axis
+	// removing any vertical collisions that the collider is no longer intersecting in the x-axis
 	for (Collision &collision : collisions)
 	{
 		if (collision.direction == Up || collision.direction == Down)

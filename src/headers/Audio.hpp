@@ -6,7 +6,7 @@ struct Audio
 {
 	// music
 
-	// sfx
+	// SFX
 	sf::SoundBuffer clickBuffer;
 	sf::Sound click;
 
@@ -16,5 +16,20 @@ struct Audio
 	sf::SoundBuffer bounceBuffer;
 	sf::Sound bounce;
 
+	sf::SoundBuffer hurtBuffer;
+	sf::Sound hurt;
+
+	sf::SoundBuffer spawnBuffer;
+	sf::Sound spawn;
+
+	sf::SoundBuffer shootBuffer;
+	sf::Sound shoot;
+
+	sf::SoundBuffer explosionBuffer;
+	sf::Sound explosion;
+
 	Audio();
+
+	void updateMusicVolume(bool notMuted);
+	void updateSFXVolume(bool notMuted);
 };

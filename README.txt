@@ -20,4 +20,4 @@ Controls:
 		Load Map         - Ctrl + L || Hit the load button
 		Pause            - Escape
 
-		*The load function will parse the name of the map to load from the "name of map" input
+		*The load map function will parse the name of the map to load from the "name of map" input

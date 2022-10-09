@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "Animation.hpp"
+#include "Audio.hpp"
 #include "Button.hpp"
 #include "Global.hpp"
 #include "Sprites.hpp"
@@ -42,10 +43,12 @@ struct Editor
 	sf::View *view;
 	sf::FloatRect *viewport;
 
+	Audio   *audio;
 	Sprites *sprites;
-	Text *text;
+	Text    *text;
 
 	bool *handyCursor;
+	bool *leftClick;
 	bool *paused;
 
 	mapVector map;
@@ -147,8 +150,8 @@ struct Editor
 	Animation sawbladeAnimation;
 
 	Editor();
-	Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Sprites *_sprites, Text *_text,
-	       sf::Vector2f *_mousePosition, bool *_handyCursor, bool *_paused);
+	Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Audio *_audio, Sprites *_sprites, Text *_text,
+	       sf::Vector2f *_mousePosition, bool *_handyCursor, bool *_leftClick, bool *_paused);
 
 	void declareRegions();
 
@@ -161,6 +164,7 @@ struct Editor
 	void processMouseInput();
 	void handleDragging();
 
+	void updateMapRect();
 	void updateMapBounds();
 	void updateSelectionTilesetBounds();
 	sf::Vector2f relativeMapPosition(float x, float y);

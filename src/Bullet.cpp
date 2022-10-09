@@ -1,5 +1,3 @@
-#include <SFML/Graphics.hpp>
-
 #include "headers/Bullet.hpp"
 
 Bullet::Bullet(sf::Sprite *_sprite, mapVector *_map, sf::Vector2u _mapSize, sf::Sprite *_explosion, Player *_player, sf::Vector2f _position, sf::Vector2f _velocity)

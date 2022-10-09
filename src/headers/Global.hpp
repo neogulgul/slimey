@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
 #include <filesystem>
 
 #define mapVector std::vector<std::vector<sf::Vector3i>>
@@ -45,7 +46,7 @@ enum State
 	SplashScreen,
 	ExitScreen,
 	MainMenu,
-	Options,
+	OptionsScreen,
 	LevelEditor,
 	StoryLevels,
 	CustomLevels,
@@ -60,6 +61,8 @@ extern sf::Color   activeMenuboxBackground;
 extern sf::Color inactiveMenuboxForeground;
 extern sf::Color   activeMenuboxForeground;
 extern sf::Color                pauseColor;
+// level
+extern sf::Color collisionColor;
 // editor
 extern sf::Color     mapOutlineColor;
 extern sf::Color mapCheckerEvenColor;

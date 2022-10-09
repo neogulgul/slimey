@@ -1,5 +1,3 @@
-#include <SFML/Graphics.hpp>
-
 #include "headers/Turret.hpp"
 
 Turret::Turret(Direction _direction, sf::Vector2u coord)

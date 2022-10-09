@@ -1,4 +1,3 @@
-#include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -35,16 +34,18 @@ std::string Input::getString()
 
 Editor::Editor() {}
 
-Editor::Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Sprites *_sprites, Text *_text,
-               sf::Vector2f *_mousePosition, bool *_handyCursor, bool *_paused)
+Editor::Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Audio *_audio, Sprites *_sprites, Text *_text,
+               sf::Vector2f *_mousePosition, bool *_handyCursor, bool *_leftClick, bool *_paused)
 {
 	window        = _window;
 	view          = _view;
 	viewport      = _viewport;
+	audio         = _audio;
 	sprites       = _sprites;
 	text          = _text;
 	mousePosition = _mousePosition;
 	handyCursor   = _handyCursor;
+	leftClick     = _leftClick;
 	paused        = _paused;
 	
 	declareRegions();
@@ -72,12 +73,11 @@ Editor::Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewp
 
 	tileDimension = {tilesize, tilesize};
 
-	mapRect.setSize({(float)mapSize.x * tilesize, (float)mapSize.y * tilesize});
-	mapRect.setOrigin(mapRect.getSize().x * 0.5, mapRect.getSize().y * 0.5);
 	mapRect.setPosition(viewWidth * 0.5, viewHeight * 0.5);
 	mapRect.setFillColor(sf::Color::Transparent);
 	mapRect.setOutlineThickness(mapOutlineThickness);
 	mapRect.setOutlineColor(mapOutlineColor);
+	updateMapRect();
 
 	mapChecker.setSize(tileDimension);
 	mapChecker.setFillColor(mapOutlineColor);
@@ -94,8 +94,6 @@ Editor::Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewp
 	selectionTilesetSelection.setFillColor(sf::Color::Transparent);
 	selectionTilesetSelection.setOutlineColor(selectionTilesetSelectionOutlineColor);
 	selectionTilesetSelection.setOutlineThickness(-selectionTilesetOutlineThickness);
-
-	updateMapBounds();
 
 	sawbladeAnimation = Animation(sawbladeFrameCount, sawbladeFrameDuration);
 }
@@ -166,31 +164,36 @@ void Editor::processKeyboardInput()
 	// load
 	handlePress(pressingControl && pressing(sf::Keyboard::L), loadMapPress, loadMapPressed);
 
-	if (!inputSelected)
-	{
-		handleKeyboardInput();
-	}
+	handleKeyboardInput();
 }
 
 void Editor::handleKeyboardInput()
 {
-	if (brushPress)
+	if (!inputSelected)
 	{
-		method = Brush;
-	}
-	else if (fillPress)
-	{
-		method = Fill;
-	}
+		if (brushPress)
+		{
+			method = Brush;
+		}
+		else if (fillPress)
+		{
+			method = Fill;
+		}
 
-	if (erasePress)
-	{
-		toggle(erase);
-	}
+		if (erasePress)
+		{
+			toggle(erase);
+		}
 
-	if (crosshairPress)
-	{
-		toggle(crosshair);
+		if (crosshairPress)
+		{
+			toggle(crosshair);
+		}
+
+		if (resetViewPress && !clearMapPress)
+		{
+			resetView();
+		}
 	}
 
 	if (saveMapPress)
@@ -204,10 +207,6 @@ void Editor::handleKeyboardInput()
 	else if (clearMapPress)
 	{
 		clearMap();
-	}
-	else if (resetViewPress)
-	{
-		resetView();
 	}
 }
 
@@ -250,6 +249,13 @@ void Editor::handleDragging()
 }
 
 
+
+void Editor::updateMapRect()
+{
+	mapRect.setSize({(float)mapSize.x * tilesize, (float)mapSize.y * tilesize});
+	mapRect.setOrigin(mapRect.getSize().x * 0.5, mapRect.getSize().y * 0.5);
+	updateMapBounds();
+}
 
 void Editor::updateMapBounds()
 {
@@ -354,6 +360,8 @@ void Editor::loadMap()
 		mapWidthInput ->value << mapSize.x;
 		mapHeightInput->value << mapSize.y;
 	}
+
+	updateMapRect();
 }
 
 void Editor::changeMapSize(unsigned int newWidth, unsigned int newHeight)
@@ -363,10 +371,7 @@ void Editor::changeMapSize(unsigned int newWidth, unsigned int newHeight)
 
 	mapSize.x = newWidth;
 	mapSize.y = newHeight;
-	mapRect.setSize({(float)mapSize.x * tilesize, (float)mapSize.y * tilesize});
-	mapRect.setOrigin(mapRect.getSize().x / 2, mapRect.getSize().y / 2);
-
-	updateMapBounds();
+	updateMapRect();
 
 	// reseting spawn and exit positions if any of them are out of bounds
 	if (spawnPosition.x > newWidth || spawnPosition.y > newHeight)
@@ -1019,8 +1024,9 @@ void Editor::update()
 	updateSizeInputs();
 	updateButtons();
 
-	if (buttonHovering && pressing(sf::Mouse::Left))
+	if (buttonHovering && *leftClick)
 	{
+		audio->click.play();
 		if (activeButton == saveButton)
 		{
 			saveMap();

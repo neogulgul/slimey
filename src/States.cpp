@@ -1,5 +1,3 @@
-#include <SFML/Graphics.hpp>
-
 #include "headers/Game.hpp"
 
 #define amountOfRainbowSlimeys 100
@@ -89,8 +87,34 @@ void Game::updateMainMenu()
 	}
 }
 
-void Game::updateOptions()
+void Game::updateOptionsScreen()
 {
+	for (OptionButton &button : options.optionButtons)
+	{
+		button.active = false;
+		if (button.bounds.contains(mousePosition))
+		{
+			button.active = true;
+			handyCursor   = true;
+			if (leftClick)
+			{
+				audio.click.play();
+				toggle(*button.option);
+				button.update();
+			}
+		}
+	}
+	options.resetButton.active = false;
+	if (options.resetButton.bounds.contains(mousePosition))
+	{
+		options.resetButton.active = true;
+		handyCursor   = true;
+		if (leftClick)
+		{
+			audio.click.play();
+			options.reset();
+		}
+	}
 }
 
 void Game::updateLevelEditor()
@@ -131,8 +155,8 @@ void Game::updateState()
 			updateMainMenu();
 			break;
 
-		case Options:
-			updateOptions();
+		case OptionsScreen:
+			updateOptionsScreen();
 			break;
 
 		case LevelEditor:
@@ -182,9 +206,19 @@ void Game::drawMainMenu()
 	text.draw("Slimey", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
 }
 
-void Game::drawOptions()
+void Game::drawOptionsScreen()
 {
 	text.draw("Options", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
+	text.draw("Music"        , Start, Center, {viewWidth * 0.25, viewHeight - 150});
+	text.draw("Sound Effects", Start, Center, {viewWidth * 0.25, viewHeight - 120});
+	text.draw("Show FPS"     , Start, Center, {viewWidth * 0.25, viewHeight -  90});
+	text.draw("Debug Mode"   , Start, Center, {viewWidth * 0.25, viewHeight -  60});
+
+	for (OptionButton &button : options.optionButtons)
+	{
+		button.draw(window, view, &text);
+	}
+	options.resetButton.draw(window, view, &text);
 }
 
 void Game::drawLevelEditor()
@@ -236,8 +270,8 @@ void Game::drawState()
 			drawMainMenu();
 			break;
 
-		case Options:
-			drawOptions();
+		case OptionsScreen:
+			drawOptionsScreen();
 			break;
 
 		case LevelEditor:

@@ -1,5 +1,3 @@
-#include <SFML/Graphics.hpp>
-
 #include "headers/Editor.hpp"
 
 #define regionSize 9 // 3 x 3

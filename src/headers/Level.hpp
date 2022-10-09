@@ -7,6 +7,7 @@
 #include "Global.hpp"
 #include "Player.hpp"
 #include "Sprites.hpp"
+#include "Text.hpp"
 #include "Transition.hpp"
 #include "Turret.hpp"
 
@@ -16,11 +17,15 @@ struct Level
 	sf::View *view;
 	sf::FloatRect *viewport;
 
-	Audio *audio;
-	Sprites *sprites;
+	Audio      *audio;
+	Sprites    *sprites;
+	Text       *text;
 	Transition *transition;
 
 	bool *paused;
+	bool *debug;
+
+	sf::RectangleShape collisionRect;
 
 	bool custom = false;
 
@@ -46,7 +51,7 @@ struct Level
 
 	Level();
 	Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport,
-	      Audio *_audio, Sprites *_sprites, Transition *_transition, bool *_paused);
+	      Audio *_audio, Sprites *_sprites, Text *_text, Transition *_transition, bool *_paused, bool *_debug);
 
 	void reset();
 	void loadMap(mapVector _map, bool _custom = false);
@@ -56,6 +61,8 @@ struct Level
 	void updateBullets();
 	void drawBullets();
 	void destroyBullets();
+
+	void drawPlayerCollisions();
 
 	void updateView(bool instant);
 

@@ -1,4 +1,3 @@
-#include <SFML/Graphics.hpp>
 #include <fstream>
 
 #include "headers/Global.hpp"
@@ -10,6 +9,8 @@ sf::Color   activeMenuboxBackground( 90, 197,  79);
 sf::Color inactiveMenuboxForeground(101, 115, 146);
 sf::Color   activeMenuboxForeground( 12,  46,  68);
 sf::Color                pauseColor(  0,   0,   0, 191);
+// level
+sf::Color collisionColor(0x4f37b3ee);
 // editor
 sf::Color          mapOutlineColor(0x306bbdff);
 sf::Color      mapCheckerEvenColor(0x53a5d9ff);

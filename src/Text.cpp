@@ -1,5 +1,3 @@
-#include <SFML/Graphics.hpp>
-
 #include "headers/Text.hpp"
 
 void loadPixelatedFont(sf::Font &font, int fontSize, std::string fontPath)

@@ -1,5 +1,5 @@
-#include <SFML/Graphics.hpp>
 #include <cmath>
+#include <cstring>
 
 #include "headers/Game.hpp"
 
@@ -16,8 +16,8 @@ Game::Game(sf::RenderWindow *_window, sf::View *_view)
 	viewport.width  = viewWidth;
 	viewport.height = viewHeight;
 
-	editor     = Editor(window, view, &viewport, &sprites, &text, &mousePosition, &handyCursor, &paused);
-	level      = Level(window, view, &viewport, &audio, &sprites, &transition, &paused);
+	editor     = Editor(window, view, &viewport, &audio, &sprites, &text, &mousePosition, &handyCursor, &leftClick, &paused);
+	level      = Level(window, view, &viewport, &audio, &sprites, &text, &transition, &paused, &options.debug);
 	text       = Text(window);
 	transition = Transition(window, view, state);
 
@@ -152,6 +152,10 @@ void Game::createCustomLevelboxes()
 	{
 		std::stringstream conversionStream;
 		conversionStream << entry;
+
+		// if the file is not a .txt we skip it
+		if (!strstr(conversionStream.str().c_str(), ".txt")) { continue; }
+
 		std::string mapName = conversionStream.str();
 		mapName.replace(mapName.find("custom_maps"), sizeof("custom_maps"), "");
 		mapName.replace(mapName.find(".txt"), sizeof(".txt"), "");
@@ -181,14 +185,14 @@ void Game::createMenu()
 		// 	break;
 
 		case MainMenu:
-			menu.push_back(new Menubox(StoryLevels , "Story"  , {60, 20}, End   , End  , {viewHeight * 0.5 - (30 + 10), viewWidth * 0.75 - 5}));
-			menu.push_back(new Menubox(CustomLevels, "Custom" , {60, 20}, Center, End  , {viewHeight * 0.5            , viewWidth * 0.75 - 5}));
-			menu.push_back(new Menubox(LevelEditor , "Editor" , {60, 20}, Start , End  , {viewHeight * 0.5 + (30 + 10), viewWidth * 0.75 - 5}));
-			menu.push_back(new Menubox(Options     , "Options", {60, 20}, End   , Start, {viewHeight * 0.5 - 5        , viewWidth * 0.75 + 5}));
-			menu.push_back(new Menubox(ExitScreen  , "Exit"   , {60, 20}, Start , Start, {viewHeight * 0.5 + 5        , viewWidth * 0.75 + 5}));
+			menu.push_back(new Menubox(StoryLevels  , "Story"  , {60, 20}, End   , End  , {viewHeight * 0.5 - (30 + 10), viewWidth * 0.75 - 5}));
+			menu.push_back(new Menubox(CustomLevels , "Custom" , {60, 20}, Center, End  , {viewHeight * 0.5            , viewWidth * 0.75 - 5}));
+			menu.push_back(new Menubox(LevelEditor  , "Editor" , {60, 20}, Start , End  , {viewHeight * 0.5 + (30 + 10), viewWidth * 0.75 - 5}));
+			menu.push_back(new Menubox(OptionsScreen, "Options", {60, 20}, End   , Start, {viewHeight * 0.5 - 5        , viewWidth * 0.75 + 5}));
+			menu.push_back(new Menubox(ExitScreen   , "Exit"   , {60, 20}, Start , Start, {viewHeight * 0.5 + 5        , viewWidth * 0.75 + 5}));
 			break;
 
-		case Options:
+		case OptionsScreen:
 			menu.push_back(new Menubox(MainMenu, "Back", {60, 20}, Start, Start, {10, 10}));
 			break;
 
@@ -310,46 +314,56 @@ void Game::drawFPS()
 
 
 /*
-moved these to States.cpp
+	moved these to States.cpp
 */
-// void Game::updateSplashScreen()
+// void updateSplashScreen()
 // { ... }
-// void Game::updateExitScreen()
+// void updateExitScreen()
 // { ... }
-// void Game::updateMainMenu()
+// void updateMainMenu()
 // { ... }
-// void Game::updateOptions()
+// void updateOptionsScreen()
 // { ... }
-// void Game::update()
+// void updateLevelEditor()
 // { ... }
-// void Game::updateLevelPlay()
+// void updateStoryLevels()
 // { ... }
-// void Game::updateLevelClear()
+// void updateCustomLevels()
 // { ... }
-// void Game::updateState()
+// void updateLevelPlay()
+// { ... }
+// void updateLevelClear()
+// { ... }
+// void updateState()
 // { ... }
 
-// void Game::drawSplashScreen()
+// void drawSplashScreen()
 // { ... }
-// void Game::drawExitScreen()
+// void drawExitScreen()
 // { ... }
-// void Game::drawMainMenu()
+// void drawMainMenu()
 // { ... }
-// void Game::drawOptions()
+// void drawOptionsScreen()
 // { ... }
-// void Game::draw()
+// void drawLevelEditor()
 // { ... }
-// void Game::drawLevelPlay()
+// void drawStoryLevels()
 // { ... }
-// void Game::drawLevelClear()
+// void drawCustomLevels()
 // { ... }
-// void Game::drawState()
+// void drawLevelPlay()
+// { ... }
+// void drawLevelClear()
+// { ... }
+// void drawState()
 // { ... }
 
 
 
 void Game::update()
 {
+	bool playedMusicLastFrame = options.music;
+	bool playedSFXLastFrame   = options.SFX;
 	updateFPS();
 	if (transition.transitioning)
 	{
@@ -364,6 +378,15 @@ void Game::update()
 	updateState();
 	updateCursor();
 	updateViewport();
+
+	if (playedMusicLastFrame != options.music)
+	{
+		audio.updateMusicVolume(options.music);
+	}
+	if (playedSFXLastFrame != options.SFX)
+	{
+		audio.updateSFXVolume(options.SFX);
+	}
 
 	if (state != lastState)
 	{
@@ -407,6 +430,9 @@ void Game::draw()
 	{
 		transition.draw();
 	}
-	drawFPS();
+	if (options.FPS)
+	{
+		drawFPS();
+	}
 	displayClock.restart();
 }

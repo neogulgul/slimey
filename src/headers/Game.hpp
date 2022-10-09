@@ -6,9 +6,10 @@
 #include "DefaultMaps.hpp"
 #include "Editor.hpp"
 #include "Global.hpp"
-#include "Menubox.hpp"
 #include "Level.hpp"
 #include "Levelbox.hpp"
+#include "Menubox.hpp"
+#include "Options.hpp"
 #include "Sprites.hpp"
 #include "Text.hpp"
 #include "Transition.hpp"
@@ -48,6 +49,7 @@ struct Game
 	Audio audio;
 	Editor editor;
 	Level level;
+	Options options;
 	Sprites sprites;
 	Text text;
 	Transition transition;
@@ -104,7 +106,7 @@ struct Game
 	void updateSplashScreen();
 	void updateExitScreen();
 	void updateMainMenu();
-	void updateOptions();
+	void updateOptionsScreen();
 	void updateLevelEditor();
 	void updateStoryLevels();
 	void updateCustomLevels();
@@ -115,7 +117,7 @@ struct Game
 	void drawSplashScreen();
 	void drawExitScreen();
 	void drawMainMenu();
-	void drawOptions();
+	void drawOptionsScreen();
 	void drawLevelEditor();
 	void drawStoryLevels();
 	void drawCustomLevels();
