@@ -51,7 +51,7 @@ Editor::Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewp
 	clearMap();
 
 	sizeInputs = {
-		new Input({viewWidth / 2 - 96 / 2, viewHeight - 24}, {96, 12}, 15),
+		new Input({viewWidth * 0.5 - 48, viewHeight - 24}, {96, 12}, 15),
 		new Input({16, viewHeight - 32}, {24 ,12}, 3, true),
 		new Input({16, viewHeight - 16}, {24 ,12}, 3, true)
 	};
@@ -71,8 +71,8 @@ Editor::Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewp
 	tileDimension = {tilesize, tilesize};
 
 	mapRect.setSize({(float)mapSize.x * tilesize, (float)mapSize.y * tilesize});
-	mapRect.setOrigin(mapRect.getSize().x / 2, mapRect.getSize().y / 2);
-	mapRect.setPosition(viewWidth / 2, viewHeight / 2);
+	mapRect.setOrigin(mapRect.getSize().x * 0.5, mapRect.getSize().y * 0.5);
+	mapRect.setPosition(viewWidth * 0.5, viewHeight * 0.5);
 	mapRect.setFillColor(sf::Color::Transparent);
 	mapRect.setOutlineThickness(mapOutlineThickness);
 	mapRect.setOutlineColor(mapOutlineColor);
@@ -135,7 +135,7 @@ void Editor::adjustZoom()
 
 void Editor::resetView()
 {
-	view->setCenter(viewWidth / 2, viewHeight / 2);
+	view->setCenter(viewWidth * 0.5, viewHeight * 0.5);
 	zoom = 1.0;
 	adjustZoom();
 }

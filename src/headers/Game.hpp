@@ -1,7 +1,6 @@
 #pragma once
 
 #include <random>
-#include <sstream>
 
 #include "Audio.hpp"
 #include "DefaultMaps.hpp"
@@ -42,7 +41,7 @@ struct Game
 	sf::Clock frameUpdateClock;   // used to only update the FPS counter after a certain amount of time has passed, to make it more readable
 	sf::Clock frameClock;         // used to calculate FPS
 	sf::Clock displayClock;       // the time it takes the window to display everything drawn which is then subtracted when calculating FPS
-	std::stringstream FPS;
+	unsigned int FPS;
 
 	std::mt19937 rng;
 
@@ -66,6 +65,7 @@ struct Game
 	bool rightClicked  = false;
 
 	float lastCustomMapVerticalPosition;
+	unsigned int customLevelsCount;
 
 	std::vector<Menubox *> menu;
 

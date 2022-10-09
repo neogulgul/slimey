@@ -200,6 +200,14 @@ void Game::drawStoryLevels()
 void Game::drawCustomLevels()
 {
 	text.draw("Custom Levels", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
+	if (customLevelsCount == 0)
+	{
+		text.draw("No custom levels...", Center, Center, {viewWidth * 0.5, viewHeight * 0.5});
+	}
+	else
+	{
+		text.draw("Number of custom levels:" + std::to_string(customLevelsCount), Center, Center, {viewWidth * 0.5, viewHeight * 0.325});
+	}
 }
 
 void Game::drawLevelPlay()

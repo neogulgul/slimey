@@ -78,22 +78,22 @@ void Game::handleCustomLevelsScroll(sf::Event event)
 	}
 
 	// limiting the view
-	if (viewPosition.y < viewHeight / 2)
+	if (viewPosition.y < viewHeight * 0.5)
 	{
-		viewPosition.y = viewHeight / 2;
+		viewPosition.y = viewHeight * 0.5;
 	}
 	if (lastCustomMapVerticalPosition + 24 > viewHeight)
 	{
-		if (viewPosition.y > lastCustomMapVerticalPosition + 24 - viewHeight / 2)
+		if (viewPosition.y > lastCustomMapVerticalPosition + 24 - viewHeight * 0.5)
 		{
-			viewPosition.y = lastCustomMapVerticalPosition + 24 - viewHeight / 2;
+			viewPosition.y = lastCustomMapVerticalPosition + 24 - viewHeight * 0.5;
 		}
 	}
 	else
 	{
-		if (viewPosition.y > viewHeight / 2)
+		if (viewPosition.y > viewHeight * 0.5)
 		{
-			viewPosition.y = viewHeight / 2;
+			viewPosition.y = viewHeight * 0.5;
 		}
 	}
 
@@ -146,7 +146,7 @@ void Game::createStoryLevelboxes()
 void Game::createCustomLevelboxes()
 {
 	lastCustomMapVerticalPosition = 0;
-	unsigned int count = 0;
+	customLevelsCount = 0;
 	if (!fs::is_directory("custom_maps")) { return; }
 	for (fs::directory_entry entry : fs::directory_iterator("custom_maps"))
 	{
@@ -157,13 +157,13 @@ void Game::createCustomLevelboxes()
 		mapName.replace(mapName.find(".txt"), sizeof(".txt"), "");
 		mapName.replace(mapName.find('"'), sizeof('"'), "");
 
-		float verticalPosition = viewHeight * 0.25 + 48 + levelboxSpacing * count;
+		float verticalPosition = viewHeight * 0.25 + 48 + levelboxSpacing * customLevelsCount;
 
-		menu.push_back(new Levelbox(level, mapName, {viewWidth / 2, verticalPosition}));
+		menu.push_back(new Levelbox(level, mapName, {viewWidth * 0.5, verticalPosition}));
 
 		lastCustomMapVerticalPosition = verticalPosition;
 
-		count++;
+		customLevelsCount++;
 	}
 }
 
@@ -297,15 +297,14 @@ void Game::updateFPS()
 {
 	if (frameUpdateClock.getElapsedTime().asSeconds() >= frameUpdateDelta) {
 		frameUpdateClock.restart();
-		FPS.str("");
-		FPS << "FPS: " << std::floor(1 / (frameClock.getElapsedTime().asSeconds() - displayClock.getElapsedTime().asSeconds()));
+		FPS = std::floor(1 / (frameClock.getElapsedTime().asSeconds() - displayClock.getElapsedTime().asSeconds()));
 	}
 	frameClock.restart();
 }
 
 void Game::drawFPS()
 {
-	text.draw(FPS.str(), Start, Start, relativeViewPosition(*view, {0, 0}));
+	text.draw("FPS:" + std::to_string(FPS), Start, Start, relativeViewPosition(*view, {0, 0}));
 }
 
 

@@ -21,7 +21,7 @@ const unsigned int verticalTiles   = 16;
 
 const unsigned int viewWidth       = tilesize * horizontalTiles;
 const unsigned int viewHeight      = tilesize * verticalTiles;
-const unsigned int windowViewScale = 3;
+const unsigned int windowViewScale = 1;
 const unsigned int windowWidth     = viewWidth  * windowViewScale;
 const unsigned int windowHeight    = viewHeight * windowViewScale;
 
