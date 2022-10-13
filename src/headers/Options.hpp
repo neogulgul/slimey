@@ -4,11 +4,11 @@
 
 struct OptionButton : Button
 {
-	bool *option;
+	bool* option;
 
-	OptionButton(Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position, bool *_option);
+	OptionButton(Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position, bool* _option);
 
-	void update();
+	void updateString();
 };
 
 struct Options

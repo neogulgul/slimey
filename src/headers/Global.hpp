@@ -79,6 +79,6 @@ void toggle(bool &boolean);
 bool pressing(sf::Keyboard::Key key);
 bool pressing(sf::Mouse::Button button);
 void handlePress(bool pressing, bool &press, bool &pressed);
-sf::Vector2f relativeViewPosition(sf::View view, sf::Vector2f position);
+sf::Vector2f relativeViewPosition(sf::View* view, sf::Vector2f position);
 sf::Vector2f align(sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position);
 mapVector getCustomMapVector(std::string mapName);

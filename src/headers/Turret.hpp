@@ -11,5 +11,5 @@ struct Turret
 	sf::Vector2f bulletVelocity;
 
 	Turret(Direction _direction, sf::Vector2u coord);
-	void shoot(std::vector<Bullet> *bullets, sf::Sprite *sprite, mapVector *map, sf::Vector2u mapSize, sf::Sprite *explosion, Player *player);
+	void shoot(std::vector<Bullet>* bullets, sf::Sprite* sprite, mapVector* map, sf::Vector2u mapSize, sf::Sprite* explosion, Player* player);
 };

@@ -13,17 +13,17 @@
 
 struct Level
 {
-	sf::RenderWindow *window;
-	sf::View *view;
-	sf::FloatRect *viewport;
+	sf::RenderWindow* window;
+	sf::View* view;
+	sf::FloatRect* viewport;
 
-	Audio      *audio;
-	Sprites    *sprites;
-	Text       *text;
-	Transition *transition;
+	Audio*      audio;
+	Sprites*    sprites;
+	Text*       text;
+	Transition* transition;
 
-	bool *paused;
-	bool *debug;
+	bool* paused;
+	bool* debug;
 
 	sf::RectangleShape collisionRect;
 
@@ -50,8 +50,8 @@ struct Level
 	Animation sawbladeAnimation;
 
 	Level();
-	Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport,
-	      Audio *_audio, Sprites *_sprites, Text *_text, Transition *_transition, bool *_paused, bool *_debug);
+	Level(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewport,
+	      Audio* _audio, Sprites* _sprites, Text* _text, Transition* _transition, bool* _paused, bool* _debug);
 
 	void reset();
 	void loadMap(mapVector _map, bool _custom = false);

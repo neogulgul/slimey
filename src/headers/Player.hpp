@@ -4,9 +4,9 @@
 
 struct Player : Collider
 {
-	sf::Sprite *slimeyDeath;
-	sf::Sprite *offscreenCircle;
-	bool *levelCleared;
+	sf::Sprite* slimeyDeath;
+	sf::Sprite* offscreenCircle;
+	bool* levelCleared;
 
 	sf::Vector2i spawn;
 	sf::Vector2i exit;
@@ -67,7 +67,8 @@ struct Player : Collider
 	bool resurrected  = false;
 
 	Player();
-	Player(sf::Sprite *_sprite, sf::Sprite *_slimeyDeath, sf::Sprite *_offscreenCircle, bool *_levelCleared, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2i _exit);
+	Player(sf::Sprite* _sprite, sf::Sprite* _slimeyDeath, sf::Sprite* _offscreenCircle,
+           bool* _levelCleared, mapVector* _map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2i _exit);
 
 	void place(int x, int y);
 	void death();
@@ -78,5 +79,5 @@ struct Player : Collider
 	virtual void updatePosition();
 	virtual void handleCollision();
 	virtual void updateSprite();
-	virtual void draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused);
+	virtual void draw(sf::RenderWindow* window, sf::FloatRect viewport, bool paused);
 };

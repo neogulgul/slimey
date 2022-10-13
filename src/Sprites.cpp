@@ -6,6 +6,8 @@ Sprites::Sprites()
 {
 	// textures
 	slimeyTexture         .loadFromFile("assets/textures/slimey.png");
+	slimeyAsleepTexture   .loadFromFile("assets/textures/slimey-asleep.png");
+	slimeyAwakeTexture    .loadFromFile("assets/textures/slimey-awake.png");
 	slimeyColorlessTexture.loadFromFile("assets/textures/slimey-colorless.png");
 	slimeyFramesTexture   .loadFromFile("assets/textures/slimey-frames.png");
 	slimeyDeathTexture    .loadFromFile("assets/textures/slimey-death.png");
@@ -18,9 +20,12 @@ Sprites::Sprites()
 	sawbladeTexture       .loadFromFile("assets/textures/sawblade.png");
 	bulletTexture         .loadFromFile("assets/textures/bullet.png");
 	bulletExplosionTexture.loadFromFile("assets/textures/bullet-explosion.png");
+	bookTexture           .loadFromFile("assets/textures/book.png");
 
 	// sprites
 	slimey         .setTexture(slimeyTexture);
+	slimeyAsleep   .setTexture(slimeyAsleepTexture);
+	slimeyAwake    .setTexture(slimeyAwakeTexture);
 	slimeyColorless.setTexture(slimeyColorlessTexture);
 	slimeyFrames   .setTexture(slimeyFramesTexture);
 	slimeyDeath    .setTexture(slimeyDeathTexture);
@@ -33,6 +38,7 @@ Sprites::Sprites()
 	sawblade       .setTexture(sawbladeTexture);
 	bullet         .setTexture(bulletTexture);
 	bulletExplosion.setTexture(bulletExplosionTexture);
+	book           .setTexture(bookTexture);
 
 	tilesets = {
 		&tilesetNormal,

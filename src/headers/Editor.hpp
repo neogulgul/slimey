@@ -39,17 +39,20 @@ struct Region
 
 struct Editor
 {
-	sf::RenderWindow *window;
-	sf::View *view;
-	sf::FloatRect *viewport;
+	sf::RenderWindow* window;
+	sf::View* view;
+	sf::FloatRect* viewport;
 
-	Audio   *audio;
-	Sprites *sprites;
-	Text    *text;
+	Audio*   audio;
+	Sprites* sprites;
+	Text*    text;
 
-	bool *handyCursor;
-	bool *leftClick;
-	bool *paused;
+	bool* handyCursor;
+	bool* leftClick;
+	bool* pressingControl;
+	bool* pressingShift;
+	bool* pressingAlt;
+	bool* paused;
 
 	mapVector map;
 	/*
@@ -68,17 +71,17 @@ struct Editor
 	unsigned int initialMapHeight = minMapSize;
 	sf::Vector2u mapSize;
 
-	Input *mapNameInput;
-	Input *mapWidthInput;
-	Input *mapHeightInput;
-	Input *selectedInput;
-	std::vector<Input *> sizeInputs;
+	Input* mapNameInput;
+	Input* mapWidthInput;
+	Input* mapHeightInput;
+	Input* selectedInput;
+	std::vector<Input*> sizeInputs;
 	bool inputHovering = false;
 	bool inputSelected = false;
 
-	Button *saveButton;
-	Button *loadButton;
-	Button *activeButton;
+	Button* saveButton;
+	Button* loadButton;
+	Button* activeButton;
 	std::vector<Button> buttons;
 	bool buttonHovering = false;
 
@@ -100,9 +103,9 @@ struct Editor
 	sf::RectangleShape selectionTilesetSelection;
 	sf::FloatRect selectionTilesetBounds;
 
-	sf::Vector2f *mousePosition;
-	sf::Vector2i mouseMapCoord;
-	sf::Vector2i mouseSelectionCoord;
+	sf::Vector2f* mousePosition;
+	sf::Vector2i  mouseMapCoord;
+	sf::Vector2i  mouseSelectionCoord;
 	sf::Vector2f draggingStartPosition;
 	bool dragging = false;
 
@@ -150,8 +153,9 @@ struct Editor
 	Animation sawbladeAnimation;
 
 	Editor();
-	Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Audio *_audio, Sprites *_sprites, Text *_text,
-	       sf::Vector2f *_mousePosition, bool *_handyCursor, bool *_leftClick, bool *_paused);
+	Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewport, Audio* _audio, Sprites* _sprites, Text* _text,
+	       sf::Vector2f* _mousePosition, bool* _handyCursor, bool* _leftClick,
+	       bool* _pressingControl, bool* _pressingShift, bool* _pressingAlt, bool* _paused);
 
 	void declareRegions();
 

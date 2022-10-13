@@ -20,7 +20,7 @@ Collision::Collision(Direction _direction, sf::Vector2i _coord)
 
 Collider::Collider() {}
 
-Collider::Collider(sf::Sprite *_sprite, mapVector *_map, sf::Vector2u _mapSize)
+Collider::Collider(sf::Sprite* _sprite, mapVector* _map, sf::Vector2u _mapSize)
 {
 	 sprite = _sprite;
 	    map = _map;
@@ -284,7 +284,7 @@ void Collider::updateSprite()
 	*/
 }
 
-void Collider::draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused)
+void Collider::draw(sf::RenderWindow* window, sf::FloatRect viewport, bool paused)
 {
 	if (!paused && window->hasFocus())
 	{

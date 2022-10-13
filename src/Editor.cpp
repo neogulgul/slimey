@@ -34,19 +34,23 @@ std::string Input::getString()
 
 Editor::Editor() {}
 
-Editor::Editor(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport, Audio *_audio, Sprites *_sprites, Text *_text,
-               sf::Vector2f *_mousePosition, bool *_handyCursor, bool *_leftClick, bool *_paused)
+Editor::Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewport, Audio* _audio, Sprites* _sprites, Text* _text,
+               sf::Vector2f* _mousePosition, bool* _handyCursor, bool* _leftClick,
+               bool* _pressingControl, bool* _pressingShift, bool* _pressingAlt, bool* _paused)
 {
-	window        = _window;
-	view          = _view;
-	viewport      = _viewport;
-	audio         = _audio;
-	sprites       = _sprites;
-	text          = _text;
-	mousePosition = _mousePosition;
-	handyCursor   = _handyCursor;
-	leftClick     = _leftClick;
-	paused        = _paused;
+	window          = _window;
+	view            = _view;
+	viewport        = _viewport;
+	audio           = _audio;
+	sprites         = _sprites;
+	text            = _text;
+	mousePosition   = _mousePosition;
+	handyCursor     = _handyCursor;
+	leftClick       = _leftClick;
+	pressingControl = _pressingControl;
+	pressingShift   = _pressingShift;
+	pressingAlt     = _pressingAlt;
+	paused          = _paused;
 	
 	declareRegions();
 
@@ -144,9 +148,6 @@ void Editor::resetView()
 
 void Editor::processKeyboardInput()
 {
-	bool pressingControl = pressing(sf::Keyboard::LControl) || pressing(sf::Keyboard::RControl);
-	bool pressingShift = pressing(sf::Keyboard::LShift) || pressing(sf::Keyboard::RShift);
-
 	// brush
 	handlePress(pressing(sf::Keyboard::B), brushPress, brushPressed);
 	// fill
@@ -158,11 +159,11 @@ void Editor::processKeyboardInput()
 	// reset view
 	handlePress(pressing(sf::Keyboard::R), resetViewPress, resetViewPressed);
 	// clear
-	handlePress(pressingControl && pressingShift && pressing(sf::Keyboard::R), clearMapPress, clearMapPressed);
+	handlePress(*pressingControl && *pressingShift && pressing(sf::Keyboard::R), clearMapPress, clearMapPressed);
 	// save
-	handlePress(pressingControl && pressing(sf::Keyboard::S), saveMapPress, saveMapPressed);
+	handlePress(*pressingControl && pressing(sf::Keyboard::S), saveMapPress, saveMapPressed);
 	// load
-	handlePress(pressingControl && pressing(sf::Keyboard::L), loadMapPress, loadMapPressed);
+	handlePress(*pressingControl && pressing(sf::Keyboard::L), loadMapPress, loadMapPressed);
 
 	handleKeyboardInput();
 }
@@ -232,7 +233,7 @@ void Editor::processMouseInput()
 
 void Editor::handleDragging()
 {
-	if (pressing(sf::Mouse::Middle) || pressing(sf::Keyboard::Space))
+	if (pressing(sf::Mouse::Middle) || *pressingShift)
 	{
 		if (!dragging)
 		{
@@ -518,7 +519,10 @@ void Editor::placeTile(unsigned int x, unsigned int y, sf::Vector3i newTile)
 		{
 			placeTile(spawnPosition.x, spawnPosition.y, emptyTile);
 		}
-		placeTile(x, y - 1, emptyTile);
+		if (y != 0) // removing any tile placed above the spawn
+		{
+			placeTile(x, y - 1, emptyTile);
+		}
 		spawnPosition.x = x;
 		spawnPosition.y = y;
 	}
@@ -528,7 +532,10 @@ void Editor::placeTile(unsigned int x, unsigned int y, sf::Vector3i newTile)
 		{
 			placeTile(exitPosition.x, exitPosition.y, emptyTile);
 		}
-		placeTile(x, y - 1, emptyTile);
+		if (y != 0) // removing any tile placed above the exit
+		{
+			placeTile(x, y - 1, emptyTile);
+		}
 		exitPosition.x = x;
 		exitPosition.y = y;
 	}
@@ -860,7 +867,7 @@ void Editor::selectTile()
 
 void Editor::drawSelectionTileset()
 {
-	selectionTilesetRect.setPosition(relativeViewPosition(*view, {(float)viewWidth - (float)sprites->tilesetOtherTexture.getSize().x - selectionTilesetOutlineThickness, selectionTilesetOutlineThickness}));
+	selectionTilesetRect.setPosition(relativeViewPosition(view, {(float)viewWidth - (float)sprites->tilesetOtherTexture.getSize().x - selectionTilesetOutlineThickness, selectionTilesetOutlineThickness}));
 	updateSelectionTilesetBounds();
 	window->draw(selectionTilesetRect);
 
@@ -940,9 +947,9 @@ void Editor::updateSizeInputs()
 {
 	inputHovering = false;
 
-	for (Input *input : sizeInputs)
+	for (Input* input : sizeInputs)
 	{
-		input->shape.setPosition(relativeViewPosition(*view, input->position));
+		input->shape.setPosition(relativeViewPosition(view, input->position));
 		input->bounds = input->shape.getGlobalBounds();
 
 		input->shape.setFillColor(inactiveMenuboxBackground);
@@ -975,7 +982,7 @@ void Editor::updateSizeInputs()
 
 void Editor::drawSizeInputs()
 {
-	for (Input *input : sizeInputs)
+	for (Input* input : sizeInputs)
 	{
 		window->draw(input->shape);
 		text->draw(input->value.str(), Start, Center, {input->bounds.left + 3.5f, input->bounds.top + input->bounds.height / 2}, input->textColor);
@@ -994,10 +1001,9 @@ void Editor::updateButtons()
 	buttonHovering = false;
 	for (Button &button : buttons)
 	{
-		button.active = false;
-		if (button.bounds.contains(*mousePosition))
+		button.update(*mousePosition);
+		if (button.active)
 		{
-			button.active = true;
 			buttonHovering = true;
 			activeButton = &button;
 		}
@@ -1053,7 +1059,7 @@ void Editor::update()
 
 		if (pressing(sf::Mouse::Left))
 		{
-			if (pressing(sf::Keyboard::LAlt) || pressing(sf::Keyboard::RAlt))
+			if (*pressingAlt)
 			{
 				eyedropper();
 			}

@@ -1,5 +1,6 @@
 #include "headers/Audio.hpp"
 
+#define startupVolume   50
 #define clickVolume     40
 #define jumpVolume      20
 #define bounceVolume    10
@@ -13,6 +14,10 @@ Audio::Audio()
 	// music
 
 	// SFX
+	startupBuffer.loadFromFile("assets/audio/sfx/startup.wav");
+	startup.setBuffer(startupBuffer);
+	startup.setVolume(startupVolume);
+
 	clickBuffer.loadFromFile("assets/audio/sfx/click.wav");
 	click.setBuffer(clickBuffer);
 	click.setVolume(clickVolume);
@@ -45,15 +50,18 @@ Audio::Audio()
 void Audio::updateMusicVolume(bool notMuted)
 {
 	if (notMuted)
-	{}
+	{
+	}
 	else
-	{}
+	{
+	}
 }
 
 void Audio::updateSFXVolume(bool notMuted)
 {
 	if (notMuted)
 	{
+		  startup.setVolume(startupVolume);
 		    click.setVolume(clickVolume);
 		     jump.setVolume(jumpVolume);
 		   bounce.setVolume(bounceVolume);
@@ -64,6 +72,7 @@ void Audio::updateSFXVolume(bool notMuted)
 	}
 	else
 	{
+		  startup.setVolume(0);
 		    click.setVolume(0);
 		     jump.setVolume(0);
 		   bounce.setVolume(0);

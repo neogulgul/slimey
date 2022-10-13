@@ -15,9 +15,9 @@ struct Collision
 
 struct Collider
 {
-	sf::Sprite *sprite;
+	sf::Sprite* sprite;
 
-	mapVector *map;
+	mapVector* map;
 	sf::Vector2u mapSize;
 
 	sf::Vector2f size;
@@ -32,7 +32,7 @@ struct Collider
 	bool hitRight = false;
 
 	Collider();
-	Collider(sf::Sprite *_sprite, mapVector *_map, sf::Vector2u _mapSize);
+	Collider(sf::Sprite* _sprite, mapVector* _map, sf::Vector2u _mapSize);
 
 	sf::Vector3i getTile(sf::Vector2i coord);
 	sf::Vector2f getCenter();
@@ -46,5 +46,5 @@ struct Collider
 	virtual void handleCollision();
 	        void update();
 	virtual void updateSprite();
-	virtual void draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused);
+	virtual void draw(sf::RenderWindow* window, sf::FloatRect viewport, bool paused);
 };

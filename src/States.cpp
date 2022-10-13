@@ -1,5 +1,6 @@
 #include "headers/Game.hpp"
 
+#define splashScreenWaitFrames 120
 #define amountOfRainbowSlimeys 100
 
 RainbowSlimey::RainbowSlimey(sf::Color _color, sf::Vector2f _position, float _scale, int _rotation, int _speed)
@@ -25,6 +26,40 @@ void RainbowSlimey::update()
 
 void Game::updateSplashScreen()
 {
+	static char asleepTimer = 0;
+	static char awakeTimer  = 0;
+
+	if (asleepTimer < splashScreenWaitFrames)
+	{
+		asleepTimer++;
+		if (asleepTimer == splashScreenWaitFrames)
+		{
+			audio.startup.play();
+		}
+	}
+	else if (awakeTimer < splashScreenWaitFrames)
+	{
+		awakeTimer++;
+		if (awakeTimer == splashScreenWaitFrames)
+		{
+			transition.to(MainMenu);
+		}
+	}
+
+	if (asleepTimer < splashScreenWaitFrames)
+	{
+		sprites.slimeyAsleep.setScale(5, 5);
+		sf::Vector2f position(viewWidth / 2 - sprites.slimeyAsleep.getGlobalBounds().width / 2, viewHeight / 2 - sprites.slimeyAsleep.getGlobalBounds().height / 2);
+		sprites.slimeyAsleep.setPosition(position);
+		window->draw(sprites.slimeyAsleep);
+	}
+	else
+	{
+		sprites.slimeyAwake.setScale(5, 5);
+		sf::Vector2f position(viewWidth / 2 - sprites.slimeyAwake.getGlobalBounds().width / 2, viewHeight / 2 - sprites.slimeyAwake.getGlobalBounds().height / 2);
+		sprites.slimeyAwake.setPosition(position);
+		window->draw(sprites.slimeyAwake);
+	}
 }
 
 void Game::updateExitScreen()
@@ -34,6 +69,7 @@ void Game::updateExitScreen()
 
 void Game::updateMainMenu()
 {
+	// rainbow slimeys
 	static std::vector<sf::Color> randomColors = {
 		sf::Color(255, 139, 139, 63),
 		sf::Color(245, 255, 162, 63),
@@ -85,30 +121,48 @@ void Game::updateMainMenu()
 			passedSlimeys++;
 		}
 	}
+
+	// book button
+	if (bookIsOpen)
+	{
+		if (leftClick)
+		{
+			bookIsOpen = false;
+		}
+	}
+	else
+	{
+		bookButton.update(mousePosition);
+		if (bookButton.active) {
+			handyCursor = true;
+			if (leftClick)
+			{
+				bookIsOpen = true;
+			}
+		}
+	}
 }
 
 void Game::updateOptionsScreen()
 {
 	for (OptionButton &button : options.optionButtons)
 	{
-		button.active = false;
-		if (button.bounds.contains(mousePosition))
+		button.update(mousePosition);
+		if (button.active)
 		{
-			button.active = true;
-			handyCursor   = true;
+			handyCursor = true;
 			if (leftClick)
 			{
 				audio.click.play();
 				toggle(*button.option);
-				button.update();
+				button.updateString();
 			}
 		}
 	}
-	options.resetButton.active = false;
-	if (options.resetButton.bounds.contains(mousePosition))
+	options.resetButton.update(mousePosition);
+	if (options.resetButton.active)
 	{
-		options.resetButton.active = true;
-		handyCursor   = true;
+		handyCursor = true;
 		if (leftClick)
 		{
 			audio.click.play();
@@ -204,6 +258,8 @@ void Game::drawMainMenu()
 	}
 
 	text.draw("Slimey", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
+
+	bookButton.draw(window, view, &text);
 }
 
 void Game::drawOptionsScreen()

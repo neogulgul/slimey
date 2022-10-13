@@ -8,25 +8,32 @@
 
 #define customLevelsScrollDelta 30
 
-Game::Game(sf::RenderWindow *_window, sf::View *_view)
+#define backMenubox MainMenu, "Back", {60, 20}, Start, Start, {10, 10}
+
+Game::Game(sf::RenderWindow* _window, sf::View* _view)
 {
 	window = _window;
 	view   = _view;
 
+	state = SplashScreen;
+
 	viewport.width  = viewWidth;
 	viewport.height = viewHeight;
 
-	editor     = Editor(window, view, &viewport, &audio, &sprites, &text, &mousePosition, &handyCursor, &leftClick, &paused);
+	editor     = Editor(window, view, &viewport, &audio, &sprites, &text,
+	                    &mousePosition, &handyCursor, &leftClick,
+	                    &pressingControl, &pressingShift, &pressingAlt, &paused);
 	level      = Level(window, view, &viewport, &audio, &sprites, &text, &transition, &paused, &options.debug);
 	text       = Text(window);
 	transition = Transition(window, view, state);
 
-	state = MainMenu;
-
-	pauseShape.setSize({viewWidth, viewHeight});
-	pauseShape.setFillColor(pauseColor);
+	pauseRect.setSize({viewWidth, viewHeight});
+	pauseRect.setFillColor(pauseColor);
 
 	rng.seed(std::random_device{}());
+
+	// buttons
+	bookButton = Button(&sprites.book, End, End, {viewWidth - 5, viewHeight - 5});
 }
 
 
@@ -50,6 +57,22 @@ void Game::processKeyboardInput()
 	{
 		handlePress(pressing(pause), pausePress, pausePressed);
 		if (pausePress) { toggle(paused); }
+	}
+
+	pressingControl = false;
+	pressingShift   = false;
+	pressingAlt     = false;
+	if (pressing(sf::Keyboard::LControl) || pressing(sf::Keyboard::RControl))
+	{
+		pressingControl = true;
+	}
+	if (pressing(sf::Keyboard::LShift) || pressing(sf::Keyboard::RShift))
+	{
+		pressingShift = true;
+	}
+	if (pressing(sf::Keyboard::LAlt) || pressing(sf::Keyboard::RAlt))
+	{
+		pressingAlt = true;
 	}
 }
 
@@ -143,6 +166,11 @@ void Game::createStoryLevelboxes()
 	}
 }
 
+void replaceSubstringInString(std::string &string, std::string substring)
+{
+	string.replace(string.find(substring), substring.size(), "");
+}
+
 void Game::createCustomLevelboxes()
 {
 	lastCustomMapVerticalPosition = 0;
@@ -152,14 +180,25 @@ void Game::createCustomLevelboxes()
 	{
 		std::stringstream conversionStream;
 		conversionStream << entry;
+		std::string mapName = conversionStream.str();
 
 		// if the file is not a .txt we skip it
-		if (!strstr(conversionStream.str().c_str(), ".txt")) { continue; }
+		if (!strstr(mapName.c_str(), ".txt")) { continue; }
 
-		std::string mapName = conversionStream.str();
-		mapName.replace(mapName.find("custom_maps"), sizeof("custom_maps"), "");
-		mapName.replace(mapName.find(".txt"), sizeof(".txt"), "");
-		mapName.replace(mapName.find('"'), sizeof('"'), "");
+		// this removes a \ from the name, which appears on windows
+		if (strstr(mapName.c_str(), "\\"))
+		{
+			replaceSubstringInString(mapName, "\\");
+		}
+		// this removes a / from the name
+		else
+		{
+			replaceSubstringInString(mapName, "/");
+		}
+		replaceSubstringInString(mapName, "custom_maps");
+		replaceSubstringInString(mapName, ".txt");
+		replaceSubstringInString(mapName, "\""); // we do this two times, since there
+		replaceSubstringInString(mapName, "\""); // is one quotation mark on each side
 
 		float verticalPosition = viewHeight * 0.25 + 48 + levelboxSpacing * customLevelsCount;
 
@@ -173,16 +212,13 @@ void Game::createCustomLevelboxes()
 
 void Game::createMenu()
 {
-	/*
-	the ones commented out do not have any menuboxes
-	*/
 	switch (state)
 	{
-		// case SplashScreen:
-		// 	break;
+		case SplashScreen:
+			break;
 
-		// case ExitScreen:
-		// 	break;
+		case ExitScreen:
+			break;
 
 		case MainMenu:
 			menu.push_back(new Menubox(StoryLevels  , "Story"  , {60, 20}, End   , End  , {viewHeight * 0.5 - (30 + 10), viewWidth * 0.75 - 5}));
@@ -193,20 +229,20 @@ void Game::createMenu()
 			break;
 
 		case OptionsScreen:
-			menu.push_back(new Menubox(MainMenu, "Back", {60, 20}, Start, Start, {10, 10}));
+			menu.push_back(new Menubox(backMenubox));
 			break;
 
 		case LevelEditor:
-			menu.push_back(new Menubox(MainMenu, "Back", {60, 20}, Start, Start, {10, 10}));
+			menu.push_back(new Menubox(backMenubox));
 			break;
 
 		case StoryLevels:
-			menu.push_back(new Menubox(MainMenu, "Back", {60, 20}, Start, Start, {10, 10}));
+			menu.push_back(new Menubox(backMenubox));
 			createStoryLevelboxes();
 			break;
 		
 		case CustomLevels:
-			menu.push_back(new Menubox(MainMenu, "Back", {60, 20}, Start, Start, {10, 10}));
+			menu.push_back(new Menubox(backMenubox));
 			createCustomLevelboxes();
 			break;
 
@@ -223,17 +259,19 @@ void Game::createMenu()
 			menu.push_back(new Menubox(returnState, "Back", {60, 20}, Start, Start, {10, 10}));
 			break;
 
-		// case LevelClear:
-		// 	break;
+		case LevelClear:
+			break;
 	}
 }
 
 void Game::updateMenu()
 {
+	if (state == MainMenu && bookIsOpen) { return; }
+
 	if (changedState)
 	{
 		// avoiding a memory leak by deleting the pointers in this vector
-		for (Menubox *menubox : menu)
+		for (Menubox* menubox : menu)
 		{
 			delete menubox;
 		}
@@ -248,21 +286,17 @@ void Game::updateMenu()
 	// disallowing presses
 	if (transition.transitioning || (state == LevelEditor || state == LevelPlay) && !paused) { return; }
 
-	for (Menubox *box : menu)
+	for (Menubox* box : menu)
 	{
-		box->active = false;
-		if (box->bounds.contains(mousePosition))
+		box->update(mousePosition);
+		if (box->active)
 		{
+			handyCursor = true;
 			if (leftClick)
 			{
 				audio.click.play();
 				box->action();
 				transition.to(box->destination);
-			}
-			else
-			{
-				box->active = true;
-				handyCursor = true;
 			}
 		}
 	}
@@ -271,10 +305,39 @@ void Game::updateMenu()
 void Game::drawMenu()
 {
 	if ((state == LevelEditor || state == LevelPlay) && !paused) { return; }
-	for (Menubox *box : menu)
+	for (Menubox* box : menu)
 	{
 		box->draw(window, view, &text);
 	}
+}
+
+
+
+void Game::drawBookIsOpen()
+{
+	pauseRect.setPosition(relativeViewPosition(view, {0, 0}));
+	window->draw(pauseRect);
+
+	text.draw("Level", Center, Start, {viewWidth / 2, 10}, {1.5, 1.5});
+	text.draw("Move - WASD or Arrow Keys", Start, Start, {10, 25}, {0.8, 0.8});
+	text.draw("Jump - J or Space"        , Start, Start, {10, 35}, {0.8, 0.8});
+	text.draw("Reset - R"                , Start, Start, {10, 45}, {0.8, 0.8});
+	text.draw("Pause - Escape"           , Start, Start, {10, 55}, {0.8, 0.8});
+
+	text.draw("Editor", Center, Start, {viewWidth / 2, 70}, {1.5, 1.5});
+	text.draw("Place / Erase - Left Click"                      , Start, Start, {10,  85}, {0.8, 0.8});
+	text.draw("Move View - (Middle Click or Shift) + Mouse Move", Start, Start, {10,  95}, {0.8, 0.8});
+	text.draw("Zoom View - Scroll Wheel"                        , Start, Start, {10, 105}, {0.8, 0.8});
+	text.draw("Eyedropper - Alt + Left Click"                   , Start, Start, {10, 115}, {0.8, 0.8});
+	text.draw("Equip Brush - B"                                 , Start, Start, {10, 125}, {0.8, 0.8});
+	text.draw("Equip Fill - F"                                  , Start, Start, {10, 135}, {0.8, 0.8});
+	text.draw("Toggle Erase - E"                                , Start, Start, {10, 145}, {0.8, 0.8});
+	text.draw("Toggle Crosshair - C"                            , Start, Start, {10, 155}, {0.8, 0.8});
+	text.draw("Reset View - R"                                  , Start, Start, {10, 165}, {0.8, 0.8});
+	text.draw("Clear Map - Control + Shift + R"                 , Start, Start, {10, 175}, {0.8, 0.8});
+	text.draw("Save Map - Control + S or Hit the save button"   , Start, Start, {10, 185}, {0.8, 0.8});
+	text.draw("Load Map - Control + L or Hit the load button"   , Start, Start, {10, 195}, {0.8, 0.8});
+	text.draw("Pause - Escape"                                  , Start, Start, {10, 205}, {0.8, 0.8});
 }
 
 
@@ -308,7 +371,7 @@ void Game::updateFPS()
 
 void Game::drawFPS()
 {
-	text.draw("FPS:" + std::to_string(FPS), Start, Start, relativeViewPosition(*view, {0, 0}));
+	text.draw("FPS:" + std::to_string(FPS), Start, Start, relativeViewPosition(view, {0, 0}));
 }
 
 
@@ -316,46 +379,46 @@ void Game::drawFPS()
 /*
 	moved these to States.cpp
 */
-// void updateSplashScreen()
+// void Game::updateSplashScreen()
 // { ... }
-// void updateExitScreen()
+// void Game::updateExitScreen()
 // { ... }
-// void updateMainMenu()
+// void Game::updateMainMenu()
 // { ... }
-// void updateOptionsScreen()
+// void Game::updateOptionsScreen()
 // { ... }
-// void updateLevelEditor()
+// void Game::updateLevelEditor()
 // { ... }
-// void updateStoryLevels()
+// void Game::updateStoryLevels()
 // { ... }
-// void updateCustomLevels()
+// void Game::updateCustomLevels()
 // { ... }
-// void updateLevelPlay()
+// void Game::updateLevelPlay()
 // { ... }
-// void updateLevelClear()
+// void Game::updateLevelClear()
 // { ... }
-// void updateState()
+// void Game::updateState()
 // { ... }
 
-// void drawSplashScreen()
+// void Game::drawSplashScreen()
 // { ... }
-// void drawExitScreen()
+// void Game::drawExitScreen()
 // { ... }
-// void drawMainMenu()
+// void Game::drawMainMenu()
 // { ... }
-// void drawOptionsScreen()
+// void Game::drawOptionsScreen()
 // { ... }
-// void drawLevelEditor()
+// void Game::drawLevelEditor()
 // { ... }
-// void drawStoryLevels()
+// void Game::drawStoryLevels()
 // { ... }
-// void drawCustomLevels()
+// void Game::drawCustomLevels()
 // { ... }
-// void drawLevelPlay()
+// void Game::drawLevelPlay()
 // { ... }
-// void drawLevelClear()
+// void Game::drawLevelClear()
 // { ... }
-// void drawState()
+// void Game::drawState()
 // { ... }
 
 
@@ -421,11 +484,15 @@ void Game::draw()
 	drawState();
 	if (paused)
 	{
-		pauseShape.setPosition(relativeViewPosition(*view, {0, 0}));
-		window->draw(pauseShape);
-		text.draw("Paused", Center, Center, relativeViewPosition(*view, {viewWidth * 0.5, viewHeight * 0.25}), {2, 2});
+		pauseRect.setPosition(relativeViewPosition(view, {0, 0}));
+		window->draw(pauseRect);
+		text.draw("Paused", Center, Center, relativeViewPosition(view, {viewWidth * 0.5, viewHeight * 0.25}), {2, 2});
 	}
 	drawMenu();
+	if (state == MainMenu && bookIsOpen)
+	{
+		drawBookIsOpen();
+	}
 	if (transition.transitioning)
 	{
 		transition.draw();

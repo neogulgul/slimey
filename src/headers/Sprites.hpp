@@ -4,6 +4,8 @@ struct Sprites
 {
 	// textures
 	sf::Texture slimeyTexture;
+	sf::Texture slimeyAsleepTexture;
+	sf::Texture slimeyAwakeTexture;
 	sf::Texture slimeyColorlessTexture;
 	sf::Texture slimeyFramesTexture;
 	sf::Texture slimeyDeathTexture;
@@ -16,9 +18,12 @@ struct Sprites
 	sf::Texture sawbladeTexture;
 	sf::Texture bulletTexture;
 	sf::Texture bulletExplosionTexture;
+	sf::Texture bookTexture;
 
 	// sprites
 	sf::Sprite slimey;
+	sf::Sprite slimeyAsleep;
+	sf::Sprite slimeyAwake;
 	sf::Sprite slimeyColorless;
 	sf::Sprite slimeyFrames;
 	sf::Sprite slimeyDeath;
@@ -31,8 +36,9 @@ struct Sprites
 	sf::Sprite sawblade;
 	sf::Sprite bullet;
 	sf::Sprite bulletExplosion;
+	sf::Sprite book;
 
-	std::vector<sf::Sprite *> tilesets;
+	std::vector<sf::Sprite*> tilesets;
 
 	Sprites();
 	void resetScale();

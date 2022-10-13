@@ -31,8 +31,8 @@ struct RainbowSlimey // used on the main menu
 
 struct Game
 {
-	sf::RenderWindow *window;
-	sf::View *view;
+	sf::RenderWindow* window;
+	sf::View* view;
 	sf::FloatRect viewport;
 
 	sf::Cursor cursor;
@@ -54,7 +54,10 @@ struct Game
 	Text text;
 	Transition transition;
 
+	// main menu stuff
 	std::vector<RainbowSlimey> rainbowSlimeys;
+	Button bookButton;
+	bool bookIsOpen;
 
 	sf::Vector2f mousePosition;
 
@@ -66,23 +69,28 @@ struct Game
 	bool rightClick    = false;
 	bool rightClicked  = false;
 
+	// keyboard
+	bool pressingControl = false;
+	bool pressingShift   = false;
+	bool pressingAlt     = false;
+
 	float lastCustomMapVerticalPosition;
 	unsigned int customLevelsCount;
 
-	std::vector<Menubox *> menu;
+	std::vector<Menubox*> menu;
 
 	State lastState;
 	State     state;
 	bool changedState = false;
 
 	// pause
-	sf::RectangleShape pauseShape;
+	sf::RectangleShape pauseRect;
 	sf::Keyboard::Key pause = sf::Keyboard::Escape;
 	bool paused       = false;
 	bool pausePress   = false;
 	bool pausePressed = false;
 
-	Game(sf::RenderWindow *_window, sf::View *_view);
+	Game(sf::RenderWindow* _window, sf::View* _view);
 
 	void resetView();
 	void updateViewport();
@@ -97,6 +105,8 @@ struct Game
 	void createMenu();
 	void updateMenu();
 	void drawMenu();
+
+	void drawBookIsOpen();
 
 	void updateCursor();
 

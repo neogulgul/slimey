@@ -6,7 +6,7 @@
 
 struct Levelbox : Menubox
 {
-	Level *level;
+	Level* level;
 
 	std::string customMapName; // only used if custom
 	bool custom = false;

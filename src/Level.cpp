@@ -2,8 +2,8 @@
 
 Level::Level() {}
 
-Level::Level(sf::RenderWindow *_window, sf::View *_view, sf::FloatRect *_viewport,
-             Audio *_audio, Sprites *_sprites, Text *_text, Transition *_transition, bool *_paused, bool *_debug)
+Level::Level(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewport,
+             Audio* _audio, Sprites* _sprites, Text* _text, Transition* _transition, bool* _paused, bool* _debug)
 {
 	window     = _window;
 	view       = _view;
@@ -91,7 +91,7 @@ void Level::loadMap(mapVector _map, bool _custom)
 
 void Level::drawMap()
 {
-	sf::Sprite *sprite;
+	sf::Sprite* sprite;
 	for (unsigned int x = 0; x < mapSize.x; x++)
 	{
 		for (unsigned int y = 0; y < mapSize.y; y++)
@@ -296,19 +296,19 @@ void Level::draw()
 
 		std::stringstream stream;
 		stream << "pos.x:" << player.position.x;
-		text->draw(stream.str(), Start, End, relativeViewPosition(*view, {0, viewHeight - 30}));
+		text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 30}));
 
 		stream.str("");
 		stream << "pos.y:" << player.position.y;
-		text->draw(stream.str(), Start, End, relativeViewPosition(*view, {0, viewHeight - 20}));
+		text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 20}));
 
 		stream.str("");
 		stream << "vel.x:" << player.velocity.x;
-		text->draw(stream.str(), Start, End, relativeViewPosition(*view, {0, viewHeight - 10}));
+		text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 10}));
 
 		stream.str("");
 		stream << "vel.y:" << player.velocity.y;
-		text->draw(stream.str(), Start, End, relativeViewPosition(*view, {0, viewHeight     }));
+		text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight     }));
 
 	}
 }

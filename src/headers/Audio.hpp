@@ -7,6 +7,9 @@ struct Audio
 	// music
 
 	// SFX
+	sf::SoundBuffer startupBuffer;
+	sf::Sound startup;
+
 	sf::SoundBuffer clickBuffer;
 	sf::Sound click;
 

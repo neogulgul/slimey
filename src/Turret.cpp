@@ -32,7 +32,7 @@ Turret::Turret(Direction _direction, sf::Vector2u coord)
 	}
 }
 
-void Turret::shoot(std::vector<Bullet> *bullets, sf::Sprite *sprite, mapVector *map, sf::Vector2u mapSize, sf::Sprite *explosion, Player *player)
+void Turret::shoot(std::vector<Bullet>* bullets, sf::Sprite* sprite, mapVector* map, sf::Vector2u mapSize, sf::Sprite* explosion, Player* player)
 {
 	bullets->push_back(Bullet(sprite, map, mapSize, explosion, player, bulletSpawn, bulletVelocity));
 }

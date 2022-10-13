@@ -15,74 +15,118 @@ Button::Button(std::string _string, sf::Vector2f size, Alignment horizontalAlign
 	shape.setSize({size.x - borderSize * 2, size.y - borderSize * 2});
 }
 
-void Button::draw(sf::RenderWindow *window, sf::View *view, Text *text)
+Button::Button(sf::Sprite* _sprite, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f _position, bool _relativeToView)
 {
-	if (relativeToView)
+	isSprite = true;
+	sprite = _sprite;
+	position = align((sf::Vector2f)sprite->getTexture()->getSize(), horizontalAlignment, verticalAlignment, _position);
+	relativeToView = _relativeToView;
+}
+
+void Button::update(sf::Vector2f mousePosition)
+{
+	active = false;
+	if (bounds.contains(mousePosition))
 	{
-		shape.setPosition(relativeViewPosition(*view, position));
+		active = true;
+	}
+}
+
+void Button::draw(sf::RenderWindow* window, sf::View* view, Text* text)
+{
+	if (isSprite)
+	{
+		if (relativeToView)
+		{
+			sprite->setPosition(relativeViewPosition(view, position));
+		}
+		else
+		{
+			sprite->setPosition(position);
+		}
+
+		bounds = sprite->getGlobalBounds();
+
+		if (active)
+		{
+			sprite->setColor(sf::Color(255, 255, 255, 191));
+		}
+		else
+		{
+			sprite->setColor(sf::Color::White);
+		}
+
+		window->draw(*sprite);
 	}
 	else
 	{
-		shape.setPosition(position);
+		if (relativeToView)
+		{
+			shape.setPosition(relativeViewPosition(view, position));
+		}
+		else
+		{
+			shape.setPosition(position);
+		}
+		bounds = shape.getGlobalBounds();
+
+		sf::Vector2f shapeCenter;
+		shapeCenter.x = bounds.left + bounds.width  / 2;
+		shapeCenter.y = bounds.top  + bounds.height / 2;
+
+		if (active)
+		{
+			shape .setFillColor(activeMenuboxBackground);
+			border.setFillColor(activeMenuboxForeground);
+		}
+		else
+		{
+			shape .setFillColor(inactiveMenuboxBackground);
+			border.setFillColor(inactiveMenuboxForeground);
+		}
+
+		window->draw(shape);
+
+		if (active)
+		{
+			text->draw(string, Center, Center, shapeCenter, activeMenuboxForeground, {activeScale, activeScale});
+		}
+		else
+		{
+			text->draw(string, Center, Center, shapeCenter, inactiveMenuboxForeground);
+		}
+
+		// drawing border sides
+		// top
+		border.setSize({bounds.width - borderSize * 2, borderSize});
+		border.setPosition(bounds.left + borderSize, bounds.top);
+		window->draw(border);
+		// bottom
+		border.setSize({bounds.width - borderSize * 2, borderSize});
+		border.setPosition(bounds.left + borderSize, bounds.top + bounds.height - borderSize);
+		window->draw(border);
+		// left
+		border.setSize({borderSize, bounds.height - borderSize * 2});
+		border.setPosition(bounds.left, bounds.top + borderSize);
+		window->draw(border);
+		// right
+		border.setSize({borderSize, bounds.height - borderSize * 2});
+		border.setPosition(bounds.left + bounds.width - borderSize, bounds.top + borderSize);
+		window->draw(border);
+
+		// drawing border corners
+		border.setSize({borderSize, borderSize});
+		// top left
+		border.setPosition(bounds.left + borderSize                      - borderSize / 2.f, bounds.top + borderSize                       - borderSize / 2.f);
+		window->draw(border);
+		// top right
+		border.setPosition(bounds.left + bounds.width - borderSize * 2.f + borderSize / 2.f, bounds.top + borderSize                       - borderSize / 2.f);
+		window->draw(border);
+		// bottom left
+		border.setPosition(bounds.left + borderSize                      - borderSize / 2.f, bounds.top + bounds.height - borderSize * 2.f + borderSize / 2.f);
+		window->draw(border);
+		// bottom right
+		border.setPosition(bounds.left + bounds.width - borderSize * 2.f + borderSize / 2.f, bounds.top + bounds.height - borderSize * 2.f + borderSize / 2.f);
+		window->draw(border);
 	}
-	bounds = shape.getGlobalBounds();
-
-	sf::Vector2f shapeCenter;
-	shapeCenter.x = bounds.left + bounds.width  / 2;
-	shapeCenter.y = bounds.top  + bounds.height / 2;
-
-	if (active)
-	{
-		shape .setFillColor(activeMenuboxBackground);
-		border.setFillColor(activeMenuboxForeground);
-	}
-	else
-	{
-		shape .setFillColor(inactiveMenuboxBackground);
-		border.setFillColor(inactiveMenuboxForeground);
-	}
-
-	window->draw(shape);
-
-	if (active)
-	{
-		text->draw(string, Center, Center, shapeCenter, activeMenuboxForeground, {activeScale, activeScale});
-	}
-	else
-	{
-		text->draw(string, Center, Center, shapeCenter, inactiveMenuboxForeground);
-	}
-
-	// drawing border sides
-	// top
-	border.setSize({bounds.width - borderSize * 2, borderSize});
-	border.setPosition(bounds.left + borderSize, bounds.top);
-	window->draw(border);
-	// bottom
-	border.setSize({bounds.width - borderSize * 2, borderSize});
-	border.setPosition(bounds.left + borderSize, bounds.top + bounds.height - borderSize);
-	window->draw(border);
-	// left
-	border.setSize({borderSize, bounds.height - borderSize * 2});
-	border.setPosition(bounds.left, bounds.top + borderSize);
-	window->draw(border);
-	// right
-	border.setSize({borderSize, bounds.height - borderSize * 2});
-	border.setPosition(bounds.left + bounds.width - borderSize, bounds.top + borderSize);
-	window->draw(border);
-
-	// drawing border corners
-	border.setSize({borderSize, borderSize});
-	// top left
-	border.setPosition(bounds.left + borderSize                      - borderSize / 2.f, bounds.top + borderSize                       - borderSize / 2.f);
-	window->draw(border);
-	// top right
-	border.setPosition(bounds.left + bounds.width - borderSize * 2.f + borderSize / 2.f, bounds.top + borderSize                       - borderSize / 2.f);
-	window->draw(border);
-	// bottom left
-	border.setPosition(bounds.left + borderSize                      - borderSize / 2.f, bounds.top + bounds.height - borderSize * 2.f + borderSize / 2.f);
-	window->draw(border);
-	// bottom right
-	border.setPosition(bounds.left + bounds.width - borderSize * 2.f + borderSize / 2.f, bounds.top + bounds.height - borderSize * 2.f + borderSize / 2.f);
-	window->draw(border);
 }

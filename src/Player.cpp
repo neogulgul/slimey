@@ -4,7 +4,8 @@
 
 Player::Player() {}
 
-Player::Player(sf::Sprite *_sprite, sf::Sprite *_slimeyDeath, sf::Sprite *_offscreenCircle, bool *_levelCleared, mapVector *_map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2i _exit)
+Player::Player(sf::Sprite* _sprite, sf::Sprite* _slimeyDeath, sf::Sprite* _offscreenCircle,
+               bool* _levelCleared, mapVector* _map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2i _exit)
 : Collider(_sprite, _map, _mapSize)
 {
 	slimeyDeath     = _slimeyDeath;
@@ -364,7 +365,7 @@ void Player::updateSprite()
 	}
 }
 
-void Player::draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused)
+void Player::draw(sf::RenderWindow* window, sf::FloatRect viewport, bool paused)
 {
 	if (!paused && window->hasFocus())
 	{

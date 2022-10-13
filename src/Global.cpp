@@ -60,9 +60,9 @@ void handlePress(bool pressing, bool &press, bool &pressed)
 }
 
 
-sf::Vector2f relativeViewPosition(sf::View view, sf::Vector2f position)
+sf::Vector2f relativeViewPosition(sf::View* view, sf::Vector2f position)
 {
-	return {view.getCenter().x - view.getSize().x / 2 + position.x, view.getCenter().y - view.getSize().y / 2 + position.y};
+	return {view->getCenter().x - view->getSize().x / 2 + position.x, view->getCenter().y - view->getSize().y / 2 + position.y};
 }
 
 sf::Vector2f align(sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position)

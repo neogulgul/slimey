@@ -2,14 +2,14 @@
 
 #define sizeOfOptionButton {20, 20}
 
-OptionButton::OptionButton(Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position, bool *_option)
+OptionButton::OptionButton(Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position, bool* _option)
 : Button("", sizeOfOptionButton, horizontalAlignment, verticalAlignment, position)
 {
 	option = _option;
-	update();
+	updateString();
 }
 
-void OptionButton::update()
+void OptionButton::updateString()
 {
 	if (*option)
 	{
@@ -40,6 +40,6 @@ void Options::reset()
 	debug = false;
 	for (OptionButton &button : optionButtons)
 	{
-		button.update();
+		button.updateString();
 	}
 }

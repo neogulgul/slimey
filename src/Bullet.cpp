@@ -1,6 +1,7 @@
 #include "headers/Bullet.hpp"
 
-Bullet::Bullet(sf::Sprite *_sprite, mapVector *_map, sf::Vector2u _mapSize, sf::Sprite *_explosion, Player *_player, sf::Vector2f _position, sf::Vector2f _velocity)
+Bullet::Bullet(sf::Sprite* _sprite, mapVector* _map, sf::Vector2u _mapSize, sf::Sprite* _explosion, Player* _player,
+               sf::Vector2f _position, sf::Vector2f _velocity)
 : Collider(_sprite, _map, _mapSize)
 {
 	explosion = _explosion;
@@ -53,7 +54,7 @@ void Bullet::updateSprite()
 	}
 }
 
-void Bullet::draw(sf::RenderWindow *window, sf::FloatRect viewport, bool paused)
+void Bullet::draw(sf::RenderWindow* window, sf::FloatRect viewport, bool paused)
 {
 	if (!paused && window->hasFocus())
 	{

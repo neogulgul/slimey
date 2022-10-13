@@ -4,13 +4,13 @@
 
 struct Transition
 {
-	sf::RenderWindow *window;
-	sf::View *view;
+	sf::RenderWindow* window;
+	sf::View* view;
 
 	sf::RectangleShape shape;
 
 	State destination;
-	State *gameState;
+	State* gameState;
 
 	bool transitioning = false;
 	bool atDestination = false;
@@ -26,7 +26,7 @@ struct Transition
 	bool sleeping = false;
 
 	Transition();
-	Transition(sf::RenderWindow *_window, sf::View *_view, State &_gameState);
+	Transition(sf::RenderWindow* _window, sf::View* _view, State &_gameState);
 	void to(State state);
 	void changeState();
 	void reset();
