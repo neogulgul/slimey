@@ -4,7 +4,6 @@
 #include "headers/Game.hpp"
 
 #define levelboxColumns 5
-#define levelboxSpacing 36
 
 #define customLevelsScrollDelta 30
 
@@ -154,7 +153,7 @@ void Game::createStoryLevelboxes()
 
 		position.y = viewHeight * 0.25 + 48 + levelboxSpacing * currentRow;
 
-		menu.push_back(new Levelbox(level, i, position));
+		menu.push_back(new Levelbox(&level, i, position));
 
 		currentColumn++;
 
@@ -202,7 +201,15 @@ void Game::createCustomLevelboxes()
 
 		float verticalPosition = viewHeight * 0.25 + 48 + levelboxSpacing * customLevelsCount;
 
-		menu.push_back(new Levelbox(level, mapName, {viewWidth * 0.5, verticalPosition}));
+		// menu.push_back(
+		// 	new Levelbox(level, mapName, {viewWidth * 0.5, verticalPosition})
+		// );
+		customLevelboxes.push_back(
+			Levelbox(&level, mapName, {viewWidth * 0.5, verticalPosition})
+		);
+		customLevelRemoveButtons.push_back(
+			Button(&sprites.xMark, Start, Center, {viewWidth * 0.5 + 114 / 2 + 10, verticalPosition}, false)
+		);
 
 		lastCustomMapVerticalPosition = verticalPosition;
 
@@ -276,6 +283,12 @@ void Game::updateMenu()
 			delete menubox;
 		}
 		menu.clear();
+
+		if (lastState == CustomLevels)
+		{
+			customLevelboxes.clear();
+			customLevelRemoveButtons.clear();
+		}
 	}
 
 	if (menu.empty())

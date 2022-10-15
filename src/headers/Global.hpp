@@ -76,6 +76,7 @@ extern sf::Color          selectionTilesetOutlineColor;
 extern sf::Color selectionTilesetSelectionOutlineColor;
 
 void toggle(bool &boolean);
+std::string boolString(bool boolean);
 bool pressing(sf::Keyboard::Key key);
 bool pressing(sf::Mouse::Button button);
 void handlePress(bool pressing, bool &press, bool &pressed);

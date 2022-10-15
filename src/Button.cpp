@@ -36,19 +36,21 @@ void Button::draw(sf::RenderWindow* window, sf::View* view, Text* text)
 {
 	if (isSprite)
 	{
+		sprite->setOrigin(sprite->getTexture()->getSize().x / 2, sprite->getTexture()->getSize().y / 2);
 		if (relativeToView)
 		{
-			sprite->setPosition(relativeViewPosition(view, position));
+			sprite->setPosition(relativeViewPosition(view, position + sprite->getOrigin()));
 		}
 		else
 		{
-			sprite->setPosition(position);
+			sprite->setPosition(position + sprite->getOrigin());
 		}
 
 		bounds = sprite->getGlobalBounds();
 
 		if (active)
 		{
+			sprite->setScale(0.8, 0.8);
 			sprite->setColor(sf::Color(255, 255, 255, 191));
 		}
 		else
@@ -57,6 +59,10 @@ void Button::draw(sf::RenderWindow* window, sf::View* view, Text* text)
 		}
 
 		window->draw(*sprite);
+
+		// resetting sprite in case it is used somewhere else
+		sprite->setOrigin(0, 0);
+		sprite->setScale(1, 1);
 	}
 	else
 	{

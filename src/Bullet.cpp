@@ -69,6 +69,14 @@ void Bullet::draw(sf::RenderWindow* window, sf::FloatRect viewport, bool paused)
 	}
 	else
 	{
+		// drawing the bullet trail
+		sprite->setColor(sf::Color(255, 255, 255, 63));
+		sprite->setPosition(position.x - velocity.x * 2, position.y - velocity.y * 2);
+		window->draw(*sprite);
+		// resetting the color to default, opaque white
+		sprite->setColor(sf::Color::White);
+
+		// drawing the actual bullet
 		sprite->setPosition(position);
 		window->draw(*sprite);
 	}

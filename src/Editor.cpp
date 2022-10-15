@@ -832,12 +832,12 @@ void Editor::drawMapCrosshair()
 	// horizontal
 	mapCrosshair.setSize({(float)mapSize.x * tilesize, mapOutlineThickness});
 	mapCrosshair.setOrigin(0, mapOutlineThickness / 2);
-	mapCrosshair.setPosition(relativeMapPosition(0, mapSize.y / 2 * tilesize));
+	mapCrosshair.setPosition(relativeMapPosition(0, (float)mapSize.y / 2 * tilesize));
 	window->draw(mapCrosshair);
 	// vertical
 	mapCrosshair.setSize({mapOutlineThickness, (float)mapSize.y * tilesize});
 	mapCrosshair.setOrigin(mapOutlineThickness / 2, 0);
-	mapCrosshair.setPosition(relativeMapPosition(mapSize.x / 2 * tilesize, 0));
+	mapCrosshair.setPosition(relativeMapPosition((float)mapSize.x / 2 * tilesize, 0));
 	window->draw(mapCrosshair);
 }
 

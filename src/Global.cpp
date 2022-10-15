@@ -23,12 +23,27 @@ sf::Color       selectionTilesetBackgroundColor(0xd9c797ff);
 sf::Color          selectionTilesetOutlineColor(0xdaba87ff);
 sf::Color selectionTilesetSelectionOutlineColor(0x5ac54faa);
 
+
+
 void toggle(bool &boolean)
 {
 	if (boolean)
-	{ boolean = false; }
+	{
+		boolean = false;
+	}
 	else
-	{ boolean = true; }
+	{
+		boolean = true;
+	}
+}
+
+std::string boolString(bool boolean)
+{
+	if (boolean)
+	{
+		return "true";
+	}
+	return "false";
 }
 
 bool pressing(sf::Keyboard::Key key)

@@ -1,6 +1,6 @@
 #include "headers/Game.hpp"
 
-#define splashScreenWaitFrames 120
+#define splashScreenWaitFrames 30
 #define amountOfRainbowSlimeys 100
 
 RainbowSlimey::RainbowSlimey(sf::Color _color, sf::Vector2f _position, float _scale, int _rotation, int _speed)
@@ -182,6 +182,65 @@ void Game::updateStoryLevels()
 
 void Game::updateCustomLevels()
 {
+	for (Levelbox &box : customLevelboxes)
+	{
+		box.update(mousePosition);
+		if (box.active)
+		{
+			handyCursor = true;
+			if (leftClick)
+			{
+				box.action();
+				transition.to(box.destination);
+			}
+		}
+	}
+
+	bool remove = false;
+	unsigned int index = 0;
+	for (Button &button : customLevelRemoveButtons)
+	{
+		button.update(mousePosition);
+		if (button.active)
+		{
+			handyCursor = true;
+			if (leftClick)
+			{
+				remove = true;
+			}
+		}
+		if (!remove)
+		{
+			index++;
+		}
+	}
+	if (remove)
+	{
+		fs::remove("custom_maps/" + customLevelboxes.at(index).customMapName + ".txt");
+
+		customLevelsCount--;
+		customLevelboxes.erase(customLevelboxes.begin() + index);
+		customLevelRemoveButtons.erase(customLevelRemoveButtons.begin() + index);
+
+		unsigned int localIndex = 0;
+		for (Levelbox &box : customLevelboxes)
+		{
+			if (localIndex >= index)
+			{
+				box.position.y -= levelboxSpacing;
+			}
+			localIndex++;
+		}
+		localIndex = 0;
+		for (Button &button : customLevelRemoveButtons)
+		{
+			if (localIndex >= index)
+			{
+				button.position.y -= levelboxSpacing;
+			}
+			localIndex++;
+		}
+	}
 }
 
 void Game::updateLevelPlay()
@@ -297,6 +356,14 @@ void Game::drawCustomLevels()
 	else
 	{
 		text.draw("Number of custom levels:" + std::to_string(customLevelsCount), Center, Center, {viewWidth * 0.5, viewHeight * 0.325});
+	}
+	for (Levelbox &box : customLevelboxes)
+	{
+		box.draw(window, view, &text);
+	}
+	for (Button &button : customLevelRemoveButtons)
+	{
+		button.draw(window, view, &text);
 	}
 }
 

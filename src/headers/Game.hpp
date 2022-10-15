@@ -57,7 +57,7 @@ struct Game
 	// main menu stuff
 	std::vector<RainbowSlimey> rainbowSlimeys;
 	Button bookButton;
-	bool bookIsOpen;
+	bool bookIsOpen = false;
 
 	sf::Vector2f mousePosition;
 
@@ -78,6 +78,9 @@ struct Game
 	unsigned int customLevelsCount;
 
 	std::vector<Menubox*> menu;
+
+	std::vector<Levelbox> customLevelboxes;
+	std::vector<Button> customLevelRemoveButtons;
 
 	State lastState;
 	State     state;

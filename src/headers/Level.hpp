@@ -63,6 +63,7 @@ struct Level
 	void destroyBullets();
 
 	void drawPlayerCollisions();
+	void drawDebugMode();
 
 	void updateView(bool instant);
 
