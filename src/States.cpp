@@ -1,6 +1,6 @@
 #include "headers/Game.hpp"
 
-#define splashScreenWaitFrames 30
+#define splashScreenWaitFrames 60
 #define amountOfRainbowSlimeys 100
 
 RainbowSlimey::RainbowSlimey(sf::Color _color, sf::Vector2f _position, float _scale, int _rotation, int _speed)
@@ -32,8 +32,12 @@ void Game::updateSplashScreen()
 	if (asleepTimer < splashScreenWaitFrames)
 	{
 		asleepTimer++;
-		if (asleepTimer == splashScreenWaitFrames)
+		if (asleepTimer == splashScreenWaitFrames || leftClick)
 		{
+			if (leftClick)
+			{
+				asleepTimer = splashScreenWaitFrames;
+			}
 			audio.startup.play();
 		}
 	}
@@ -190,6 +194,7 @@ void Game::updateCustomLevels()
 			handyCursor = true;
 			if (leftClick)
 			{
+				audio.click.play();
 				box.action();
 				transition.to(box.destination);
 			}
@@ -206,6 +211,7 @@ void Game::updateCustomLevels()
 			handyCursor = true;
 			if (leftClick)
 			{
+				audio.explosion.play();
 				remove = true;
 			}
 		}

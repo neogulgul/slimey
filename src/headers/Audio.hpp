@@ -5,6 +5,7 @@
 struct Audio
 {
 	// music
+	sf::Music titleTrack;
 
 	// SFX
 	sf::SoundBuffer startupBuffer;

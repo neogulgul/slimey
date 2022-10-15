@@ -37,8 +37,13 @@ void Player::place(int x, int y)
 
 void Player::death()
 {
-	alive = false;
-	velocity = {0, 0};
+	alive         = false;
+	jump          = false;
+	jumped        = false;
+	jumpedEarly   = false;
+	preJumpTimer  = 0;
+	postJumpTimer = 0;
+	velocity      = {0, 0};
 }
 
 void Player::levelClear()
@@ -160,8 +165,8 @@ void Player::handleJump()
 
 	if (!jump)
 	{
-		jumpTimer = 0;
-		jumped = false;
+		jumpTimer   = 0;
+		jumped      = false;
 		jumpedEarly = false;
 	}
 
@@ -193,7 +198,8 @@ void Player::updatePosition()
 
 void Player::handleCollision()
 {
-	onIce = false;
+	onGround = false;
+	onIce    = false;
 
 	hitVerticalBounce   = false;
 	hitHorizontalBounce = false;
@@ -253,8 +259,8 @@ void Player::handleCollision()
 	{
 		if (onGround) // if also touched ground last frame
 		{
-			jumpTimer = 0;
-			preJumpTimer = 0;
+			jumpTimer     = 0;
+			preJumpTimer  = 0;
 			postJumpTimer = 0;
 		}
 		onGround = true;
@@ -265,7 +271,6 @@ void Player::handleCollision()
 		{
 			postJumpTimer = postJumpFrames;
 		}
-		onGround = false;
 	}
 
 	if (position.y > mapSize.y * tilesize)
@@ -365,12 +370,8 @@ void Player::updateSprite()
 	}
 }
 
-void Player::draw(sf::RenderWindow* window, sf::FloatRect viewport, bool paused)
+void Player::draw(sf::RenderWindow* window, sf::FloatRect viewport)
 {
-	if (!paused && window->hasFocus())
-	{
-		updateSprite();
-	}
 	if (alive)
 	{
 		if (!getHitbox().intersects(viewport))

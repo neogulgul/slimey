@@ -46,5 +46,5 @@ struct Collider
 	virtual void handleCollision();
 	        void update();
 	virtual void updateSprite();
-	virtual void draw(sf::RenderWindow* window, sf::FloatRect viewport, bool paused);
+	virtual void draw(sf::RenderWindow* window, sf::FloatRect viewport);
 };

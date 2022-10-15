@@ -274,6 +274,7 @@ void Collider::update()
 	updatePosition();
 	checkCollision();
 	handleCollision();
+	updateSprite();
 }
 
 void Collider::updateSprite()
@@ -284,12 +285,8 @@ void Collider::updateSprite()
 	*/
 }
 
-void Collider::draw(sf::RenderWindow* window, sf::FloatRect viewport, bool paused)
+void Collider::draw(sf::RenderWindow* window, sf::FloatRect viewport)
 {
-	if (!paused && window->hasFocus())
-	{
-		updateSprite();
-	}
 	if (!getHitbox().intersects(viewport)) { return; }
 	sprite->setPosition(position);
 	window->draw(*sprite);

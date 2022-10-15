@@ -164,7 +164,7 @@ void Level::drawBullets()
 {
 	for (Bullet &bullet : bullets)
 	{
-		bullet.draw(window, *viewport, *paused);
+		bullet.draw(window, *viewport);
 	}
 }
 
@@ -277,8 +277,8 @@ void Level::update()
 
 	if (*paused) { return; }
 
-	bool playerJumpedLastFrame = player.jumped;
 	bool playerAliveLastFrame  = player.alive;
+	bool playerJumpedLastFrame = player.jumped;
 
 	if (!cleared && player.alive)
 	{
@@ -322,7 +322,7 @@ void Level::draw()
 {
 	drawMap();
 	drawBullets();
-	player.draw(window, *viewport, *paused);
+	player.draw(window, *viewport);
 	if (*debug)
 	{
 		drawDebugMode();

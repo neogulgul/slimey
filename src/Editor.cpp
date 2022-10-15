@@ -360,6 +360,23 @@ void Editor::loadMap()
 		mapHeightInput->value.str("");
 		mapWidthInput ->value << mapSize.x;
 		mapHeightInput->value << mapSize.y;
+
+		for (unsigned int x = 0; x < mapSize.x; x++)
+		{
+			for (unsigned int y = 0; y < mapSize.y; y++)
+			{
+				if (getTile(x, y) == spawnTile)
+				{
+					spawnPosition.x = x;
+					spawnPosition.y = y;
+				}
+				else if (getTile(x, y) == exitTile)
+				{
+					exitPosition.x = x;
+					exitPosition.y = y;
+				}
+			}
+		}
 	}
 
 	updateMapRect();

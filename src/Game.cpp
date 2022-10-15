@@ -444,6 +444,11 @@ void Game::update()
 	if (transition.transitioning)
 	{
 		transition.update();
+		if (transition.destination == ExitScreen)
+		{
+			static const float originalVolume = audio.titleTrack.getVolume();
+			audio.titleTrack.setVolume(originalVolume * (1 - transition.opacity));
+		}
 	}
 	if (window->hasFocus())
 	{
@@ -467,10 +472,6 @@ void Game::update()
 	if (state != lastState)
 	{
 		changedState = true;
-		if (state != LevelEditor && state != LevelPlay)
-		{
-			resetView();
-		}
 	}
 	else
 	{
@@ -483,9 +484,20 @@ void Game::update()
 		pausePress   = false;
 		pausePressed = false;
 
-		if (lastState == LevelEditor)
+		if (state != LevelEditor && state != LevelPlay)
 		{
-			sprites.resetScale();
+			resetView();
+		}
+
+		switch (lastState)
+		{
+			case SplashScreen:
+				audio.titleTrack.play();
+				break;
+
+			case LevelEditor:
+				sprites.resetScale();
+				break;
 		}
 	}
 

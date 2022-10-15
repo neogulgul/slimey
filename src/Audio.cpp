@@ -1,17 +1,22 @@
 #include "headers/Audio.hpp"
 
-#define startupVolume   50
+#define titleTrackVolume 50
+
+#define startupVolume   55
 #define clickVolume     40
 #define jumpVolume      20
 #define bounceVolume    10
-#define hurtVolume      50
-#define spawnVolume     40
+#define hurtVolume      45
+#define spawnVolume     15
 #define shootVolume     10
 #define explosionVolume 10
 
 Audio::Audio()
 {
 	// music
+	titleTrack.openFromFile("assets/audio/music/slimey.ogg");
+	titleTrack.setVolume(titleTrackVolume);
+	titleTrack.setLoop(true);
 
 	// SFX
 	startupBuffer.loadFromFile("assets/audio/sfx/startup.wav");
@@ -51,9 +56,11 @@ void Audio::updateMusicVolume(bool notMuted)
 {
 	if (notMuted)
 	{
+		titleTrack.setVolume(titleTrackVolume);
 	}
 	else
 	{
+		titleTrack.setVolume(0);
 	}
 }
 

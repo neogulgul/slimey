@@ -79,5 +79,5 @@ struct Player : Collider
 	virtual void updatePosition();
 	virtual void handleCollision();
 	virtual void updateSprite();
-	virtual void draw(sf::RenderWindow* window, sf::FloatRect viewport, bool paused);
+	virtual void draw(sf::RenderWindow* window, sf::FloatRect viewport);
 };
