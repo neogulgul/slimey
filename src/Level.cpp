@@ -198,7 +198,7 @@ void Level::drawDebugMode()
 	drawPlayerCollisions();
 
 	std::stringstream stream;
-	stream << "alive:" << boolString(player.alive);
+	stream << "alive:   " << boolString(player.alive);
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 60}));
 
 	stream.str("");
@@ -206,23 +206,23 @@ void Level::drawDebugMode()
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 50}));
 
 	stream.str("");
-	stream << "onIce:" << boolString(player.onIce);
+	stream << "onIce:   " << boolString(player.onIce);
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 40}));
 
 	stream.str("");
-	stream << "pos.x:" << player.position.x;
+	stream << "pos.x:   " << player.position.x;
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 30}));
 
 	stream.str("");
-	stream << "pos.y:" << player.position.y;
+	stream << "pos.y:   " << player.position.y;
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 20}));
 
 	stream.str("");
-	stream << "vel.x:" << player.velocity.x;
+	stream << "vel.x:   " << player.velocity.x;
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 10}));
 
 	stream.str("");
-	stream << "vel.y:" << player.velocity.y;
+	stream << "vel.y:   " << player.velocity.y;
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight     }));
 }
 

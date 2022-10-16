@@ -68,6 +68,8 @@ Editor::Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewp
 	mapHeightInput = sizeInputs.at(2);
 	mapWidthInput ->value << mapSize.x;
 	mapHeightInput->value << mapSize.y;
+	
+	updateSizeInputs();
 
 	buttons = {
 		Button("Save", {35, 20}, End, End, {viewWidth - 5, viewHeight - 30}),

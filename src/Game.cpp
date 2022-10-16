@@ -201,9 +201,10 @@ void Game::createCustomLevelboxes()
 		// if the file is not a .txt we skip it
 		if (!strstr(mapName.c_str(), ".txt")) { continue; }
 
-		// this removes a \ from the name, which appears on windows
+		// this removes a two \ from the name, which appears on windows
 		if (strstr(mapName.c_str(), "\\"))
 		{
+			replaceSubstringInString(mapName, "\\");
 			replaceSubstringInString(mapName, "\\");
 		}
 		// this removes a / from the name
