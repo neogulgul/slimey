@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstring>
+#include <set>
 
 #include "headers/Game.hpp"
 
@@ -21,7 +22,7 @@ Game::Game(sf::RenderWindow* _window, sf::View* _view)
 
 	editor     = Editor(window, view, &viewport, &audio, &sprites, &text,
 	                    &mousePosition, &handyCursor, &leftClick,
-	                    &pressingControl, &pressingShift, &pressingAlt, &paused);
+	                    &pressingControl, &pressingShift, &pressingAlt, &paused, &transition.transitioning);
 	level      = Level(window, view, &viewport, &audio, &sprites, &text, &transition, &paused, &options.debug);
 	text       = Text(window);
 	transition = Transition(window, view, state);
@@ -99,7 +100,15 @@ void Game::handleCustomLevelsScroll(sf::Event event)
 		viewPosition.y += customLevelsScrollDelta;
 	}
 
-	// limiting the view
+	view->setCenter(viewPosition);
+
+	limitCustomLevelsScroll();
+}
+
+void Game::limitCustomLevelsScroll()
+{
+	sf::Vector2f viewPosition = view->getCenter();
+
 	if (viewPosition.y < viewHeight * 0.5)
 	{
 		viewPosition.y = viewHeight * 0.5;
@@ -175,10 +184,18 @@ void Game::createCustomLevelboxes()
 	lastCustomMapVerticalPosition = 0;
 	customLevelsCount = 0;
 	if (!fs::is_directory("custom_maps")) { return; }
+
+	std::set<fs::path> maps_sorted_by_name;
+
 	for (fs::directory_entry entry : fs::directory_iterator("custom_maps"))
 	{
+		maps_sorted_by_name.insert(entry.path());
+	}
+
+	for (fs::path path : maps_sorted_by_name)
+	{
 		std::stringstream conversionStream;
-		conversionStream << entry;
+		conversionStream << path;
 		std::string mapName = conversionStream.str();
 
 		// if the file is not a .txt we skip it
@@ -201,9 +218,6 @@ void Game::createCustomLevelboxes()
 
 		float verticalPosition = viewHeight * 0.25 + 48 + levelboxSpacing * customLevelsCount;
 
-		// menu.push_back(
-		// 	new Levelbox(level, mapName, {viewWidth * 0.5, verticalPosition})
-		// );
 		customLevelboxes.push_back(
 			Levelbox(&level, mapName, {viewWidth * 0.5, verticalPosition})
 		);

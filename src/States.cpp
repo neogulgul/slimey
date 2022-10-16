@@ -149,6 +149,8 @@ void Game::updateMainMenu()
 
 void Game::updateOptionsScreen()
 {
+	if (transition.transitioning) { return; }
+
 	for (OptionButton &button : options.optionButtons)
 	{
 		button.update(mousePosition);
@@ -186,6 +188,8 @@ void Game::updateStoryLevels()
 
 void Game::updateCustomLevels()
 {
+	if (transition.transitioning) { return; }
+
 	for (Levelbox &box : customLevelboxes)
 	{
 		box.update(mousePosition);
@@ -246,6 +250,9 @@ void Game::updateCustomLevels()
 			}
 			localIndex++;
 		}
+
+		lastCustomMapVerticalPosition = viewHeight * 0.25 + 48 + levelboxSpacing * (customLevelsCount - 1);
+		limitCustomLevelsScroll();
 	}
 }
 

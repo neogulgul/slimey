@@ -74,13 +74,13 @@ struct Game
 	bool pressingShift   = false;
 	bool pressingAlt     = false;
 
-	float lastCustomMapVerticalPosition;
-	unsigned int customLevelsCount;
-
 	std::vector<Menubox*> menu;
 
 	std::vector<Levelbox> customLevelboxes;
 	std::vector<Button> customLevelRemoveButtons;
+
+	float lastCustomMapVerticalPosition;
+	unsigned int customLevelsCount;
 
 	State lastState;
 	State     state;
@@ -102,6 +102,7 @@ struct Game
 	void processMouseInput();
 
 	void handleCustomLevelsScroll(sf::Event event);
+	void limitCustomLevelsScroll();
 
 	void createStoryLevelboxes();
 	void createCustomLevelboxes();

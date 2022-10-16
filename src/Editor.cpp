@@ -36,7 +36,7 @@ Editor::Editor() {}
 
 Editor::Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewport, Audio* _audio, Sprites* _sprites, Text* _text,
                sf::Vector2f* _mousePosition, bool* _handyCursor, bool* _leftClick,
-               bool* _pressingControl, bool* _pressingShift, bool* _pressingAlt, bool* _paused)
+               bool* _pressingControl, bool* _pressingShift, bool* _pressingAlt, bool* _paused, bool* _transitioning)
 {
 	window          = _window;
 	view            = _view;
@@ -51,6 +51,7 @@ Editor::Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewp
 	pressingShift   = _pressingShift;
 	pressingAlt     = _pressingAlt;
 	paused          = _paused;
+	transitioning   = _transitioning;
 	
 	declareRegions();
 
@@ -924,11 +925,21 @@ void Editor::handleTextEntered(sf::Event event)
 		removeLastCharFromStringstream(selectedInput->value);
 	}
 	else if (!selectedInput->numbersOnly && (
-	         	character >= '0' && character <= '9'
-	         	||
-	         	character >= 'A' && character <= 'Z'
-	         	||
-	         	character >= 'a' && character <= 'z'
+	         	character >  32 && character < 127
+	         	//        Space             Delete
+	         	&&
+	         	character != 47 && character != 92
+	         	//          '/'                '\'
+	         	/*
+	         		decided to keep this just in case
+	         		i would want to change it back later
+	         		to only allow letters and numbers
+	         	*/
+	         	// character >= '0' && character <= '9'
+	         	// ||
+	         	// character >= 'A' && character <= 'Z'
+	         	// ||
+	         	// character >= 'a' && character <= 'z'
 	         )
 	         ||
 	         selectedInput->numbersOnly && character >= '0' && character <= '9')
@@ -1039,7 +1050,7 @@ void Editor::drawButtons()
 
 void Editor::update()
 {
-	if (*paused || !window->hasFocus()) { return; }
+	if (*paused || *transitioning || !window->hasFocus()) { return; }
 
 	processKeyboardInput();
 	processMouseInput();

@@ -198,6 +198,9 @@ void Player::updatePosition()
 
 void Player::handleCollision()
 {
+	static bool touchedIceLastFrame = false;
+	       bool touchedIceThisFrame = false;
+
 	onGround = false;
 	onIce    = false;
 
@@ -217,7 +220,7 @@ void Player::handleCollision()
 		{
 			if (collision.direction == Down)
 			{
-				onIce = true;
+				touchedIceThisFrame = true;
 			}
 		}
 		else if (tileset == Bounce)
@@ -250,6 +253,12 @@ void Player::handleCollision()
 			}
 		}
 	}
+
+	if (touchedIceLastFrame || touchedIceThisFrame)
+	{
+		onIce = true;
+	}
+	touchedIceLastFrame = touchedIceThisFrame;
 
 	if (hitUp)
 	{

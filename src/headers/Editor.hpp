@@ -53,6 +53,7 @@ struct Editor
 	bool* pressingShift;
 	bool* pressingAlt;
 	bool* paused;
+	bool* transitioning;
 
 	mapVector map;
 	/*
@@ -155,7 +156,7 @@ struct Editor
 	Editor();
 	Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewport, Audio* _audio, Sprites* _sprites, Text* _text,
 	       sf::Vector2f* _mousePosition, bool* _handyCursor, bool* _leftClick,
-	       bool* _pressingControl, bool* _pressingShift, bool* _pressingAlt, bool* _paused);
+	       bool* _pressingControl, bool* _pressingShift, bool* _pressingAlt, bool* _paused, bool* _transitioning);
 
 	void declareRegions();
 
