@@ -57,17 +57,18 @@ struct Editor
 
 	mapVector map;
 	/*
-	one 3D vector has 3 values (x, y, z) which in this case represents one tile
-	the x value represents which tileset to draw
-	the y value represents the horizontal (x) crop of the respective tileset
-	the z value represents the vertical (y) crop of the respective tileset
+		one 3D vector has 3 values (x, y, z) which in this case represents one tile
+		the x value represents which tileset to draw
+		the y value represents the horizontal (x) crop of the respective tileset
+		the z value represents the vertical (y) crop of the respective tileset
 
-	could change it so that the z represents the tileset
-	because that would make more sense
-	but i am to lazy to do so
+		could change it so that the z represents the tileset
+		because it would make more sense for the x and y
+		to represent their corresponding crop values
+		but i am too lazy :)))
 	*/
-	unsigned int minMapSize = 16;
-	unsigned int maxMapSize = 64;
+	unsigned int minMapSize =  16;
+	unsigned int maxMapSize = 128;
 	unsigned int initialMapWidth  = minMapSize;
 	unsigned int initialMapHeight = minMapSize;
 	sf::Vector2u mapSize;

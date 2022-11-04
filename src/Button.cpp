@@ -18,9 +18,14 @@ Button::Button(std::string _string, sf::Vector2f size, Alignment horizontalAlign
 Button::Button(sf::Sprite* _sprite, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f _position, bool _relativeToView)
 {
 	isSprite = true;
-	sprite = _sprite;
+	setSprite(_sprite);
 	position = align((sf::Vector2f)sprite->getTexture()->getSize(), horizontalAlignment, verticalAlignment, _position);
 	relativeToView = _relativeToView;
+}
+
+void Button::setSprite(sf::Sprite* _sprite)
+{
+	sprite = _sprite;
 }
 
 void Button::update(sf::Vector2f mousePosition)

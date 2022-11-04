@@ -25,7 +25,7 @@ Level::Level(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewpor
 
 void Level::reset()
 {
-	turretTimer = 0;
+	turretTimer = default_turretTimer;
 	for (Bullet &bullet : bullets)
 	{
 		bullet.explode();
@@ -42,7 +42,7 @@ void Level::loadMap(mapVector _map, bool _custom)
 	loaded  = false;
 	cleared = false;
 
-	turretTimer = 0;
+	turretTimer = default_turretTimer;
 
 	turrets.clear();
 	bullets.clear();
@@ -86,7 +86,7 @@ void Level::loadMap(mapVector _map, bool _custom)
 		}
 	}
 
-	player = Player(&sprites->slimeyFrames, &sprites->slimeyDeath, &sprites->offscreenCircle, &cleared, &map, mapSize, spawn, exit);
+	player = Player(&sprites->slimeyFrames, &sprites->slimeyDeath, &sprites->offscreenCircle, &cleared, &map, mapSize, spawn);
 }
 
 void Level::drawMap()

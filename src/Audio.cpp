@@ -52,11 +52,11 @@ Audio::Audio()
 	explosion.setVolume(explosionVolume);
 }
 
-void Audio::updateMusicVolume(bool notMuted)
+void Audio::updateMusicVolume(bool notMuted, float volume)
 {
 	if (notMuted)
 	{
-		titleTrack.setVolume(titleTrackVolume);
+		titleTrack.setVolume(titleTrackVolume * volume);
 	}
 	else
 	{
@@ -64,18 +64,18 @@ void Audio::updateMusicVolume(bool notMuted)
 	}
 }
 
-void Audio::updateSFXVolume(bool notMuted)
+void Audio::updateSFXVolume(bool notMuted, float volume)
 {
 	if (notMuted)
 	{
-		  startup.setVolume(startupVolume);
-		    click.setVolume(clickVolume);
-		     jump.setVolume(jumpVolume);
-		   bounce.setVolume(bounceVolume);
-		     hurt.setVolume(hurtVolume);
-		    spawn.setVolume(spawnVolume);
-		    shoot.setVolume(shootVolume);
-		explosion.setVolume(explosionVolume);
+		  startup.setVolume(startupVolume   * volume);
+		    click.setVolume(clickVolume     * volume);
+		     jump.setVolume(jumpVolume      * volume);
+		   bounce.setVolume(bounceVolume    * volume);
+		     hurt.setVolume(hurtVolume      * volume);
+		    spawn.setVolume(spawnVolume     * volume);
+		    shoot.setVolume(shootVolume     * volume);
+		explosion.setVolume(explosionVolume * volume);
 	}
 	else
 	{

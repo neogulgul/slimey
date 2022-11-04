@@ -8,8 +8,6 @@ Menubox::Menubox(State _destination, std::string string, sf::Vector2f size, Alig
 
 void Menubox::action()
 {
-	/*
-	empty by default
-	used by derived structs
-	*/
+	// empty by default
+	// used by derived structs
 }

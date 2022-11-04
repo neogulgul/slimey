@@ -34,6 +34,6 @@ struct Audio
 
 	Audio();
 
-	void updateMusicVolume(bool notMuted);
-	void updateSFXVolume(bool notMuted);
+	void updateMusicVolume(bool notMuted, float volume);
+	void updateSFXVolume(bool notMuted, float volume);
 };

@@ -2,16 +2,6 @@
 
 #include "headers/Collider.hpp"
 
-sf::FloatRect getTileHitbox(sf::Vector3i tile, sf::Vector2i tileCoord)
-{
-	if (tile == sawbladeTile)
-	{
-		return sf::FloatRect(tileCoord.x * tilesize + 1, tileCoord.y * tilesize + 1, tilesize - 2, tilesize - 2);
-	}
-
-	return sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
-}
-
 Collision::Collision(Direction _direction, sf::Vector2i _coord)
 {
 	direction = _direction;
@@ -27,11 +17,6 @@ Collider::Collider(sf::Sprite* _sprite, mapVector* _map, sf::Vector2u _mapSize)
 	mapSize = _mapSize;
 }
 
-sf::Vector3i Collider::getTile(sf::Vector2i coord)
-{
-	return map->at(coord.x).at(coord.y);
-}
-
 sf::Vector2f Collider::getCenter()
 {
 	return {position.x + size.x / 2, position.y + size.y / 2};
@@ -40,6 +25,21 @@ sf::Vector2f Collider::getCenter()
 sf::FloatRect Collider::getHitbox()
 {
 	return sf::FloatRect(position.x, position.y, size.x, size.y);
+}
+
+sf::Vector3i Collider::getTile(sf::Vector2i coord)
+{
+	return map->at(coord.x).at(coord.y);
+}
+
+sf::FloatRect Collider::getTileHitbox(sf::Vector3i tile, sf::Vector2i tileCoord)
+{
+	if (tile == sawbladeTile)
+	{
+		return sf::FloatRect(tileCoord.x * tilesize + 1, tileCoord.y * tilesize + 1, tilesize - 2, tilesize - 2);
+	}
+
+	return sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
 }
 
 void Collider::setPosition(float x, float y)
@@ -62,10 +62,17 @@ bool Collider::validCoord(sf::Vector2i coord)
 
 bool Collider::validCollisionTile(sf::Vector2i coord)
 {
-	sf::Vector3i tile = map->at(coord.x).at(coord.y);
+	sf::Vector3i tile = getTile(coord);
 	int tileset = tile.x;
 
-	return (!(tileset == 0 || tile == exitTile));
+	return tileset != 0;
+}
+
+bool Collider::validSolidCollisionTile(sf::Vector2i coord)
+{
+	sf::Vector3i tile = getTile(coord);
+
+	return !(tile == exitTile || tile == sawbladeTile);
 }
 
 void Collider::checkCollision()
@@ -128,9 +135,12 @@ void Collider::checkCollision()
 
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
-						hitUp = true;
 						collisions.push_back(Collision(Up, tileCoord));
-						position.y = tileCoord.y * tilesize + tilesize;
+						if (validSolidCollisionTile(tileCoord))
+						{
+							hitUp = true;
+							position.y = tileCoord.y * tilesize + tilesize;
+						}
 					}
 				}
 			}
@@ -146,9 +156,12 @@ void Collider::checkCollision()
 
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
-						hitDown = true;
 						collisions.push_back(Collision(Down, tileCoord));
-						position.y = tileCoord.y * tilesize - size.y;
+						if (validSolidCollisionTile(tileCoord))
+						{
+							hitDown = true;
+							position.y = tileCoord.y * tilesize - size.y;
+						}
 					}
 				}
 			}
@@ -200,9 +213,12 @@ void Collider::checkCollision()
 
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
-						hitLeft = true;
 						collisions.push_back(Collision(Left, tileCoord));
-						position.x = tileCoord.x * tilesize + tilesize;
+						if (validSolidCollisionTile(tileCoord))
+						{
+							hitLeft = true;
+							position.x = tileCoord.x * tilesize + tilesize;
+						}
 					}
 				}
 			}
@@ -218,9 +234,12 @@ void Collider::checkCollision()
 
 					if (validCollisionTile(tileCoord) && colliderHitbox.intersects(tileHitbox))
 					{
-						hitRight = true;
 						collisions.push_back(Collision(Right, tileCoord));
-						position.x = tileCoord.x * tilesize - size.x;
+						if (validSolidCollisionTile(tileCoord))
+						{
+							hitRight = true;
+							position.x = tileCoord.x * tilesize - size.x;
+						}
 					}
 				}
 			}
@@ -263,10 +282,8 @@ void Collider::checkCollision()
 
 void Collider::handleCollision()
 {
-	/*
-	empty by default
-	used by derived structs
-	*/
+	// empty by default
+	// used by derived structs
 }
 
 void Collider::update()
@@ -279,10 +296,8 @@ void Collider::update()
 
 void Collider::updateSprite()
 {
-	/*
-	empty by default
-	used by derived structs
-	*/
+	// empty by default
+	// used by derived structs
 }
 
 void Collider::draw(sf::RenderWindow* window, sf::FloatRect viewport)

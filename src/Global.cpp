@@ -23,8 +23,6 @@ sf::Color       selectionTilesetBackgroundColor(0xd9c797ff);
 sf::Color          selectionTilesetOutlineColor(0xdaba87ff);
 sf::Color selectionTilesetSelectionOutlineColor(0x5ac54faa);
 
-
-
 void toggle(bool &boolean)
 {
 	if (boolean)

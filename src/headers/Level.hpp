@@ -11,6 +11,8 @@
 #include "Transition.hpp"
 #include "Turret.hpp"
 
+#define default_turretTimer 120
+
 struct Level
 {
 	sf::RenderWindow* window;
@@ -41,7 +43,7 @@ struct Level
 	std::vector<Turret> turrets;
 	std::vector<Bullet> bullets;
 
-	unsigned int turretTimer  = 0;
+	unsigned int turretTimer  = default_turretTimer;
 	unsigned int turretFrames = 120;
 
 	bool loaded  = false;

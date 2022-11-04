@@ -175,6 +175,45 @@ void Game::updateOptionsScreen()
 			options.reset();
 		}
 	}
+
+	// music volume bar
+	for (Button* button : options.volumeBarMusic)
+	{
+		button->update(mousePosition);
+		if (button->active)
+		{
+			handyCursor = true;
+			if (leftClick)
+			{
+				bool correctVolume = false;
+				for (unsigned int i = 0; i < options.volumeBarMusic.size(); i++)
+				{
+					if (correctVolume)
+					{
+						options.volumeBarMusic.at(i)->sprite = &options.barOff;
+					}
+					else
+					{
+						options.volumeBarMusic.at(i)->sprite = &options.barOn;
+					}
+					if (button == options.volumeBarMusic.at(i))
+					{
+						correctVolume = true;
+						options.volumeMusic = (i + 1) / 10.f;
+					}
+				}
+			}
+		}
+	}
+	// sfx volume bar
+	for (Button* button : options.volumeBarSFX)
+	{
+		button->update(mousePosition);
+		if (button->active)
+		{
+			handyCursor = true;
+		}
+	}
 }
 
 void Game::updateLevelEditor()
@@ -337,16 +376,27 @@ void Game::drawMainMenu()
 void Game::drawOptionsScreen()
 {
 	text.draw("Options", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
-	text.draw("Music"        , Start, Center, {viewWidth * 0.25, viewHeight - 150});
+	text.draw("Music"        , Start, Center, {viewWidth * 0.25, viewHeight - 160});
 	text.draw("Sound Effects", Start, Center, {viewWidth * 0.25, viewHeight - 120});
-	text.draw("Show FPS"     , Start, Center, {viewWidth * 0.25, viewHeight -  90});
-	text.draw("Debug Mode"   , Start, Center, {viewWidth * 0.25, viewHeight -  60});
+	text.draw("Show FPS"     , Start, Center, {viewWidth * 0.25, viewHeight -  80});
+	text.draw("Debug Mode"   , Start, Center, {viewWidth * 0.25, viewHeight -  50});
 
 	for (OptionButton &button : options.optionButtons)
 	{
 		button.draw(window, view, &text);
 	}
 	options.resetButton.draw(window, view, &text);
+
+	// drawing music volume bar
+	for (Button* button : options.volumeBarMusic)
+	{
+		button->draw(window, view, &text);
+	}
+	// drawing SFX volume bar
+	for (Button* button : options.volumeBarSFX)
+	{
+		button->draw(window, view, &text);
+	}
 }
 
 void Game::drawLevelEditor()

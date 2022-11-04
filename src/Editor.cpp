@@ -68,8 +68,6 @@ Editor::Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewp
 	mapHeightInput = sizeInputs.at(2);
 	mapWidthInput ->value << mapSize.x;
 	mapHeightInput->value << mapSize.y;
-	
-	updateSizeInputs();
 
 	buttons = {
 		Button("Save", {35, 20}, End, End, {viewWidth - 5, viewHeight - 30}),
@@ -927,21 +925,13 @@ void Editor::handleTextEntered(sf::Event event)
 		removeLastCharFromStringstream(selectedInput->value);
 	}
 	else if (!selectedInput->numbersOnly && (
-	         	character >  32 && character < 127
-	         	//        Space             Delete
-	         	&&
-	         	character != 47 && character != 92
-	         	//          '/'                '\'
-	         	/*
-	         		decided to keep this just in case
-	         		i would want to change it back later
-	         		to only allow letters and numbers
-	         	*/
-	         	// character >= '0' && character <= '9'
-	         	// ||
-	         	// character >= 'A' && character <= 'Z'
-	         	// ||
-	         	// character >= 'a' && character <= 'z'
+	         	character >= '0' && character <= '9'
+	         	||
+	         	character >= 'A' && character <= 'Z'
+	         	||
+	         	character >= 'a' && character <= 'z'
+	         	||
+	         	character == '_' || character == '-'
 	         )
 	         ||
 	         selectedInput->numbersOnly && character >= '0' && character <= '9')

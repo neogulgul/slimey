@@ -34,14 +34,16 @@ struct Collider
 	Collider();
 	Collider(sf::Sprite* _sprite, mapVector* _map, sf::Vector2u _mapSize);
 
-	sf::Vector3i getTile(sf::Vector2i coord);
 	sf::Vector2f getCenter();
 	sf::FloatRect getHitbox();
+	sf::Vector3i getTile(sf::Vector2i coord);
+	sf::FloatRect getTileHitbox(sf::Vector3i tile, sf::Vector2i tileCoord);
 
 	        void setPosition(float x, float y);
 	virtual void updatePosition();
 	        bool validCoord(sf::Vector2i coord);
 	        bool validCollisionTile(sf::Vector2i coord);
+	        bool validSolidCollisionTile(sf::Vector2i coord);
 	        void checkCollision();
 	virtual void handleCollision();
 	        void update();

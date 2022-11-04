@@ -24,8 +24,12 @@ Game::Game(sf::RenderWindow* _window, sf::View* _view)
 	                    &mousePosition, &handyCursor, &leftClick,
 	                    &pressingControl, &pressingShift, &pressingAlt, &paused, &transition.transitioning);
 	level      = Level(window, view, &viewport, &audio, &sprites, &text, &transition, &paused, &options.debug);
+	// options = Options(&sprites.barOff); // for some reason this doesn't work :(
 	text       = Text(window);
 	transition = Transition(window, view, state);
+
+	audio.updateMusicVolume(options.music, options.volumeMusic);
+	audio.updateSFXVolume(options.SFX, options.volumeSFX);
 
 	pauseRect.setSize({viewWidth, viewHeight});
 	pauseRect.setFillColor(pauseColor);
@@ -451,10 +455,15 @@ void Game::drawFPS()
 
 
 
+#include <iostream>
+
 void Game::update()
 {
-	bool playedMusicLastFrame = options.music;
-	bool playedSFXLastFrame   = options.SFX;
+	bool playedMusicLastFrame  = options.music;
+	bool playedSFXLastFrame    = options.SFX;
+	float volumeMusicLastFrame = options.volumeMusic;
+	float volumeSFXLastFrame   = options.volumeSFX;
+
 	updateFPS();
 	if (transition.transitioning)
 	{
@@ -475,13 +484,13 @@ void Game::update()
 	updateCursor();
 	updateViewport();
 
-	if (playedMusicLastFrame != options.music)
+	if (playedMusicLastFrame != options.music || volumeMusicLastFrame != options.volumeMusic)
 	{
-		audio.updateMusicVolume(options.music);
+		audio.updateMusicVolume(options.music, options.volumeMusic);
 	}
-	if (playedSFXLastFrame != options.SFX)
+	if (playedSFXLastFrame != options.SFX || volumeSFXLastFrame != options.volumeSFX)
 	{
-		audio.updateSFXVolume(options.SFX);
+		audio.updateSFXVolume(options.SFX, options.volumeSFX);
 	}
 
 	if (state != lastState)
@@ -499,6 +508,11 @@ void Game::update()
 		pausePress   = false;
 		pausePressed = false;
 
+		if (state == LevelEditor)
+		{
+			editor.updateSizeInputs();
+		}
+
 		if (state != LevelEditor && state != LevelPlay)
 		{
 			resetView();
@@ -515,6 +529,8 @@ void Game::update()
 				break;
 		}
 	}
+
+	std::cout << options.volumeMusic << "\n";
 
 	lastState = state;
 }

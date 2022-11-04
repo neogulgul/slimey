@@ -36,6 +36,16 @@ void Bullet::handleCollision()
 	    hitLeft || hitRight)
 	{
 		explode();
+		return;
+	}
+	for (Collision collision : collisions)
+	{
+		sf::Vector3i tile = getTile(collision.coord);
+		if (tile == sawbladeTile)
+		{
+			explode();
+			return;
+		}
 	}
 }
 

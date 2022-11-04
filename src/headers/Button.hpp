@@ -20,6 +20,8 @@ struct Button
 	Button(std::string _string, sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f _position, bool _relativeToView = true);
 	Button(sf::Sprite* _sprite, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position, bool _relativeToView = true);
 
+	void setSprite(sf::Sprite* _sprite);
+
 	void update(sf::Vector2f mousePosition);
 	void draw(sf::RenderWindow* window, sf::View* view, Text* text);
 };

@@ -5,7 +5,7 @@
 Player::Player() {}
 
 Player::Player(sf::Sprite* _sprite, sf::Sprite* _slimeyDeath, sf::Sprite* _offscreenCircle,
-               bool* _levelCleared, mapVector* _map, sf::Vector2u _mapSize, sf::Vector2i _spawn, sf::Vector2i _exit)
+               bool* _levelCleared, mapVector* _map, sf::Vector2u _mapSize, sf::Vector2i _spawn)
 : Collider(_sprite, _map, _mapSize)
 {
 	slimeyDeath     = _slimeyDeath;
@@ -13,7 +13,6 @@ Player::Player(sf::Sprite* _sprite, sf::Sprite* _slimeyDeath, sf::Sprite* _offsc
 	levelCleared    = _levelCleared;
 
 	spawn = _spawn;
-	exit  = _exit;
 
 	size.x = width;
 	size.y = height;
@@ -216,6 +215,13 @@ void Player::handleCollision()
 			death();
 			return;
 		}
+		else if (tile == exitTile)
+		{
+			if (getHitbox().intersects(sf::FloatRect(collision.coord.x * tilesize + 6, collision.coord.y * tilesize + 6, 4, 4)))
+			{
+				levelClear();
+			}
+		}
 		else if (tileset == Ice)
 		{
 			if (collision.direction == Down)
@@ -307,13 +313,6 @@ void Player::handleCollision()
 	else if (!hitHorizontalBounce && (hitLeft || hitRight))
 	{
 		velocity.x = 0;
-	}
-
-	if (getTile(exit) == exitTile
-	    &&
-	    getHitbox().intersects(sf::FloatRect(exit.x * tilesize + 6, exit.y * tilesize + 6, 4, 4)))
-	{
-		levelClear();
 	}
 }
 
