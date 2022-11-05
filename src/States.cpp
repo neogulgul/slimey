@@ -176,43 +176,14 @@ void Game::updateOptionsScreen()
 		}
 	}
 
-	// music volume bar
-	for (Button* button : options.volumeBarMusic)
+	options.hoveringVolumeSlider = false;
+
+	options.volumeBarMusic.update(mousePosition);
+	options.volumeBarSFX.update(mousePosition);
+
+	if (options.hoveringVolumeSlider)
 	{
-		button->update(mousePosition);
-		if (button->active)
-		{
-			handyCursor = true;
-			if (leftClick)
-			{
-				bool correctVolume = false;
-				for (unsigned int i = 0; i < options.volumeBarMusic.size(); i++)
-				{
-					if (correctVolume)
-					{
-						options.volumeBarMusic.at(i)->sprite = &options.barOff;
-					}
-					else
-					{
-						options.volumeBarMusic.at(i)->sprite = &options.barOn;
-					}
-					if (button == options.volumeBarMusic.at(i))
-					{
-						correctVolume = true;
-						options.volumeMusic = (i + 1) / 10.f;
-					}
-				}
-			}
-		}
-	}
-	// sfx volume bar
-	for (Button* button : options.volumeBarSFX)
-	{
-		button->update(mousePosition);
-		if (button->active)
-		{
-			handyCursor = true;
-		}
+		handyCursor = true;
 	}
 }
 
@@ -387,16 +358,8 @@ void Game::drawOptionsScreen()
 	}
 	options.resetButton.draw(window, view, &text);
 
-	// drawing music volume bar
-	for (Button* button : options.volumeBarMusic)
-	{
-		button->draw(window, view, &text);
-	}
-	// drawing SFX volume bar
-	for (Button* button : options.volumeBarSFX)
-	{
-		button->draw(window, view, &text);
-	}
+	options.volumeBarMusic.draw(window, view);
+	options.volumeBarSFX.draw(window, view);
 }
 
 void Game::drawLevelEditor()

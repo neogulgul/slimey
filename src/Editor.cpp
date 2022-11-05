@@ -452,7 +452,7 @@ void Editor::changeMapSize(unsigned int newWidth, unsigned int newHeight)
 
 
 
-// this function got its own seperate file because it got so big
+// this function got its own separate file because it got so big
 // sf::Vector3i Editor::determineTile(sf::Vector2i mapCoord, int tileset)
 // {
 // 	...

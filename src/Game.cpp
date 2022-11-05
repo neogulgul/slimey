@@ -24,7 +24,6 @@ Game::Game(sf::RenderWindow* _window, sf::View* _view)
 	                    &mousePosition, &handyCursor, &leftClick,
 	                    &pressingControl, &pressingShift, &pressingAlt, &paused, &transition.transitioning);
 	level      = Level(window, view, &viewport, &audio, &sprites, &text, &transition, &paused, &options.debug);
-	// options = Options(&sprites.barOff); // for some reason this doesn't work :(
 	text       = Text(window);
 	transition = Transition(window, view, state);
 
@@ -403,7 +402,7 @@ void Game::updateFPS()
 
 void Game::drawFPS()
 {
-	text.draw("FPS:" + std::to_string(FPS), Start, Start, relativeViewPosition(view, {0, 0}));
+	text.draw("FPS:" + std::to_string(FPS), Start, Start, relativeViewPosition(view, {1, 1}));
 }
 
 
@@ -454,8 +453,6 @@ void Game::drawFPS()
 // { ... }
 
 
-
-#include <iostream>
 
 void Game::update()
 {
@@ -529,8 +526,6 @@ void Game::update()
 				break;
 		}
 	}
-
-	std::cout << options.volumeMusic << "\n";
 
 	lastState = state;
 }

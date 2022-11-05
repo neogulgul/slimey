@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <cmath>
+
 #include "headers/Options.hpp"
 
 #define sizeOfOptionButton {20, 20}
@@ -21,6 +24,90 @@ void OptionButton::updateString()
 	}
 }
 
+VolumeBar::VolumeBar() {}
+
+VolumeBar::VolumeBar(sf::Vector2f position, float* _volume, bool* _hoveringVolumeSlider, bool* _usingVolumeSlider)
+{
+	volume               = _volume;
+	hoveringVolumeSlider = _hoveringVolumeSlider;
+	usingVolumeSlider    = _usingVolumeSlider;
+
+	// shape
+	sf::Vector2f shapeSize(viewWidth / 2, 10);
+	shape.setSize(shapeSize);
+	shape.setOrigin(shapeSize.x / 2, shapeSize.y / 2);
+	shape.setPosition(position);
+	shape.setFillColor(inactiveMenuboxBackground);
+	shape.setOutlineColor(inactiveMenuboxForeground);
+	shape.setOutlineThickness(-2);
+
+	bounds = shape.getGlobalBounds();
+	bounds.top    += 2;
+	bounds.left   += 2;
+	bounds.width  -= 4;
+	bounds.height -= 4;
+
+	// separator
+	sf::Vector2f separatorSize(2, 6);
+	volumeSeparator.setSize(separatorSize);
+	volumeSeparator.setOrigin(separatorSize.x / 2, separatorSize.y / 2);
+	volumeSeparator.setFillColor(inactiveMenuboxForeground);
+
+	// slider
+	sf::Vector2f sliderSize(4, 8);
+	volumeSlider.setSize(sliderSize);
+	volumeSlider.setOrigin(sliderSize.x / 2, sliderSize.y / 2);
+	volumeSlider.setFillColor(activeMenuboxBackground);
+	volumeSlider.setOutlineColor(activeMenuboxForeground);
+	volumeSlider.setOutlineThickness(-1);
+
+	updateVolumeSlider();
+}
+
+void VolumeBar::updateVolumeSlider()
+{
+	volumeSlider.setPosition(bounds.left + bounds.width * *volume, bounds.top + bounds.height / 2);
+}
+
+void VolumeBar::update(sf::Vector2f mousePosition)
+{
+	if (bounds.contains(mousePosition) || volumeSlider.getGlobalBounds().contains(mousePosition))
+	{
+		*hoveringVolumeSlider = true;
+		if (pressing(sf::Mouse::Left) && !*usingVolumeSlider)
+		{
+			holdingSlider = true;
+			*usingVolumeSlider = true;
+		}
+	}
+
+	if (!pressing(sf::Mouse::Left))
+	{
+		holdingSlider = false;
+		*usingVolumeSlider = false;
+	}
+
+	if (holdingSlider)
+	{
+		*volume = std::clamp(std::ceil((mousePosition.x - bounds.left) / bounds.width * 100) / 100, 0.01f, 0.99f);
+		updateVolumeSlider();
+	}
+}
+
+void VolumeBar::draw(sf::RenderWindow* window, sf::View* view)
+{
+	window->draw(shape);
+
+	// drawing the volume separators
+	for (unsigned int i = 1; i < 10; i++)
+	{
+		volumeSeparator.setPosition(bounds.left + i * bounds.width / 10, bounds.top + bounds.height / 2);
+		window->draw(volumeSeparator);
+	}
+
+	window->draw(volumeSlider);
+}
+
 Options::Options()
 {
 	barOnTexture .loadFromFile("assets/textures/bar-on.png");
@@ -37,30 +124,8 @@ Options::Options()
 		OptionButton(End, End, {viewWidth * 0.75, viewHeight -  40}, &debug)
 	};
 
-	volumeBarMusic = {
-		new Button(&barOff, Center, Center, {viewWidth / 2 - 45, viewHeight - 140}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 - 35, viewHeight - 140}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 - 25, viewHeight - 140}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 - 15, viewHeight - 140}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 -  5, viewHeight - 140}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 +  5, viewHeight - 140}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 + 15, viewHeight - 140}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 + 25, viewHeight - 140}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 + 35, viewHeight - 140}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 + 45, viewHeight - 140})
-	};
-	volumeBarSFX = {
-		new Button(&barOff, Center, Center, {viewWidth / 2 - 45, viewHeight - 100}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 - 35, viewHeight - 100}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 - 25, viewHeight - 100}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 - 15, viewHeight - 100}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 -  5, viewHeight - 100}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 +  5, viewHeight - 100}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 + 15, viewHeight - 100}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 + 25, viewHeight - 100}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 + 35, viewHeight - 100}),
-		new Button(&barOff, Center, Center, {viewWidth / 2 + 45, viewHeight - 100})
-	};
+	volumeBarMusic = VolumeBar({viewWidth / 2, viewHeight - 140}, &volumeMusic, &hoveringVolumeSlider, &usingVolumeSlider);
+	volumeBarSFX = VolumeBar({viewWidth / 2, viewHeight - 100}, &volumeSFX, &hoveringVolumeSlider, &usingVolumeSlider);
 }
 
 void Options::reset()

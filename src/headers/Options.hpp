@@ -11,9 +11,32 @@ struct OptionButton : Button
 	void updateString();
 };
 
+struct VolumeBar
+{
+	sf::RectangleShape shape;
+	sf::RectangleShape volumeSeparator;
+	sf::RectangleShape volumeSlider;
+	sf::FloatRect bounds;
+	float* volume;
+	bool* hoveringVolumeSlider;
+	bool* usingVolumeSlider;
+
+	bool holdingSlider = false;
+
+	VolumeBar();
+
+	VolumeBar(sf::Vector2f position, float* _volume, bool* _hoveringVolumeSlider, bool* _usingVolumeSlider);
+
+	void updateVolumeSlider();
+
+	void update(sf::Vector2f mousePosition);
+
+	void draw(sf::RenderWindow* window, sf::View* view);
+};
+
 struct Options
 {
-	static const bool default_music = false; // true
+	static const bool default_music =  true;
 	static const bool default_SFX   =  true;
 	static const bool default_FPS   = false;
 	static const bool default_debug = false;
@@ -26,6 +49,9 @@ struct Options
 	float volumeMusic = 0.5;
 	float volumeSFX   = 0.5;
 
+	bool hoveringVolumeSlider = false;
+	bool    usingVolumeSlider = false;
+
 	sf::Texture barOnTexture;
 	sf::Texture barOffTexture;
 
@@ -34,8 +60,9 @@ struct Options
 
 	Button resetButton;
 	std::vector<OptionButton> optionButtons;
-	std::vector<Button*> volumeBarMusic;
-	std::vector<Button*> volumeBarSFX;
+
+	VolumeBar volumeBarMusic;
+	VolumeBar volumeBarSFX;
 
 	Options();
 
