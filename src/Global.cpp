@@ -1,6 +1,7 @@
 #include <fstream>
 
 #include "headers/Global.hpp"
+#include "headers/StoryLevels.hpp"
 
 sf::Color                background( 66,  76, 110);
 sf::Color                foreground(255, 255, 255);
@@ -12,11 +13,11 @@ sf::Color                pauseColor(  0,   0,   0, 191);
 // level
 sf::Color collisionColor(0x4f37b3ee);
 // editor
-sf::Color          mapOutlineColor(0x306bbdff);
-sf::Color      mapCheckerEvenColor(0x53a5d9ff);
-sf::Color       mapCheckerOddColor(0x73b6dfff);
-sf::Color        mapCrosshairColor(0x306bbdaa);
-sf::Color       mapRestrictedColor(255,  23,  68, 191);
+sf::Color          levelOutlineColor(0x306bbdff);
+sf::Color      levelCheckerEvenColor(0x53a5d9ff);
+sf::Color       levelCheckerOddColor(0x73b6dfff);
+sf::Color        levelCrosshairColor(0x306bbdaa);
+sf::Color       levelRestrictedColor(255,  23,  68, 191);
 sf::Color               placeColor(  0, 255,   0,  63);
 sf::Color               eraseColor(255,   0,   0,  63);
 sf::Color       selectionTilesetBackgroundColor(0xd9c797ff);
@@ -113,12 +114,17 @@ sf::Vector2f align(sf::Vector2f size, Alignment horizontalAlignment, Alignment v
 	return position;
 }
 
-mapVector getCustomMapVector(std::string mapName)
+LevelVector getStoryLevelVector(int index)
 {
-	mapVector customMap;
+	return *storyLevels[index];
+}
 
-	std::ifstream mapStream;
-	mapStream.open("custom_maps/" + mapName + ".txt");
+LevelVector getCustomLevelVector(std::string levelName)
+{
+	LevelVector customLevel;
+
+	std::ifstream levelStream;
+	levelStream.open("custom_levels/" + levelName + ".txt");
 	std::stringstream stream;
 	int currentRow = 0;
 	char character;
@@ -126,7 +132,7 @@ mapVector getCustomMapVector(std::string mapName)
 		i wrote this code a long time ago but had to revisit it and change some stuff
 		added some additional comments to try and make sense of the code i had previously written
 	*/
-	while (mapStream.get(character))
+	while (levelStream.get(character))
 	{
 		// reseting the string stream whenever we hit a left-facing curly bracket
 		if (character == '{')
@@ -137,7 +143,7 @@ mapVector getCustomMapVector(std::string mapName)
 		// pushing a new vector whenever we come across a left-facing curly bracket plus a blank space right after
 		if (stream.str() == "{ ")
 		{
-			customMap.push_back({});
+			customLevel.push_back({});
 		}
 		// keeping track of which row we are on
 		else if (stream.str() == " }")
@@ -145,14 +151,14 @@ mapVector getCustomMapVector(std::string mapName)
 			currentRow++;
 		}
 		// seeing if we have come across a pattern like {x,x,x} where x can be any digit (0-9)
-		// this represents one tile on the map and so we push that as a sf::Vector3i
+		// this represents one tile on the level and so we push that as a sf::Vector3i
 		// to the vector at the position of the row we are currently on
 		else if (stream.str().length() > 6 && stream.str()[0] == '{' && stream.str()[6] == '}')
 		{
-			customMap.at(currentRow).push_back(sf::Vector3i(stream.str()[1] - '0', stream.str()[3] - '0', stream.str()[5] - '0'));
+			customLevel.at(currentRow).push_back(sf::Vector3i(stream.str()[1] - '0', stream.str()[3] - '0', stream.str()[5] - '0'));
 			stream.str("");
 		}
 	}
 
-	return customMap;
+	return customLevel;
 }

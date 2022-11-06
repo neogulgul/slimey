@@ -20,7 +20,7 @@ struct Bullet : Collider
 	bool exploding = false;
 	bool destroyed = false;
 
-	Bullet(sf::Sprite* _sprite, mapVector* _map, sf::Vector2u _mapSize, sf::Sprite* _explosion, Player* _player,
+	Bullet(sf::Sprite* _sprite, LevelVector* _level, sf::Vector2u _levelSize, sf::Sprite* _explosion, Player* _player,
 	       sf::Vector2f _position, sf::Vector2f _velocity);
 
 	void explode();

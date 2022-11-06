@@ -10,11 +10,11 @@ Collision::Collision(Direction _direction, sf::Vector2i _coord)
 
 Collider::Collider() {}
 
-Collider::Collider(sf::Sprite* _sprite, mapVector* _map, sf::Vector2u _mapSize)
+Collider::Collider(sf::Sprite* _sprite, LevelVector* _level, sf::Vector2u _levelSize)
 {
 	 sprite = _sprite;
-	    map = _map;
-	mapSize = _mapSize;
+	    level = _level;
+	levelSize = _levelSize;
 }
 
 sf::Vector2f Collider::getCenter()
@@ -29,7 +29,7 @@ sf::FloatRect Collider::getHitbox()
 
 sf::Vector3i Collider::getTile(sf::Vector2i coord)
 {
-	return map->at(coord.x).at(coord.y);
+	return level->at(coord.x).at(coord.y);
 }
 
 sf::FloatRect Collider::getTileHitbox(sf::Vector3i tile, sf::Vector2i tileCoord)
@@ -55,9 +55,9 @@ void Collider::updatePosition()
 
 bool Collider::validCoord(sf::Vector2i coord)
 {
-	return (coord.x >= 0 && coord.x < mapSize.x
+	return (coord.x >= 0 && coord.x < levelSize.x
 	        &&
-	        coord.y >= 0 && coord.y < mapSize.y);
+	        coord.y >= 0 && coord.y < levelSize.y);
 }
 
 bool Collider::validCollisionTile(sf::Vector2i coord)

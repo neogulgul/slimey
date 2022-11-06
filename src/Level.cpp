@@ -32,9 +32,9 @@ void Level::reset()
 	}
 }
 
-void Level::loadMap(mapVector _map, bool _custom)
+void Level::loadLevel(LevelVector _level, State _destination)
 {
-	custom = _custom;
+	destination = _destination;
 
 	spawn = {0, 0};
 	exit  = {0, 0};
@@ -47,16 +47,16 @@ void Level::loadMap(mapVector _map, bool _custom)
 	turrets.clear();
 	bullets.clear();
 
-	map = _map;
+	level = _level;
 
-	mapSize.x = map.size();
-	mapSize.y = map.at(0).size();
+	levelSize.x = level.size();
+	levelSize.y = level.at(0).size();
 
-	for (unsigned int x = 0; x < mapSize.x; x++)
+	for (unsigned int x = 0; x < levelSize.x; x++)
 	{
-		for (unsigned int y = 0; y < mapSize.y; y++)
+		for (unsigned int y = 0; y < levelSize.y; y++)
 		{
-			sf::Vector3i tile = map.at(x).at(y);
+			sf::Vector3i tile = level.at(x).at(y);
 			if (tile == spawnTile)
 			{
 				spawn.x = x;
@@ -86,20 +86,26 @@ void Level::loadMap(mapVector _map, bool _custom)
 		}
 	}
 
-	player = Player(&sprites->slimeyFrames, &sprites->slimeyDeath, &sprites->offscreenCircle, &cleared, &map, mapSize, spawn);
+	player = Player(&sprites->slimeyFrames, &sprites->slimeyDeath, &sprites->offscreenCircle, &cleared, &level, levelSize, spawn);
 }
 
-void Level::drawMap()
+void Level::loadLevel(LevelVector _level, int _index)
+{
+	loadLevel(_level, LevelClear);
+	index = _index;
+}
+
+void Level::drawLevel()
 {
 	sf::Sprite* sprite;
-	for (unsigned int x = 0; x < mapSize.x; x++)
+	for (unsigned int x = 0; x < levelSize.x; x++)
 	{
-		for (unsigned int y = 0; y < mapSize.y; y++)
+		for (unsigned int y = 0; y < levelSize.y; y++)
 		{
 			// only allowing tiles seen in view to be drawn
 			if (!viewport->intersects(sf::FloatRect(x * tilesize, y * tilesize, tilesize, tilesize))) { continue; }
 
-			sf::Vector3i tile = map.at(x).at(y);
+			sf::Vector3i tile = level.at(x).at(y);
 			int tileset = tile.x;
 			if (tileset != 0)
 			{
@@ -143,7 +149,7 @@ void Level::updateTurrets()
 		turretTimer = 0;
 		for (Turret &turret : turrets)
 		{
-			turret.shoot(&bullets, &sprites->bullet, &map, mapSize, &sprites->bulletExplosion, &player);
+			turret.shoot(&bullets, &sprites->bullet, &level, levelSize, &sprites->bulletExplosion, &player);
 			audio->shoot.play();
 		}
 	}
@@ -247,9 +253,9 @@ void Level::updateView(bool instant = false)
 		destination.x = viewWidth * 0.5;
 	}
 	else
-	if (destination.x > mapSize.x * tilesize - viewWidth * 0.5)
+	if (destination.x > levelSize.x * tilesize - viewWidth * 0.5)
 	{
-		destination.x = mapSize.x * tilesize - viewWidth * 0.5;
+		destination.x = levelSize.x * tilesize - viewWidth * 0.5;
 	}
 	// limiting view vertically
 	if (destination.y < viewHeight * 0.5)
@@ -257,9 +263,9 @@ void Level::updateView(bool instant = false)
 		destination.y = viewHeight * 0.5;
 	}
 	else
-	if (destination.y > mapSize.y * tilesize - viewHeight * 0.5)
+	if (destination.y > levelSize.y * tilesize - viewHeight * 0.5)
 	{
-		destination.y = mapSize.y * tilesize - viewHeight * 0.5;
+		destination.y = levelSize.y * tilesize - viewHeight * 0.5;
 	}
 	view->setCenter(destination);
 }
@@ -303,14 +309,7 @@ void Level::update()
 
 	if (cleared && !transition->transitioning)
 	{
-		if (custom)
-		{
-			transition->to(CustomLevels);
-		}
-		else
-		{
-			transition->to(StoryLevels);
-		}
+		transition->to(destination);
 	}
 
 	if (!cleared && !player.alive) { reset(); }
@@ -320,7 +319,7 @@ void Level::update()
 
 void Level::draw()
 {
-	drawMap();
+	drawLevel();
 	drawBullets();
 	player.draw(window, *viewport);
 	if (*debug)

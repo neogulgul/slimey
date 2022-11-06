@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Animation.hpp"
-#include "DefaultMaps.hpp"
+#include "StoryLevels.hpp"
 #include "Global.hpp"
 
 struct Collision
@@ -17,8 +17,8 @@ struct Collider
 {
 	sf::Sprite* sprite;
 
-	mapVector* map;
-	sf::Vector2u mapSize;
+	LevelVector* level;
+	sf::Vector2u levelSize;
 
 	sf::Vector2f size;
 	sf::Vector2f position;
@@ -32,7 +32,7 @@ struct Collider
 	bool hitRight = false;
 
 	Collider();
-	Collider(sf::Sprite* _sprite, mapVector* _map, sf::Vector2u _mapSize);
+	Collider(sf::Sprite* _sprite, LevelVector* _level, sf::Vector2u _levelSize);
 
 	sf::Vector2f getCenter();
 	sf::FloatRect getHitbox();

@@ -67,7 +67,7 @@ struct Player : Collider
 
 	Player();
 	Player(sf::Sprite* _sprite, sf::Sprite* _slimeyDeath, sf::Sprite* _offscreenCircle,
-           bool* _levelCleared, mapVector* _map, sf::Vector2u _mapSize, sf::Vector2i _spawn);
+           bool* _levelCleared, LevelVector* _level, sf::Vector2u _levelSize, sf::Vector2i _spawn);
 
 	void place(int x, int y);
 	void death();

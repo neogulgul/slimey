@@ -4,7 +4,7 @@
 
 #include "headers/Editor.hpp"
 
-#define mapOutlineThickness 4
+#define levelOutlineThickness 4
 #define selectionTilesetOutlineThickness 2
 
 #define backspace 8
@@ -34,16 +34,19 @@ std::string Input::getString()
 
 Editor::Editor() {}
 
-Editor::Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewport, Audio* _audio, Sprites* _sprites, Text* _text,
+Editor::Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewport, Audio* _audio, Level* _level, Sprites* _sprites, Text* _text,
                sf::Vector2f* _mousePosition, bool* _handyCursor, bool* _leftClick,
                bool* _pressingControl, bool* _pressingShift, bool* _pressingAlt, bool* _paused, bool* _transitioning)
 {
 	window          = _window;
 	view            = _view;
 	viewport        = _viewport;
+
 	audio           = _audio;
+	level           = _level;
 	sprites         = _sprites;
 	text            = _text;
+
 	mousePosition   = _mousePosition;
 	handyCursor     = _handyCursor;
 	leftClick       = _leftClick;
@@ -55,41 +58,43 @@ Editor::Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewp
 	
 	declareRegions();
 
-	mapSize = {initialMapWidth, initialMapHeight};
-	clearMap();
+	levelSize = {initialLevelWidth, initialLevelHeight};
+	clearLevel();
 
 	sizeInputs = {
 		new Input({viewWidth * 0.5 - 48, viewHeight - 24}, {96, 12}, 15),
 		new Input({16, viewHeight - 32}, {24 ,12}, 3, true),
 		new Input({16, viewHeight - 16}, {24 ,12}, 3, true)
 	};
-	mapNameInput   = sizeInputs.at(0);
-	mapWidthInput  = sizeInputs.at(1);
-	mapHeightInput = sizeInputs.at(2);
-	mapWidthInput ->value << mapSize.x;
-	mapHeightInput->value << mapSize.y;
+	levelNameInput   = sizeInputs.at(0);
+	levelWidthInput  = sizeInputs.at(1);
+	levelHeightInput = sizeInputs.at(2);
+	levelWidthInput ->value << levelSize.x;
+	levelHeightInput->value << levelSize.y;
 
 	buttons = {
+		Button("Play", {35, 20}, End, End, {viewWidth - 5, viewHeight - 55}),
 		Button("Save", {35, 20}, End, End, {viewWidth - 5, viewHeight - 30}),
 		Button("Load", {35, 20}, End, End, {viewWidth - 5, viewHeight - 5})
 	};
-	saveButton = &buttons.at(0);
-	loadButton = &buttons.at(1);
+	playButton = &buttons.at(0);
+	saveButton = &buttons.at(1);
+	loadButton = &buttons.at(2);
 
 	tileDimension = {tilesize, tilesize};
 
-	mapRect.setPosition(viewWidth * 0.5, viewHeight * 0.5);
-	mapRect.setFillColor(sf::Color::Transparent);
-	mapRect.setOutlineThickness(mapOutlineThickness);
-	mapRect.setOutlineColor(mapOutlineColor);
-	updateMapRect();
+	levelRect.setPosition(viewWidth * 0.5, viewHeight * 0.5);
+	levelRect.setFillColor(sf::Color::Transparent);
+	levelRect.setOutlineThickness(levelOutlineThickness);
+	levelRect.setOutlineColor(levelOutlineColor);
+	updateLevelRect();
 
-	mapChecker.setSize(tileDimension);
-	mapChecker.setFillColor(mapOutlineColor);
-	mapRestrictedArea.setSize(tileDimension);
-	mapRestrictedArea.setFillColor(mapRestrictedColor);
-	mapGhostTile.setSize(tileDimension);
-	mapCrosshair.setFillColor(mapCrosshairColor);
+	levelChecker.setSize(tileDimension);
+	levelChecker.setFillColor(levelOutlineColor);
+	levelRestrictedArea.setSize(tileDimension);
+	levelRestrictedArea.setFillColor(levelRestrictedColor);
+	levelGhostTile.setSize(tileDimension);
+	levelCrosshair.setFillColor(levelCrosshairColor);
 
 	selectionTilesetRect.setSize((sf::Vector2f)sprites->tilesetOtherTexture.getSize());
 	selectionTilesetRect.setFillColor(selectionTilesetBackgroundColor);
@@ -131,11 +136,11 @@ void Editor::handleZoom(sf::Event event)
 
 void Editor::adjustZoom()
 {
-	mapRect.setScale(zoom, zoom);
-	mapChecker.setScale(zoom, zoom);
-	mapGhostTile.setScale(zoom, zoom);
-	mapCrosshair.setScale(zoom, zoom);
-	updateMapBounds();
+	levelRect.setScale(zoom, zoom);
+	levelChecker.setScale(zoom, zoom);
+	levelGhostTile.setScale(zoom, zoom);
+	levelCrosshair.setScale(zoom, zoom);
+	updateLevelBounds();
 }
 
 void Editor::resetView()
@@ -160,11 +165,11 @@ void Editor::processKeyboardInput()
 	// reset view
 	handlePress(pressing(sf::Keyboard::R), resetViewPress, resetViewPressed);
 	// clear
-	handlePress(*pressingControl && *pressingShift && pressing(sf::Keyboard::R), clearMapPress, clearMapPressed);
+	handlePress(*pressingControl && *pressingShift && pressing(sf::Keyboard::R), clearLevelPress, clearLevelPressed);
 	// save
-	handlePress(*pressingControl && pressing(sf::Keyboard::S), saveMapPress, saveMapPressed);
+	handlePress(*pressingControl && pressing(sf::Keyboard::S), saveLevelPress, saveLevelPressed);
 	// load
-	handlePress(*pressingControl && pressing(sf::Keyboard::L), loadMapPress, loadMapPressed);
+	handlePress(*pressingControl && pressing(sf::Keyboard::L), loadLevelPress, loadLevelPressed);
 
 	handleKeyboardInput();
 }
@@ -192,41 +197,41 @@ void Editor::handleKeyboardInput()
 			toggle(crosshair);
 		}
 
-		if (resetViewPress && !clearMapPress)
+		if (resetViewPress && !clearLevelPress)
 		{
 			resetView();
 		}
 	}
 
-	if (saveMapPress)
+	if (saveLevelPress)
 	{
-		saveMap();
+		saveLevel();
 	}
-	else if (loadMapPress)
+	else if (loadLevelPress)
 	{
-		loadMap();
+		loadLevel();
 	}
-	else if (clearMapPress)
+	else if (clearLevelPress)
 	{
-		clearMap();
+		clearLevel();
 	}
 }
 
 void Editor::processMouseInput()
 {
-	mouseOnMap              = false;
+	mouseOnLevel              = false;
 	mouseOnSelectionTileset = false;
 
 	if (getSelectionTilesetMouseBounds().contains(*mousePosition))
 	{
 		mouseOnSelectionTileset = true;
 	}
-	else if (getMapMouseBounds().contains(*mousePosition))
+	else if (getLevelMouseBounds().contains(*mousePosition))
 	{
-		mouseOnMap = true;
+		mouseOnLevel = true;
 
-		mouseMapCoord.x = std::floor((mousePosition->x - mapBounds.left - mapOutlineThickness * zoom) / (tilesize * zoom));
-		mouseMapCoord.y = std::floor((mousePosition->y - mapBounds.top  - mapOutlineThickness * zoom) / (tilesize * zoom));
+		mouseLevelCoord.x = std::floor((mousePosition->x - levelBounds.left - levelOutlineThickness * zoom) / (tilesize * zoom));
+		mouseLevelCoord.y = std::floor((mousePosition->y - levelBounds.top  - levelOutlineThickness * zoom) / (tilesize * zoom));
 	}
 
 	handleDragging();
@@ -252,16 +257,16 @@ void Editor::handleDragging()
 
 
 
-void Editor::updateMapRect()
+void Editor::updateLevelRect()
 {
-	mapRect.setSize({(float)mapSize.x * tilesize, (float)mapSize.y * tilesize});
-	mapRect.setOrigin(mapRect.getSize().x * 0.5, mapRect.getSize().y * 0.5);
-	updateMapBounds();
+	levelRect.setSize({(float)levelSize.x * tilesize, (float)levelSize.y * tilesize});
+	levelRect.setOrigin(levelRect.getSize().x * 0.5, levelRect.getSize().y * 0.5);
+	updateLevelBounds();
 }
 
-void Editor::updateMapBounds()
+void Editor::updateLevelBounds()
 {
-	mapBounds = mapRect.getGlobalBounds();
+	levelBounds = levelRect.getGlobalBounds();
 }
 
 void Editor::updateSelectionTilesetBounds()
@@ -269,9 +274,9 @@ void Editor::updateSelectionTilesetBounds()
 	selectionTilesetBounds = selectionTilesetRect.getGlobalBounds();
 }
 
-sf::Vector2f Editor::relativeMapPosition(float x, float y)
+sf::Vector2f Editor::relativeLevelPosition(float x, float y)
 {
-	return {mapBounds.left + (mapOutlineThickness + x) * zoom, mapBounds.top + (mapOutlineThickness + y) * zoom};
+	return {levelBounds.left + (levelOutlineThickness + x) * zoom, levelBounds.top + (levelOutlineThickness + y) * zoom};
 }
 
 sf::Vector2f Editor::relativeSelectionTilesetPosition(float x, float y)
@@ -287,84 +292,90 @@ sf::FloatRect Editor::getSelectionTilesetMouseBounds()
 	);
 }
 
-sf::FloatRect Editor::getMapMouseBounds()
+sf::FloatRect Editor::getLevelMouseBounds()
 {
 	return sf::FloatRect(
-		{mapBounds.left  + mapOutlineThickness * zoom    , mapBounds.top    + mapOutlineThickness * zoom    },
-		{mapBounds.width - mapOutlineThickness * zoom * 2, mapBounds.height - mapOutlineThickness * zoom * 2}
+		{levelBounds.left  + levelOutlineThickness * zoom    , levelBounds.top    + levelOutlineThickness * zoom    },
+		{levelBounds.width - levelOutlineThickness * zoom * 2, levelBounds.height - levelOutlineThickness * zoom * 2}
 	);
 }
 
 
 
-void Editor::clearMap()
+void Editor::clearLevel()
 {
-	map.clear();
-	for (unsigned int x = 0; x < mapSize.x; x++)
+	levelVector.clear();
+	for (unsigned int x = 0; x < levelSize.x; x++)
 	{
-		map.push_back({});
-		for (unsigned int y = 0; y < mapSize.y; y++)
+		levelVector.push_back({});
+		for (unsigned int y = 0; y < levelSize.y; y++)
 		{
-			map.at(x).push_back(emptyTile);
+			levelVector.at(x).push_back(emptyTile);
 		}
 	}
 }
 
-void Editor::saveMap()
+void Editor::playLevel()
 {
-	std::stringstream mapStream;
+	level->loadLevel(levelVector, LevelEditor);
+	level->transition->to(LevelPlay);
+}
 
-	mapStream << "{\n\t{ ";
-	for (unsigned int x = 0; x < mapSize.x; x++)
+void Editor::saveLevel()
+{
+	std::stringstream levelStream;
+
+	levelStream << "{\n\t{ ";
+	for (unsigned int x = 0; x < levelSize.x; x++)
 	{
-		for (unsigned int y = 0; y < mapSize.y; y++)
+		for (unsigned int y = 0; y < levelSize.y; y++)
 		{
 			sf::Vector3i tile = getTile(x, y);
-			mapStream << "{" << tile.x << "," << tile.y << "," << tile.z << "}";
+			levelStream << "{" << tile.x << "," << tile.y << "," << tile.z << "}";
 
-			if (y == mapSize.y - 1)
+			if (y == levelSize.y - 1)
 			{
-				mapStream << " },\n";
-				if (x < mapSize.x - 1)
+				levelStream << " },\n";
+				if (x < levelSize.x - 1)
 				{
-					mapStream << "\t{ ";
+					levelStream << "\t{ ";
 				}
 			}
 			else
 			{
-				mapStream << ", ";
+				levelStream << ", ";
 			}
 		}
 	}
-	mapStream << "};";
+	levelStream << "};";
 
-	if (!fs::exists("custom_maps"))
+	if (!fs::exists("custom_levels"))
 	{
-		fs::create_directory("custom_maps");
+		fs::create_directory("custom_levels");
 	}
 
-	std::ofstream output("custom_maps/" + mapNameInput->getString() + ".txt");
-	output << mapStream.str();
+	std::ofstream output("custom_levels/" + levelNameInput->getString() + ".txt");
+	output << levelStream.str();
 	output.close();
 }
 
-void Editor::loadMap()
+void Editor::loadLevel()
 {
-	if (fs::exists("custom_maps/" + mapNameInput->getString() + ".txt"))
+	if (fs::exists("custom_levels/" + levelNameInput->getString() + ".txt"))
 	{
-		map = getCustomMapVector(mapNameInput->getString());
+		levelVector = getCustomLevelVector(levelNameInput->getString());
 
-		mapSize.x = map.size();
-		mapSize.y = map.at(0).size();
+		levelSize.x = levelVector.size();
+		levelSize.y = levelVector.at(0).size();
 
-		mapWidthInput ->value.str("");
-		mapHeightInput->value.str("");
-		mapWidthInput ->value << mapSize.x;
-		mapHeightInput->value << mapSize.y;
+		levelWidthInput ->value.str("");
+		levelHeightInput->value.str("");
+		levelWidthInput ->value << levelSize.x;
+		levelHeightInput->value << levelSize.y;
 
-		for (unsigned int x = 0; x < mapSize.x; x++)
+		for (unsigned int x = 0; x < levelSize.x; x++)
 		{
-			for (unsigned int y = 0; y < mapSize.y; y++)
+			for (unsigned int y = 0; y < levelSize.y; y++)
 			{
 				if (getTile(x, y) == spawnTile)
 				{
@@ -380,17 +391,17 @@ void Editor::loadMap()
 		}
 	}
 
-	updateMapRect();
+	updateLevelRect();
 }
 
-void Editor::changeMapSize(unsigned int newWidth, unsigned int newHeight)
+void Editor::changeLevelSize(unsigned int newWidth, unsigned int newHeight)
 {
-	unsigned int oldWidth  = mapSize.x;
-	unsigned int oldHeight = mapSize.y;
+	unsigned int oldWidth  = levelSize.x;
+	unsigned int oldHeight = levelSize.y;
 
-	mapSize.x = newWidth;
-	mapSize.y = newHeight;
-	updateMapRect();
+	levelSize.x = newWidth;
+	levelSize.y = newHeight;
+	updateLevelRect();
 
 	// reseting spawn and exit positions if any of them are out of bounds
 	if (spawnPosition.x > newWidth || spawnPosition.y > newHeight)
@@ -398,30 +409,30 @@ void Editor::changeMapSize(unsigned int newWidth, unsigned int newHeight)
 	if (exitPosition.x > newWidth || exitPosition.y > newHeight)
 	{ exitPosition = sf::Vector2u(); }
 
-	// creating new map
-	std::vector<std::vector<sf::Vector3i>> newMap;
+	// creating new level
+	std::vector<std::vector<sf::Vector3i>> newLevel;
 	for (unsigned int x = 0; x < newWidth; x++)
 	{
-		newMap.push_back({});
+		newLevel.push_back({});
 		for (unsigned int y = 0; y < newHeight; y++)
 		{
-			newMap.at(x).push_back(emptyTile);
+			newLevel.at(x).push_back(emptyTile);
 		}
 	}
 
-	// populating new map
+	// populating new level
 	for (unsigned int x = 0; x < oldWidth; x++)
 	{
 		for (unsigned int y = 0; y < oldHeight; y++)
 		{
 			if (x < newWidth && y < newHeight)
 			{
-				newMap.at(x).at(y) = map.at(x).at(y);
+				newLevel.at(x).at(y) = levelVector.at(x).at(y);
 			}
 		}
 	}
 
-	map = newMap;
+	levelVector = newLevel;
 
 	// adjusting tiles that has been or is adjacent around the bottom and right sides
 	if (newHeight > oldHeight)
@@ -453,14 +464,14 @@ void Editor::changeMapSize(unsigned int newWidth, unsigned int newHeight)
 
 
 // this function got its own separate file because it got so big
-// sf::Vector3i Editor::determineTile(sf::Vector2i mapCoord, int tileset)
+// sf::Vector3i Editor::determineTile(sf::Vector2i levelCoord, int tileset)
 // {
 // 	...
 // }
 
 sf::Vector3i Editor::getTile(unsigned int x, unsigned int y)
 {
-	return map.at(x).at(y);
+	return levelVector.at(x).at(y);
 }
 
 sf::Vector2u Editor::getTileCrop(unsigned int x, unsigned int y)
@@ -497,9 +508,9 @@ int Editor::getSelectedTileset()
 
 bool Editor::invalidTile(unsigned int x, unsigned int y)
 {
-	if (x < 0 || x >= mapSize.x
+	if (x < 0 || x >= levelSize.x
 	    ||
-	    y < 0 || y >= mapSize.y)
+	    y < 0 || y >= levelSize.y)
 	{
 		return true;
 	}
@@ -509,7 +520,7 @@ bool Editor::invalidTile(unsigned int x, unsigned int y)
 
 void Editor::eyedropper()
 {
-	int tileset = getTileset(mouseMapCoord.x, mouseMapCoord.y);
+	int tileset = getTileset(mouseLevelCoord.x, mouseLevelCoord.y);
 	if (tileset == Tileset::Null) { return; }
 
 	if (tileset < Tileset::Other)
@@ -518,7 +529,7 @@ void Editor::eyedropper()
 	}
 	else
 	{
-		selectionCoord = getTileCrop(mouseMapCoord.x, mouseMapCoord.y);
+		selectionCoord = getTileCrop(mouseLevelCoord.x, mouseLevelCoord.y);
 	}
 }
 
@@ -558,7 +569,7 @@ void Editor::placeTile(unsigned int x, unsigned int y, sf::Vector3i newTile)
 		exitPosition.y = y;
 	}
 
-	map.at(x).at(y) = newTile;
+	levelVector.at(x).at(y) = newTile;
 	adjustAdjacentTiles(x, y);
 }
 
@@ -568,7 +579,7 @@ void Editor::adjustTile(unsigned int x, unsigned int y)
 
 	if (getTileset(x, y) != Tileset::Null && getTileset(x, y) != Tileset::Other)
 	{
-		map.at(x).at(y) = determineTile(sf::Vector2i(x, y), getTileset(x, y));
+		levelVector.at(x).at(y) = determineTile(sf::Vector2i(x, y), getTileset(x, y));
 	}
 }
 
@@ -587,111 +598,111 @@ void Editor::adjustAdjacentTiles(unsigned int x, unsigned int y)
 	adjustTile(x + 1, y + 1);
 }
 
-void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localMap, unsigned int x, unsigned int y, int oldTileset      , int newTileset)
+void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned int x, unsigned int y, int oldTileset      , int newTileset)
 {
-	if (invalidTile(x, y) || localMap.at(x).at(y).x != oldTileset) { return; }
+	if (invalidTile(x, y) || localLevel.at(x).at(y).x != oldTileset) { return; }
 
 	fillTiles.push_back(sf::Vector2u(x, y));
-	localMap.at(x).at(y).x = newTileset;
+	localLevel.at(x).at(y).x = newTileset;
 
 	// expand up
-	fill(localMap, x, y - 1, oldTileset, newTileset);
+	fill(localLevel, x, y - 1, oldTileset, newTileset);
 	// expand down
-	fill(localMap, x, y + 1, oldTileset, newTileset);
+	fill(localLevel, x, y + 1, oldTileset, newTileset);
 	// expand left
-	fill(localMap, x - 1, y, oldTileset, newTileset);
+	fill(localLevel, x - 1, y, oldTileset, newTileset);
 	// expand right
-	fill(localMap, x + 1, y, oldTileset, newTileset);
+	fill(localLevel, x + 1, y, oldTileset, newTileset);
 }
 
-void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localMap, unsigned int x, unsigned int y, sf::Vector3i oldTile, int newTileset)
+void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned int x, unsigned int y, sf::Vector3i oldTile, int newTileset)
 {
-	if (invalidTile(x, y) || localMap.at(x).at(y) != oldTile) { return; }
+	if (invalidTile(x, y) || localLevel.at(x).at(y) != oldTile) { return; }
 
 	fillTiles.push_back(sf::Vector2u(x, y));
-	localMap.at(x).at(y).x = newTileset;
+	localLevel.at(x).at(y).x = newTileset;
 
 	// expand up
-	fill(localMap, x, y - 1, oldTile, newTileset);
+	fill(localLevel, x, y - 1, oldTile, newTileset);
 	// expand down
-	fill(localMap, x, y + 1, oldTile, newTileset);
+	fill(localLevel, x, y + 1, oldTile, newTileset);
 	// expand left
-	fill(localMap, x - 1, y, oldTile, newTileset);
+	fill(localLevel, x - 1, y, oldTile, newTileset);
 	// expand right
-	fill(localMap, x + 1, y, oldTile, newTileset);
+	fill(localLevel, x + 1, y, oldTile, newTileset);
 }
 
-void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localMap, unsigned int x, unsigned int y, int oldTileset      , sf::Vector3i newTile)
+void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned int x, unsigned int y, int oldTileset      , sf::Vector3i newTile)
 {
-	if (invalidTile(x, y) || localMap.at(x).at(y).x != oldTileset) { return; }
+	if (invalidTile(x, y) || localLevel.at(x).at(y).x != oldTileset) { return; }
 
 	fillTiles.push_back(sf::Vector2u(x, y));
-	localMap.at(x).at(y) = newTile;
+	localLevel.at(x).at(y) = newTile;
 
 	// expand up
-	fill(localMap, x, y - 1, oldTileset, newTile);
+	fill(localLevel, x, y - 1, oldTileset, newTile);
 	// expand down
-	fill(localMap, x, y + 1, oldTileset, newTile);
+	fill(localLevel, x, y + 1, oldTileset, newTile);
 	// expand left
-	fill(localMap, x - 1, y, oldTileset, newTile);
+	fill(localLevel, x - 1, y, oldTileset, newTile);
 	// expand right
-	fill(localMap, x + 1, y, oldTileset, newTile);
+	fill(localLevel, x + 1, y, oldTileset, newTile);
 }
 
-void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localMap, unsigned int x, unsigned int y, sf::Vector3i oldTile, sf::Vector3i newTile)
+void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned int x, unsigned int y, sf::Vector3i oldTile, sf::Vector3i newTile)
 {
-	if (invalidTile(x, y) || localMap.at(x).at(y) != oldTile) { return; }
+	if (invalidTile(x, y) || localLevel.at(x).at(y) != oldTile) { return; }
 
 	fillTiles.push_back(sf::Vector2u(x, y));
-	localMap.at(x).at(y) = newTile;
+	localLevel.at(x).at(y) = newTile;
 
 	// expand up
-	fill(localMap, x, y - 1, oldTile, newTile);
+	fill(localLevel, x, y - 1, oldTile, newTile);
 	// expand down
-	fill(localMap, x, y + 1, oldTile, newTile);
+	fill(localLevel, x, y + 1, oldTile, newTile);
 	// expand left
-	fill(localMap, x - 1, y, oldTile, newTile);
+	fill(localLevel, x - 1, y, oldTile, newTile);
 	// expand right
-	fill(localMap, x + 1, y, oldTile, newTile);
+	fill(localLevel, x + 1, y, oldTile, newTile);
 }
 
 void Editor::fillArea()
 {
-	if (invalidTile(mouseMapCoord.x, mouseMapCoord.y)) { return; }
+	if (invalidTile(mouseLevelCoord.x, mouseLevelCoord.y)) { return; }
 
 	fillTiles.clear();
 
-	std::vector<std::vector<sf::Vector3i>> localMap = map;
+	std::vector<std::vector<sf::Vector3i>> localLevel = levelVector;
 
 	if (getSelectedTileset() < Tileset::Other)
 	{
 		// fill (int oldTileset, int newTileset)
-		if (getTileset(mouseMapCoord.x, mouseMapCoord.y) < Tileset::Other)
+		if (getTileset(mouseLevelCoord.x, mouseLevelCoord.y) < Tileset::Other)
 		{
-			if (getTileset(mouseMapCoord.x, mouseMapCoord.y) != getSelectedTileset())
+			if (getTileset(mouseLevelCoord.x, mouseLevelCoord.y) != getSelectedTileset())
 			{
-				fill(localMap, mouseMapCoord.x, mouseMapCoord.y, getTileset(mouseMapCoord.x, mouseMapCoord.y), getSelectedTileset());
+				fill(localLevel, mouseLevelCoord.x, mouseLevelCoord.y, getTileset(mouseLevelCoord.x, mouseLevelCoord.y), getSelectedTileset());
 			}
 		}
 		// fill (vector3i oldTile, int newTileset)
 		else
 		{
-			fill(localMap, mouseMapCoord.x, mouseMapCoord.y, getTile(mouseMapCoord.x, mouseMapCoord.y), getSelectedTileset());
+			fill(localLevel, mouseLevelCoord.x, mouseLevelCoord.y, getTile(mouseLevelCoord.x, mouseLevelCoord.y), getSelectedTileset());
 		}
 	}
 	else
 	{
 		// fill (int oldTileset, vector3i newTile)
-		if (getTileset(mouseMapCoord.x, mouseMapCoord.y) < Tileset::Other)
+		if (getTileset(mouseLevelCoord.x, mouseLevelCoord.y) < Tileset::Other)
 		{
-			fill(localMap, mouseMapCoord.x, mouseMapCoord.y, getTileset(mouseMapCoord.x, mouseMapCoord.y), sf::Vector3i(getSelectedTileset(), selectionCoord.x, selectionCoord.y));
+			fill(localLevel, mouseLevelCoord.x, mouseLevelCoord.y, getTileset(mouseLevelCoord.x, mouseLevelCoord.y), sf::Vector3i(getSelectedTileset(), selectionCoord.x, selectionCoord.y));
 		}
 		// fill (vector3i oldTile, vector3i newTile)
 		else
 		{
-			if (getTile(mouseMapCoord.x, mouseMapCoord.y) != sf::Vector3i(getSelectedTileset(), selectionCoord.x, selectionCoord.y))
+			if (getTile(mouseLevelCoord.x, mouseLevelCoord.y) != sf::Vector3i(getSelectedTileset(), selectionCoord.x, selectionCoord.y))
 			{
-				fill(localMap, mouseMapCoord.x, mouseMapCoord.y, getTile(mouseMapCoord.x, mouseMapCoord.y), sf::Vector3i(getSelectedTileset(), selectionCoord.x, selectionCoord.y));
+				fill(localLevel, mouseLevelCoord.x, mouseLevelCoord.y, getTile(mouseLevelCoord.x, mouseLevelCoord.y), sf::Vector3i(getSelectedTileset(), selectionCoord.x, selectionCoord.y));
 			}
 		}
 	}
@@ -704,11 +715,11 @@ void Editor::tiling()
 		case Brush:
 			if (erase)
 			{
-				placeTile(mouseMapCoord.x, mouseMapCoord.y, emptyTile);
+				placeTile(mouseLevelCoord.x, mouseLevelCoord.y, emptyTile);
 			}
 			else
 			{
-				placeTile(mouseMapCoord.x, mouseMapCoord.y, determineTile(mouseMapCoord, getSelectedTileset()));
+				placeTile(mouseLevelCoord.x, mouseLevelCoord.y, determineTile(mouseLevelCoord, getSelectedTileset()));
 			}
 			break;
 
@@ -716,19 +727,19 @@ void Editor::tiling()
 			sf::Vector3i tile(getSelectedTileset(), selectionCoord.x, selectionCoord.y);
 			if (!erase && (tile == spawnTile || tile == exitTile))
 			{
-				placeTile(mouseMapCoord.x, mouseMapCoord.y, determineTile(mouseMapCoord, getSelectedTileset()));
+				placeTile(mouseLevelCoord.x, mouseLevelCoord.y, determineTile(mouseLevelCoord, getSelectedTileset()));
 			}
 			else
 			{
-				for (sf::Vector2u mapCoord : fillTiles)
+				for (sf::Vector2u levelCoord : fillTiles)
 				{
 					if (erase)
 					{
-						placeTile(mapCoord.x, mapCoord.y, emptyTile);
+						placeTile(levelCoord.x, levelCoord.y, emptyTile);
 					}
 					else
 					{
-						placeTile(mapCoord.x, mapCoord.y, determineTile(mouseMapCoord, getSelectedTileset()));
+						placeTile(levelCoord.x, levelCoord.y, determineTile(mouseLevelCoord, getSelectedTileset()));
 					}
 				}
 			}
@@ -738,31 +749,31 @@ void Editor::tiling()
 
 
 
-void Editor::drawMapCheckers()
+void Editor::drawLevelCheckers()
 {
-	for (unsigned int x = 0; x < mapSize.x; x++)
+	for (unsigned int x = 0; x < levelSize.x; x++)
 	{
-		for (unsigned int y = 0; y < mapSize.y; y++)
+		for (unsigned int y = 0; y < levelSize.y; y++)
 		{
 			if ((x + y) % 2 == 0)
 			{
-				mapChecker.setFillColor(mapCheckerEvenColor);
+				levelChecker.setFillColor(levelCheckerEvenColor);
 			}
 			else
 			{
-				mapChecker.setFillColor(mapCheckerOddColor);
+				levelChecker.setFillColor(levelCheckerOddColor);
 			}
-			mapChecker.setPosition(relativeMapPosition(x * tilesize, y * tilesize));
-			window->draw(mapChecker);
+			levelChecker.setPosition(relativeLevelPosition(x * tilesize, y * tilesize));
+			window->draw(levelChecker);
 		}
 	}
 }
 
-void Editor::drawMapTiles()
+void Editor::drawLevelTiles()
 {
-	for (unsigned int x = 0; x < mapSize.x; x++)
+	for (unsigned int x = 0; x < levelSize.x; x++)
 	{
-		for (unsigned int y = 0; y < mapSize.y; y++)
+		for (unsigned int y = 0; y < levelSize.y; y++)
 		{
 			sf::Vector3i tile = getTile(x, y);
 			int tileset = tile.x;
@@ -785,7 +796,7 @@ void Editor::drawMapTiles()
 					tilesetCrop.left = tile.y * tilesize;
 					tilesetCrop.top  = tile.z * tilesize;
 				}
-				tilesetSprite->setPosition(relativeMapPosition(x * tilesize, y * tilesize));
+				tilesetSprite->setPosition(relativeLevelPosition(x * tilesize, y * tilesize));
 				tilesetSprite->setTextureRect(tilesetCrop);
 				tilesetSprite->setScale(zoom, zoom);
 				window->draw(*tilesetSprite);
@@ -794,84 +805,84 @@ void Editor::drawMapTiles()
 	}
 }
 
-void Editor::drawMapRestrictedAreas()
+void Editor::drawLevelRestrictedAreas()
 {
 	if (spawnPosition.y != 0 && getTile(spawnPosition.x, spawnPosition.y) == spawnTile)
 	{
-		mapRestrictedArea.setPosition(relativeMapPosition(spawnPosition.x * tilesize, (spawnPosition.y - 1) * tilesize));
-		mapRestrictedArea.setScale(zoom, zoom);
-		sprites->slimey.setPosition(relativeMapPosition(spawnPosition.x * tilesize + 1, (spawnPosition.y - 1) * tilesize + 4));
+		levelRestrictedArea.setPosition(relativeLevelPosition(spawnPosition.x * tilesize, (spawnPosition.y - 1) * tilesize));
+		levelRestrictedArea.setScale(zoom, zoom);
+		sprites->slimey.setPosition(relativeLevelPosition(spawnPosition.x * tilesize + 1, (spawnPosition.y - 1) * tilesize + 4));
 		sprites->slimey.setScale(zoom, zoom);
-		window->draw(mapRestrictedArea);
+		window->draw(levelRestrictedArea);
 		window->draw(sprites->slimey);
 	}
 	if (exitPosition.y != 0 && getTile(exitPosition.x, exitPosition.y) == exitTile)
 	{
-		sf::Vector2f position = relativeMapPosition(exitPosition.x * tilesize, (exitPosition.y - 1) * tilesize);
-		mapRestrictedArea.setPosition(position);
-		mapRestrictedArea.setScale(zoom, zoom);
+		sf::Vector2f position = relativeLevelPosition(exitPosition.x * tilesize, (exitPosition.y - 1) * tilesize);
+		levelRestrictedArea.setPosition(position);
+		levelRestrictedArea.setScale(zoom, zoom);
 		sprites->exitSign.setPosition(position);
 		sprites->exitSign.setScale(zoom, zoom);
-		window->draw(mapRestrictedArea);
+		window->draw(levelRestrictedArea);
 		window->draw(sprites->exitSign);
 	}
 }
 
-void Editor::drawMapGhostTiles()
+void Editor::drawLevelGhostTiles()
 {
 	if (erase)
 	{
-		mapGhostTile.setFillColor(eraseColor);
+		levelGhostTile.setFillColor(eraseColor);
 	}
 	else
 	{
-		mapGhostTile.setFillColor(placeColor);
+		levelGhostTile.setFillColor(placeColor);
 	}
 
 	switch (method)
 	{
 		case Brush:
-			mapGhostTile.setPosition(relativeMapPosition((float)mouseMapCoord.x * tilesize, (float)mouseMapCoord.y * tilesize));
-			window->draw(mapGhostTile);
+			levelGhostTile.setPosition(relativeLevelPosition((float)mouseLevelCoord.x * tilesize, (float)mouseLevelCoord.y * tilesize));
+			window->draw(levelGhostTile);
 			break;
 
 		case Fill:
-			for (sf::Vector2u mapCoord : fillTiles)
+			for (sf::Vector2u levelCoord : fillTiles)
 			{
-				mapGhostTile.setPosition(relativeMapPosition((float)mapCoord.x * tilesize, (float)mapCoord.y * tilesize));
-				window->draw(mapGhostTile);
+				levelGhostTile.setPosition(relativeLevelPosition((float)levelCoord.x * tilesize, (float)levelCoord.y * tilesize));
+				window->draw(levelGhostTile);
 			}
 			break;
 	}
 }
 
-void Editor::drawMapCrosshair()
+void Editor::drawLevelCrosshair()
 {
 	// horizontal
-	mapCrosshair.setSize({(float)mapSize.x * tilesize, mapOutlineThickness});
-	mapCrosshair.setOrigin(0, mapOutlineThickness / 2);
-	mapCrosshair.setPosition(relativeMapPosition(0, (float)mapSize.y / 2 * tilesize));
-	window->draw(mapCrosshair);
+	levelCrosshair.setSize({(float)levelSize.x * tilesize, levelOutlineThickness});
+	levelCrosshair.setOrigin(0, levelOutlineThickness / 2);
+	levelCrosshair.setPosition(relativeLevelPosition(0, (float)levelSize.y / 2 * tilesize));
+	window->draw(levelCrosshair);
 	// vertical
-	mapCrosshair.setSize({mapOutlineThickness, (float)mapSize.y * tilesize});
-	mapCrosshair.setOrigin(mapOutlineThickness / 2, 0);
-	mapCrosshair.setPosition(relativeMapPosition((float)mapSize.x / 2 * tilesize, 0));
-	window->draw(mapCrosshair);
+	levelCrosshair.setSize({levelOutlineThickness, (float)levelSize.y * tilesize});
+	levelCrosshair.setOrigin(levelOutlineThickness / 2, 0);
+	levelCrosshair.setPosition(relativeLevelPosition((float)levelSize.x / 2 * tilesize, 0));
+	window->draw(levelCrosshair);
 }
 
-void Editor::drawMap()
+void Editor::drawLevel()
 {
-	window->draw(mapRect);
-	drawMapCheckers();
-	drawMapTiles();
-	drawMapRestrictedAreas();
-	if (mouseOnMap && !(inputHovering || buttonHovering))
+	window->draw(levelRect);
+	drawLevelCheckers();
+	drawLevelTiles();
+	drawLevelRestrictedAreas();
+	if (mouseOnLevel && !(inputHovering || buttonHovering))
 	{
-		drawMapGhostTiles();
+		drawLevelGhostTiles();
 	}
 	if (crosshair)
 	{
-		drawMapCrosshair();
+		drawLevelCrosshair();
 	}
 }
 
@@ -951,16 +962,16 @@ void Editor::handleTextEntered(sf::Event event)
 void Editor::clampSizeInputs()
 {
 	// clamp width
-	int width = std::atoi(mapWidthInput->value.str().c_str());         // string to int
-	width = std::clamp((unsigned int)width, minMapSize, maxMapSize);
-	mapWidthInput->value.str(std::to_string(width));                   // int to string
-	mapWidthInput->value.seekp(mapWidthInput->value.str().length());
+	int width = std::atoi(levelWidthInput->value.str().c_str());         // string to int
+	width = std::clamp((unsigned int)width, minLevelSize, maxLevelSize);
+	levelWidthInput->value.str(std::to_string(width));                   // int to string
+	levelWidthInput->value.seekp(levelWidthInput->value.str().length());
 
 	// clamp height
-	int height = std::atoi(mapHeightInput->value.str().c_str());       // string to int
-	height = std::clamp((unsigned int)height, minMapSize, maxMapSize);
-	mapHeightInput->value.str(std::to_string(height));                 // int to string
-	mapHeightInput->value.seekp(mapHeightInput->value.str().length());
+	int height = std::atoi(levelHeightInput->value.str().c_str());       // string to int
+	height = std::clamp((unsigned int)height, minLevelSize, maxLevelSize);
+	levelHeightInput->value.str(std::to_string(height));                 // int to string
+	levelHeightInput->value.seekp(levelHeightInput->value.str().length());
 }
 
 void Editor::updateSizeInputs()
@@ -1008,10 +1019,10 @@ void Editor::drawSizeInputs()
 		text->draw(input->value.str(), Start, Center, {input->bounds.left + 3.5f, input->bounds.top + input->bounds.height / 2}, input->textColor);
 	}
 
-	text->draw("Name of map", Center, Center, {mapNameInput->bounds.left + mapNameInput->bounds.width / 2, mapNameInput->bounds.top - 6});
-	text->draw("Size", Center, Center, {mapWidthInput->bounds.left + mapWidthInput->bounds.width / 2, mapWidthInput->bounds.top - 6});
-	text->draw("x", Center, Center, {mapWidthInput->bounds.left - 6, mapWidthInput->bounds.top + mapWidthInput->bounds.height / 2});
-	text->draw("y", Center, Center, {mapHeightInput->bounds.left - 6, mapHeightInput->bounds.top + mapHeightInput->bounds.height / 2});
+	text->draw("Name of level", Center, Center, {levelNameInput->bounds.left + levelNameInput->bounds.width / 2, levelNameInput->bounds.top - 6});
+	text->draw("Size", Center, Center, {levelWidthInput->bounds.left + levelWidthInput->bounds.width / 2, levelWidthInput->bounds.top - 6});
+	text->draw("x", Center, Center, {levelWidthInput->bounds.left - 6, levelWidthInput->bounds.top + levelWidthInput->bounds.height / 2});
+	text->draw("y", Center, Center, {levelHeightInput->bounds.left - 6, levelHeightInput->bounds.top + levelHeightInput->bounds.height / 2});
 }
 
 
@@ -1053,13 +1064,17 @@ void Editor::update()
 	if (buttonHovering && *leftClick)
 	{
 		audio->click.play();
-		if (activeButton == saveButton)
+		if (activeButton == playButton)
 		{
-			saveMap();
+			playLevel();
+		}
+		else if (activeButton == saveButton)
+		{
+			saveLevel();
 		}
 		else if (activeButton == loadButton)
 		{
-			loadMap();
+			loadLevel();
 		}
 	}
 
@@ -1067,12 +1082,12 @@ void Editor::update()
 	{
 		inputSelected = false;
 		clampSizeInputs();
-		changeMapSize(mapWidthInput->getValue(), mapHeightInput->getValue());
+		changeLevelSize(levelWidthInput->getValue(), levelHeightInput->getValue());
 	}
 
 	if (!inputHovering && !buttonHovering)
 	{
-		if (method == Fill && mouseOnMap)
+		if (method == Fill && mouseOnLevel)
 		{
 			fillArea();
 		}
@@ -1089,7 +1104,7 @@ void Editor::update()
 				{
 					selectTile();
 				}
-				else if (mouseOnMap)
+				else if (mouseOnLevel)
 				{
 					tiling();
 				}
@@ -1099,7 +1114,7 @@ void Editor::update()
 
 	sawbladeAnimation.update();
 
-	if (inputHovering || buttonHovering || mouseOnSelectionTileset || mouseOnMap)
+	if (inputHovering || buttonHovering || mouseOnSelectionTileset || mouseOnLevel)
 	{
 		*handyCursor = true;
 	}
@@ -1107,7 +1122,7 @@ void Editor::update()
 
 void Editor::draw()
 {
-	drawMap();
+	drawLevel();
 	drawSelectionTileset();
 	drawSizeInputs();
 	drawButtons();

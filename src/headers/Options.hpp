@@ -36,18 +36,21 @@ struct VolumeBar
 
 struct Options
 {
-	static const bool default_music =  true;
+	static const bool default_music = false; // true
 	static const bool default_SFX   =  true;
 	static const bool default_FPS   = false;
 	static const bool default_debug = false;
+
+	float default_volumeMusic = 0.5;
+	float default_volumeSFX   = 0.5;
 
 	bool music = default_music;
 	bool SFX   = default_SFX;
 	bool FPS   = default_FPS;
 	bool debug = default_debug;
 
-	float volumeMusic = 0.5;
-	float volumeSFX   = 0.5;
+	float volumeMusic = default_volumeMusic;
+	float volumeSFX   = default_volumeSFX;
 
 	bool hoveringVolumeSlider = false;
 	bool    usingVolumeSlider = false;
@@ -60,9 +63,7 @@ struct Options
 
 	Button resetButton;
 	std::vector<OptionButton> optionButtons;
-
-	VolumeBar volumeBarMusic;
-	VolumeBar volumeBarSFX;
+	std::vector<VolumeBar> volumeBars;
 
 	Options();
 

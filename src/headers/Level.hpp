@@ -3,7 +3,7 @@
 #include "Animation.hpp"
 #include "Audio.hpp"
 #include "Bullet.hpp"
-#include "DefaultMaps.hpp"
+#include "StoryLevels.hpp"
 #include "Global.hpp"
 #include "Player.hpp"
 #include "Sprites.hpp"
@@ -29,11 +29,13 @@ struct Level
 
 	sf::RectangleShape collisionRect;
 
-	bool custom = false;
+	int index;
 
-	mapVector map;
+	State destination;
 
-	sf::Vector2u mapSize;
+	LevelVector level;
+
+	sf::Vector2u levelSize;
 
 	sf::Vector2i spawn;
 	sf::Vector2i exit;
@@ -56,8 +58,9 @@ struct Level
 	      Audio* _audio, Sprites* _sprites, Text* _text, Transition* _transition, bool* _paused, bool* _debug);
 
 	void reset();
-	void loadMap(mapVector _map, bool _custom = false);
-	void drawMap();
+	void loadLevel(LevelVector _level, State _destination);
+	void loadLevel(LevelVector _level, int _index);
+	void drawLevel();
 
 	void updateTurrets();
 	void updateBullets();

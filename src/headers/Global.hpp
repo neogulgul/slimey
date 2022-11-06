@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <filesystem>
 
-#define mapVector std::vector<std::vector<sf::Vector3i>>
+#define LevelVector std::vector<std::vector<sf::Vector3i>>
 
 #define emptyTile    sf::Vector3i(0, 0, 0)
 #define spawnTile    sf::Vector3i(4, 0, 3)
@@ -64,11 +64,11 @@ extern sf::Color                pauseColor;
 // level
 extern sf::Color collisionColor;
 // editor
-extern sf::Color     mapOutlineColor;
-extern sf::Color mapCheckerEvenColor;
-extern sf::Color  mapCheckerOddColor;
-extern sf::Color   mapCrosshairColor;
-extern sf::Color  mapRestrictedColor;
+extern sf::Color     levelOutlineColor;
+extern sf::Color levelCheckerEvenColor;
+extern sf::Color  levelCheckerOddColor;
+extern sf::Color   levelCrosshairColor;
+extern sf::Color  levelRestrictedColor;
 extern sf::Color          placeColor;
 extern sf::Color          eraseColor;
 extern sf::Color       selectionTilesetBackgroundColor;
@@ -82,4 +82,5 @@ bool pressing(sf::Mouse::Button button);
 void handlePress(bool pressing, bool &press, bool &pressed);
 sf::Vector2f relativeViewPosition(sf::View* view, sf::Vector2f position);
 sf::Vector2f align(sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position);
-mapVector getCustomMapVector(std::string mapName);
+LevelVector getStoryLevelVector(int index);
+LevelVector getCustomLevelVector(std::string levelName);

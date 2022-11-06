@@ -3,7 +3,7 @@
 #include <random>
 
 #include "Audio.hpp"
-#include "DefaultMaps.hpp"
+#include "StoryLevels.hpp"
 #include "Editor.hpp"
 #include "Global.hpp"
 #include "Level.hpp"
@@ -79,7 +79,7 @@ struct Game
 	std::vector<Levelbox> customLevelboxes;
 	std::vector<Button> customLevelRemoveButtons;
 
-	float lastCustomMapVerticalPosition;
+	float lastCustomLevelVerticalPosition;
 	unsigned int customLevelsCount;
 
 	State lastState;

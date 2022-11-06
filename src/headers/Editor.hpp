@@ -6,6 +6,7 @@
 #include "Audio.hpp"
 #include "Button.hpp"
 #include "Global.hpp"
+#include "Level.hpp"
 #include "Sprites.hpp"
 #include "Text.hpp"
 
@@ -44,6 +45,7 @@ struct Editor
 	sf::FloatRect* viewport;
 
 	Audio*   audio;
+	Level*   level;
 	Sprites* sprites;
 	Text*    text;
 
@@ -55,7 +57,7 @@ struct Editor
 	bool* paused;
 	bool* transitioning;
 
-	mapVector map;
+	LevelVector levelVector;
 	/*
 		one 3D vector has 3 values (x, y, z) which in this case represents one tile
 		the x value represents which tileset to draw
@@ -67,20 +69,21 @@ struct Editor
 		to represent their corresponding crop values
 		but i am too lazy :)))
 	*/
-	unsigned int minMapSize =  16;
-	unsigned int maxMapSize = 128;
-	unsigned int initialMapWidth  = minMapSize;
-	unsigned int initialMapHeight = minMapSize;
-	sf::Vector2u mapSize;
+	unsigned int minLevelSize =  16;
+	unsigned int maxLevelSize = 128;
+	unsigned int initialLevelWidth  = minLevelSize;
+	unsigned int initialLevelHeight = minLevelSize;
+	sf::Vector2u levelSize;
 
-	Input* mapNameInput;
-	Input* mapWidthInput;
-	Input* mapHeightInput;
+	Input* levelNameInput;
+	Input* levelWidthInput;
+	Input* levelHeightInput;
 	Input* selectedInput;
 	std::vector<Input*> sizeInputs;
 	bool inputHovering = false;
 	bool inputSelected = false;
 
+	Button* playButton;
 	Button* saveButton;
 	Button* loadButton;
 	Button* activeButton;
@@ -94,24 +97,24 @@ struct Editor
 
 	sf::Vector2f tileDimension;
 
-	sf::RectangleShape mapRect;
-	sf::RectangleShape mapChecker;
-	sf::RectangleShape mapRestrictedArea;
-	sf::RectangleShape mapGhostTile;
-	sf::RectangleShape mapCrosshair;
-	sf::FloatRect mapBounds;
+	sf::RectangleShape levelRect;
+	sf::RectangleShape levelChecker;
+	sf::RectangleShape levelRestrictedArea;
+	sf::RectangleShape levelGhostTile;
+	sf::RectangleShape levelCrosshair;
+	sf::FloatRect levelBounds;
 
 	sf::RectangleShape selectionTilesetRect;
 	sf::RectangleShape selectionTilesetSelection;
 	sf::FloatRect selectionTilesetBounds;
 
 	sf::Vector2f* mousePosition;
-	sf::Vector2i  mouseMapCoord;
+	sf::Vector2i  mouseLevelCoord;
 	sf::Vector2i  mouseSelectionCoord;
 	sf::Vector2f draggingStartPosition;
 	bool dragging = false;
 
-	bool mouseOnMap              = false;
+	bool mouseOnLevel              = false;
 	bool mouseOnSelectionTileset = false;
 
 	sf::Vector2u selectionCoord;
@@ -143,19 +146,19 @@ struct Editor
 	bool resetViewPress   = false;
 	bool resetViewPressed = false;
 	// Control + Shift + R
-	bool clearMapPress   = false;
-	bool clearMapPressed = false;
+	bool clearLevelPress   = false;
+	bool clearLevelPressed = false;
 	// Control + S
-	bool saveMapPress   = false;
-	bool saveMapPressed = false;
+	bool saveLevelPress   = false;
+	bool saveLevelPressed = false;
 	// Control + L
-	bool loadMapPress   = false;
-	bool loadMapPressed = false;
+	bool loadLevelPress   = false;
+	bool loadLevelPressed = false;
 
 	Animation sawbladeAnimation;
 
 	Editor();
-	Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewport, Audio* _audio, Sprites* _sprites, Text* _text,
+	Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewport, Audio* _audio, Level* _level, Sprites* _sprites, Text* _text,
 	       sf::Vector2f* _mousePosition, bool* _handyCursor, bool* _leftClick,
 	       bool* _pressingControl, bool* _pressingShift, bool* _pressingAlt, bool* _paused, bool* _transitioning);
 
@@ -170,20 +173,21 @@ struct Editor
 	void processMouseInput();
 	void handleDragging();
 
-	void updateMapRect();
-	void updateMapBounds();
+	void updateLevelRect();
+	void updateLevelBounds();
 	void updateSelectionTilesetBounds();
-	sf::Vector2f relativeMapPosition(float x, float y);
+	sf::Vector2f relativeLevelPosition(float x, float y);
 	sf::Vector2f relativeSelectionTilesetPosition(float x, float y);
 	sf::FloatRect getSelectionTilesetMouseBounds();
-	sf::FloatRect getMapMouseBounds();
+	sf::FloatRect getLevelMouseBounds();
 
-	void clearMap(); // also works for initializing the map
-	void saveMap();
-	void loadMap();
-	void changeMapSize(unsigned int newWidth, unsigned int newHeight);
+	void clearLevel(); // also works for initializing the level
+	void playLevel();
+	void saveLevel();
+	void loadLevel();
+	void changeLevelSize(unsigned int newWidth, unsigned int newHeight);
 
-	sf::Vector3i determineTile(sf::Vector2i mapCoord, int tileset);
+	sf::Vector3i determineTile(sf::Vector2i levelCoord, int tileset);
 	sf::Vector3i getTile(unsigned int x, unsigned int y);
 	sf::Vector2u getTileCrop(unsigned int x, unsigned int y);
 	int getTileset(unsigned int x, unsigned int y);
@@ -193,19 +197,19 @@ struct Editor
 	void placeTile(unsigned int x, unsigned int y, sf::Vector3i newTile);
 	void adjustTile(unsigned int x, unsigned int y);
 	void adjustAdjacentTiles(unsigned int x, unsigned int y);
-	void fill(std::vector<std::vector<sf::Vector3i>> &localMap, unsigned int x, unsigned int y, int oldTileset      , int newTileset);
-	void fill(std::vector<std::vector<sf::Vector3i>> &localMap, unsigned int x, unsigned int y, sf::Vector3i oldTile, int newTileset);
-	void fill(std::vector<std::vector<sf::Vector3i>> &localMap, unsigned int x, unsigned int y, int oldTileset      , sf::Vector3i newTile);
-	void fill(std::vector<std::vector<sf::Vector3i>> &localMap, unsigned int x, unsigned int y, sf::Vector3i oldTile, sf::Vector3i newTile);
+	void fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned int x, unsigned int y, int oldTileset      , int newTileset);
+	void fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned int x, unsigned int y, sf::Vector3i oldTile, int newTileset);
+	void fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned int x, unsigned int y, int oldTileset      , sf::Vector3i newTile);
+	void fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned int x, unsigned int y, sf::Vector3i oldTile, sf::Vector3i newTile);
 	void fillArea();
 	void tiling();
 
-	void drawMapCheckers();
-	void drawMapTiles();
-	void drawMapRestrictedAreas();
-	void drawMapGhostTiles();
-	void drawMapCrosshair();
-	void drawMap();
+	void drawLevelCheckers();
+	void drawLevelTiles();
+	void drawLevelRestrictedAreas();
+	void drawLevelGhostTiles();
+	void drawLevelCrosshair();
+	void drawLevel();
 
 	void selectTile();
 	void drawSelectionTileset();

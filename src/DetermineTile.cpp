@@ -227,7 +227,7 @@ void Editor::declareRegions()
 	                                0, 1, 0}));
 }
 
-sf::Vector3i Editor::determineTile(sf::Vector2i mapCoord, int tileset)
+sf::Vector3i Editor::determineTile(sf::Vector2i levelCoord, int tileset)
 {
 	sf::Vector2u crop;
 
@@ -245,39 +245,39 @@ sf::Vector3i Editor::determineTile(sf::Vector2i mapCoord, int tileset)
 		int BC = 1;
 		int BR = 1;
 
-		if (mapCoord.y > 0)
+		if (levelCoord.y > 0)
 		{
-			if (mapCoord.x > 0)
+			if (levelCoord.x > 0)
 			{
-				TL = sameTile(getTileset(mapCoord.x - 1, mapCoord.y - 1), tileset);
+				TL = sameTile(getTileset(levelCoord.x - 1, levelCoord.y - 1), tileset);
 			}
-				TC = sameTile(getTileset(mapCoord.x + 0, mapCoord.y - 1), tileset);
-			if (mapCoord.x < mapSize.x - 1)
+				TC = sameTile(getTileset(levelCoord.x + 0, levelCoord.y - 1), tileset);
+			if (levelCoord.x < levelSize.x - 1)
 			{
-				TR = sameTile(getTileset(mapCoord.x + 1, mapCoord.y - 1), tileset);
+				TR = sameTile(getTileset(levelCoord.x + 1, levelCoord.y - 1), tileset);
 			}
 		}
 
-			if (mapCoord.x > 0)
+			if (levelCoord.x > 0)
 			{
-				ML = sameTile(getTileset(mapCoord.x - 1, mapCoord.y + 0), tileset);
+				ML = sameTile(getTileset(levelCoord.x - 1, levelCoord.y + 0), tileset);
 			}
-				MC = sameTile(getTileset(mapCoord.x + 0, mapCoord.y + 0), tileset);
-			if (mapCoord.x < mapSize.x - 1)
+				MC = sameTile(getTileset(levelCoord.x + 0, levelCoord.y + 0), tileset);
+			if (levelCoord.x < levelSize.x - 1)
 			{
-				MR = sameTile(getTileset(mapCoord.x + 1, mapCoord.y + 0), tileset);
+				MR = sameTile(getTileset(levelCoord.x + 1, levelCoord.y + 0), tileset);
 			}
 
-		if (mapCoord.y < mapSize.y - 1)
+		if (levelCoord.y < levelSize.y - 1)
 		{
-			if (mapCoord.x > 0)
+			if (levelCoord.x > 0)
 			{
-				BL = sameTile(getTileset(mapCoord.x - 1, mapCoord.y + 1), tileset);
+				BL = sameTile(getTileset(levelCoord.x - 1, levelCoord.y + 1), tileset);
 			}
-				BC = sameTile(getTileset(mapCoord.x + 0, mapCoord.y + 1), tileset);
-			if (mapCoord.x < mapSize.x - 1)
+				BC = sameTile(getTileset(levelCoord.x + 0, levelCoord.y + 1), tileset);
+			if (levelCoord.x < levelSize.x - 1)
 			{
-				BR = sameTile(getTileset(mapCoord.x + 1, mapCoord.y + 1), tileset);
+				BR = sameTile(getTileset(levelCoord.x + 1, levelCoord.y + 1), tileset);
 			}
 		}
 

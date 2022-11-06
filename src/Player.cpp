@@ -5,8 +5,8 @@
 Player::Player() {}
 
 Player::Player(sf::Sprite* _sprite, sf::Sprite* _slimeyDeath, sf::Sprite* _offscreenCircle,
-               bool* _levelCleared, mapVector* _map, sf::Vector2u _mapSize, sf::Vector2i _spawn)
-: Collider(_sprite, _map, _mapSize)
+               bool* _levelCleared, LevelVector* _level, sf::Vector2u _levelSize, sf::Vector2i _spawn)
+: Collider(_sprite, _level, _levelSize)
 {
 	slimeyDeath     = _slimeyDeath;
 	offscreenCircle = _offscreenCircle;
@@ -288,9 +288,9 @@ void Player::handleCollision()
 		}
 	}
 
-	if (position.y > mapSize.y * tilesize)
+	if (position.y > levelSize.y * tilesize)
 	{
-		position.y = mapSize.y * tilesize - size.y / 2;
+		position.y = levelSize.y * tilesize - size.y / 2;
 		death();
 		return;
 	}
@@ -305,9 +305,9 @@ void Player::handleCollision()
 		velocity.x = 0;
 	}
 	else
-	if (position.x > mapSize.x * tilesize - size.x)
+	if (position.x > levelSize.x * tilesize - size.x)
 	{
-		position.x = mapSize.x * tilesize - size.x;
+		position.x = levelSize.x * tilesize - size.x;
 		velocity.x = 0;
 	}
 	else if (!hitHorizontalBounce && (hitLeft || hitRight))

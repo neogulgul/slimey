@@ -178,8 +178,10 @@ void Game::updateOptionsScreen()
 
 	options.hoveringVolumeSlider = false;
 
-	options.volumeBarMusic.update(mousePosition);
-	options.volumeBarSFX.update(mousePosition);
+	for (VolumeBar &bar : options.volumeBars)
+	{
+		bar.update(mousePosition);
+	}
 
 	if (options.hoveringVolumeSlider)
 	{
@@ -236,7 +238,7 @@ void Game::updateCustomLevels()
 	}
 	if (remove)
 	{
-		fs::remove("custom_maps/" + customLevelboxes.at(index).customMapName + ".txt");
+		fs::remove("custom_levels/" + customLevelboxes.at(index).customLevelName + ".txt");
 
 		customLevelsCount--;
 		customLevelboxes.erase(customLevelboxes.begin() + index);
@@ -261,7 +263,7 @@ void Game::updateCustomLevels()
 			localIndex++;
 		}
 
-		lastCustomMapVerticalPosition = viewHeight * 0.25 + 48 + levelboxSpacing * (customLevelsCount - 1);
+		lastCustomLevelVerticalPosition = viewHeight * 0.25 + 48 + levelboxSpacing * (customLevelsCount - 1);
 		limitCustomLevelsScroll();
 	}
 }
@@ -271,8 +273,31 @@ void Game::updateLevelPlay()
 	level.update();
 }
 
+#include <iostream>
+
 void Game::updateLevelClear()
 {
+	for (Menubox* box : menu)
+	{
+		if (box->active && leftClick)
+		{
+			if (box->string == "Continue")
+			{
+				if (level.index + 1 == storyLevels.size())
+				{
+					transition.to(StoryLevels);
+				}
+				else
+				{
+					level.loadLevel(getStoryLevelVector(level.index + 1), level.index + 1);
+				}
+			}
+			else if (box->string == "Restart")
+			{
+				level.loadLevel(getStoryLevelVector(level.index), level.index);
+			}
+		}
+	}
 }
 
 void Game::updateState()
@@ -358,8 +383,10 @@ void Game::drawOptionsScreen()
 	}
 	options.resetButton.draw(window, view, &text);
 
-	options.volumeBarMusic.draw(window, view);
-	options.volumeBarSFX.draw(window, view);
+	for (VolumeBar &bar : options.volumeBars)
+	{
+		bar.draw(window, view);
+	}
 }
 
 void Game::drawLevelEditor()
@@ -400,7 +427,7 @@ void Game::drawLevelPlay()
 
 void Game::drawLevelClear()
 {
-	text.draw("Level Cleared", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
+	text.draw("Continue to\nnext level?", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
 }
 
 void Game::drawState()

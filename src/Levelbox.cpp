@@ -17,7 +17,7 @@ Levelbox::Levelbox(Level* _level, std::string string, sf::Vector2f position)
 {
 	level = _level;
 	relativeToView = false;
-	customMapName = string;
+	customLevelName = string;
 	custom = true;
 }
 
@@ -25,13 +25,11 @@ void Levelbox::action()
 {
 	if (custom)
 	{
-		level->loadMap(getCustomMapVector(customMapName), true);
+		level->loadLevel(getCustomLevelVector(customLevelName), CustomLevels);
 	}
 	else
 	{
 		int index = std::atoi(string.c_str()) - 1;
-		mapVector defaultMap = *defaultMaps[index];
-
-		level->loadMap(defaultMap);
+		level->loadLevel(getStoryLevelVector(index), index);
 	}
 }

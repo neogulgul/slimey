@@ -124,8 +124,10 @@ Options::Options()
 		OptionButton(End, End, {viewWidth * 0.75, viewHeight -  40}, &debug)
 	};
 
-	volumeBarMusic = VolumeBar({viewWidth / 2, viewHeight - 140}, &volumeMusic, &hoveringVolumeSlider, &usingVolumeSlider);
-	volumeBarSFX = VolumeBar({viewWidth / 2, viewHeight - 100}, &volumeSFX, &hoveringVolumeSlider, &usingVolumeSlider);
+	volumeBars = {
+		VolumeBar({viewWidth / 2, viewHeight - 140}, &volumeMusic, &hoveringVolumeSlider, &usingVolumeSlider),
+		VolumeBar({viewWidth / 2, viewHeight - 100}, &volumeSFX, &hoveringVolumeSlider, &usingVolumeSlider)
+	};
 }
 
 void Options::reset()
@@ -134,8 +136,17 @@ void Options::reset()
 	SFX   = default_SFX;
 	FPS   = default_FPS;
 	debug = default_debug;
+
+	volumeMusic = default_volumeMusic;
+	volumeSFX   = default_volumeSFX;
+
 	for (OptionButton &button : optionButtons)
 	{
 		button.updateString();
+	}
+
+	for (VolumeBar &bar : volumeBars)
+	{
+		bar.updateVolumeSlider();
 	}
 }

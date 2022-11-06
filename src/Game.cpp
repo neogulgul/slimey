@@ -20,7 +20,7 @@ Game::Game(sf::RenderWindow* _window, sf::View* _view)
 	viewport.width  = viewWidth;
 	viewport.height = viewHeight;
 
-	editor     = Editor(window, view, &viewport, &audio, &sprites, &text,
+	editor     = Editor(window, view, &viewport, &audio, &level, &sprites, &text,
 	                    &mousePosition, &handyCursor, &leftClick,
 	                    &pressingControl, &pressingShift, &pressingAlt, &paused, &transition.transitioning);
 	level      = Level(window, view, &viewport, &audio, &sprites, &text, &transition, &paused, &options.debug);
@@ -116,11 +116,11 @@ void Game::limitCustomLevelsScroll()
 	{
 		viewPosition.y = viewHeight * 0.5;
 	}
-	if (lastCustomMapVerticalPosition + 24 > viewHeight)
+	if (lastCustomLevelVerticalPosition + 24 > viewHeight)
 	{
-		if (viewPosition.y > lastCustomMapVerticalPosition + 24 - viewHeight * 0.5)
+		if (viewPosition.y > lastCustomLevelVerticalPosition + 24 - viewHeight * 0.5)
 		{
-			viewPosition.y = lastCustomMapVerticalPosition + 24 - viewHeight * 0.5;
+			viewPosition.y = lastCustomLevelVerticalPosition + 24 - viewHeight * 0.5;
 		}
 	}
 	else
@@ -141,16 +141,16 @@ void Game::createStoryLevelboxes()
 	unsigned int currentColumn = 0;
 	unsigned int currentRow    = 0;
 
-	unsigned int lastRow = std::floor((float)defaultMaps.size() / levelboxColumns);
+	unsigned int lastRow = std::floor((float)storyLevels.size() / levelboxColumns);
 
 	sf::Vector2f position;
 
-	for (unsigned int i = 1; i <= defaultMaps.size(); i++)
+	for (unsigned int i = 1; i <= storyLevels.size(); i++)
 	{
 		unsigned int columns;
 
 		if (currentRow == lastRow)
-		{ columns = defaultMaps.size() - levelboxColumns * lastRow; }
+		{ columns = storyLevels.size() - levelboxColumns * lastRow; }
 		else
 		{ columns = levelboxColumns; }
 
@@ -184,52 +184,52 @@ void replaceSubstringInString(std::string &string, std::string substring)
 
 void Game::createCustomLevelboxes()
 {
-	lastCustomMapVerticalPosition = 0;
+	lastCustomLevelVerticalPosition = 0;
 	customLevelsCount = 0;
-	if (!fs::is_directory("custom_maps")) { return; }
+	if (!fs::is_directory("custom_levels")) { return; }
 
-	std::set<fs::path> maps_sorted_by_name;
+	std::set<fs::path> levels_sorted_by_name;
 
-	for (fs::directory_entry entry : fs::directory_iterator("custom_maps"))
+	for (fs::directory_entry entry : fs::directory_iterator("custom_levels"))
 	{
-		maps_sorted_by_name.insert(entry.path());
+		levels_sorted_by_name.insert(entry.path());
 	}
 
-	for (fs::path path : maps_sorted_by_name)
+	for (fs::path path : levels_sorted_by_name)
 	{
 		std::stringstream conversionStream;
 		conversionStream << path;
-		std::string mapName = conversionStream.str();
+		std::string levelName = conversionStream.str();
 
 		// if the file is not a .txt we skip it
-		if (!strstr(mapName.c_str(), ".txt")) { continue; }
+		if (!strstr(levelName.c_str(), ".txt")) { continue; }
 
 		// this removes a two \ from the name, which appears on windows
-		if (strstr(mapName.c_str(), "\\"))
+		if (strstr(levelName.c_str(), "\\"))
 		{
-			replaceSubstringInString(mapName, "\\");
-			replaceSubstringInString(mapName, "\\");
+			replaceSubstringInString(levelName, "\\");
+			replaceSubstringInString(levelName, "\\");
 		}
 		// this removes a / from the name
 		else
 		{
-			replaceSubstringInString(mapName, "/");
+			replaceSubstringInString(levelName, "/");
 		}
-		replaceSubstringInString(mapName, "custom_maps");
-		replaceSubstringInString(mapName, ".txt");
-		replaceSubstringInString(mapName, "\""); // we do this two times, since there
-		replaceSubstringInString(mapName, "\""); // is one quotation mark on each side
+		replaceSubstringInString(levelName, "custom_levels");
+		replaceSubstringInString(levelName, ".txt");
+		replaceSubstringInString(levelName, "\""); // we do this two times, since there
+		replaceSubstringInString(levelName, "\""); // is one quotation mark on each side
 
 		float verticalPosition = viewHeight * 0.25 + 48 + levelboxSpacing * customLevelsCount;
 
 		customLevelboxes.push_back(
-			Levelbox(&level, mapName, {viewWidth * 0.5, verticalPosition})
+			Levelbox(&level, levelName, {viewWidth * 0.5, verticalPosition})
 		);
 		customLevelRemoveButtons.push_back(
 			Button(&sprites.xMark, Start, Center, {viewWidth * 0.5 + 114 / 2 + 10, verticalPosition}, false)
 		);
 
-		lastCustomMapVerticalPosition = verticalPosition;
+		lastCustomLevelVerticalPosition = verticalPosition;
 
 		customLevelsCount++;
 	}
@@ -272,19 +272,20 @@ void Game::createMenu()
 			break;
 
 		case LevelPlay:
-			State returnState;
-			if (level.custom)
+			if (level.destination == LevelClear)
 			{
-				returnState = CustomLevels;
+				menu.push_back(new Menubox(StoryLevels, "Back", {60, 20}, Start, Start, {10, 10}));
 			}
 			else
 			{
-				returnState = StoryLevels;
+				menu.push_back(new Menubox(level.destination, "Back", {60, 20}, Start, Start, {10, 10}));
 			}
-			menu.push_back(new Menubox(returnState, "Back", {60, 20}, Start, Start, {10, 10}));
 			break;
 
 		case LevelClear:
+			menu.push_back(new Menubox(LevelPlay  , "Continue", {80, 20}, Center, Center, {viewWidth / 2, viewHeight / 2     }));
+			menu.push_back(new Menubox(LevelPlay  , "Restart" , {80, 20}, Center, Center, {viewWidth / 2, viewHeight / 2 + 30}));
+			menu.push_back(new Menubox(StoryLevels, "Go back" , {80, 20}, Center, Center, {viewWidth / 2, viewHeight / 2 + 60}));
 			break;
 	}
 }
@@ -365,9 +366,9 @@ void Game::drawBookIsOpen()
 	text.draw("Toggle Erase - E"                                , Start, Start, {10, 145}, {0.8, 0.8});
 	text.draw("Toggle Crosshair - C"                            , Start, Start, {10, 155}, {0.8, 0.8});
 	text.draw("Reset View - R"                                  , Start, Start, {10, 165}, {0.8, 0.8});
-	text.draw("Clear Map - Control + Shift + R"                 , Start, Start, {10, 175}, {0.8, 0.8});
-	text.draw("Save Map - Control + S or Hit the save button"   , Start, Start, {10, 185}, {0.8, 0.8});
-	text.draw("Load Map - Control + L or Hit the load button"   , Start, Start, {10, 195}, {0.8, 0.8});
+	text.draw("Clear Level - Control + Shift + R"                 , Start, Start, {10, 175}, {0.8, 0.8});
+	text.draw("Save Level - Control + S or Hit the save button"   , Start, Start, {10, 185}, {0.8, 0.8});
+	text.draw("Load Level - Control + L or Hit the load button"   , Start, Start, {10, 195}, {0.8, 0.8});
 	text.draw("Pause - Escape"                                  , Start, Start, {10, 205}, {0.8, 0.8});
 }
 
@@ -522,6 +523,7 @@ void Game::update()
 				break;
 
 			case LevelEditor:
+				editor.playButton->active = false;
 				sprites.resetScale();
 				break;
 		}

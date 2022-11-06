@@ -1,4 +1,1 @@
-[] level clear screen
 [] ability to choose origin of resize in editor
-[] play button in editor
-[] volume bar in options

@@ -1,8 +1,8 @@
 #include "headers/Bullet.hpp"
 
-Bullet::Bullet(sf::Sprite* _sprite, mapVector* _map, sf::Vector2u _mapSize, sf::Sprite* _explosion, Player* _player,
+Bullet::Bullet(sf::Sprite* _sprite, LevelVector* _level, sf::Vector2u _levelSize, sf::Sprite* _explosion, Player* _player,
                sf::Vector2f _position, sf::Vector2f _velocity)
-: Collider(_sprite, _map, _mapSize)
+: Collider(_sprite, _level, _levelSize)
 {
 	explosion = _explosion;
 	player    = _player;
@@ -28,9 +28,9 @@ void Bullet::handleCollision()
 	{
 		player->death();
 	}
-	if (position.x > mapSize.x * tilesize ||
+	if (position.x > levelSize.x * tilesize ||
 	    position.x < -bulletSize          ||
-	    position.y > mapSize.y * tilesize ||
+	    position.y > levelSize.y * tilesize ||
 	    position.y < -bulletSize          ||
 	      hitUp || hitDown                ||
 	    hitLeft || hitRight)
