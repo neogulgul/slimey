@@ -16,7 +16,7 @@
 
 namespace fs = std::filesystem;
 
-const unsigned int tilesize        = 16;
+const          int tilesize        = 16;
 const unsigned int horizontalTiles = 16;
 const unsigned int verticalTiles   = 16;
 

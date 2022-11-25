@@ -55,12 +55,6 @@ struct Options
 	bool hoveringVolumeSlider = false;
 	bool    usingVolumeSlider = false;
 
-	sf::Texture barOnTexture;
-	sf::Texture barOffTexture;
-
-	sf::Sprite barOn;
-	sf::Sprite barOff;
-
 	Button resetButton;
 	std::vector<OptionButton> optionButtons;
 	std::vector<VolumeBar> volumeBars;

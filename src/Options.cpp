@@ -110,12 +110,6 @@ void VolumeBar::draw(sf::RenderWindow* window, sf::View* view)
 
 Options::Options()
 {
-	barOnTexture .loadFromFile("assets/textures/bar-on.png");
-	barOffTexture.loadFromFile("assets/textures/bar-off.png");
-
-	barOn .setTexture(barOnTexture);
-	barOff.setTexture(barOffTexture);
-
 	resetButton = Button("Reset Options", {viewWidth / 2, 20}, Center, End, {viewWidth / 2, viewHeight - 10});
 	optionButtons = {
 		OptionButton(End, End, {viewWidth * 0.75, viewHeight - 150}, &music),

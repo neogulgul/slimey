@@ -285,7 +285,7 @@ void Game::createMenu()
 		case LevelClear:
 			menu.push_back(new Menubox(LevelPlay  , "Continue", {80, 20}, Center, Center, {viewWidth / 2, viewHeight / 2     }));
 			menu.push_back(new Menubox(LevelPlay  , "Restart" , {80, 20}, Center, Center, {viewWidth / 2, viewHeight / 2 + 30}));
-			menu.push_back(new Menubox(StoryLevels, "Go back" , {80, 20}, Center, Center, {viewWidth / 2, viewHeight / 2 + 60}));
+			menu.push_back(new Menubox(StoryLevels, "Back"    , {80, 20}, Center, Center, {viewWidth / 2, viewHeight / 2 + 60}));
 			break;
 	}
 }
@@ -357,19 +357,20 @@ void Game::drawBookIsOpen()
 	text.draw("Pause - Escape"           , Start, Start, {10, 55}, {0.8, 0.8});
 
 	text.draw("Editor", Center, Start, {viewWidth / 2, 70}, {1.5, 1.5});
-	text.draw("Place / Erase - Left Click"                      , Start, Start, {10,  85}, {0.8, 0.8});
-	text.draw("Move View - (Middle Click or Shift) + Mouse Move", Start, Start, {10,  95}, {0.8, 0.8});
-	text.draw("Zoom View - Scroll Wheel"                        , Start, Start, {10, 105}, {0.8, 0.8});
-	text.draw("Eyedropper - Alt + Left Click"                   , Start, Start, {10, 115}, {0.8, 0.8});
-	text.draw("Equip Brush - B"                                 , Start, Start, {10, 125}, {0.8, 0.8});
-	text.draw("Equip Fill - F"                                  , Start, Start, {10, 135}, {0.8, 0.8});
-	text.draw("Toggle Erase - E"                                , Start, Start, {10, 145}, {0.8, 0.8});
-	text.draw("Toggle Crosshair - C"                            , Start, Start, {10, 155}, {0.8, 0.8});
-	text.draw("Reset View - R"                                  , Start, Start, {10, 165}, {0.8, 0.8});
-	text.draw("Clear Level - Control + Shift + R"                 , Start, Start, {10, 175}, {0.8, 0.8});
-	text.draw("Save Level - Control + S or Hit the save button"   , Start, Start, {10, 185}, {0.8, 0.8});
-	text.draw("Load Level - Control + L or Hit the load button"   , Start, Start, {10, 195}, {0.8, 0.8});
-	text.draw("Pause - Escape"                                  , Start, Start, {10, 205}, {0.8, 0.8});
+	text.draw("Place / Erase - Left Click"                         , Start, Start, {10,  85}, {0.8, 0.8});
+	text.draw("Move View - (Middle Click or Shift) + Mouse Move"   , Start, Start, {10,  95}, {0.8, 0.8});
+	text.draw("Zoom View - Scroll Wheel"                           , Start, Start, {10, 105}, {0.8, 0.8});
+	text.draw("Eyedropper - Alt + Left Click"                      , Start, Start, {10, 115}, {0.8, 0.8});
+	text.draw("Equip Brush - B"                                    , Start, Start, {10, 125}, {0.8, 0.8});
+	text.draw("Equip Fill - F"                                     , Start, Start, {10, 135}, {0.8, 0.8});
+	text.draw("Toggle Erase - E"                                   , Start, Start, {10, 145}, {0.8, 0.8});
+	text.draw("Toggle Crosshair - C"                               , Start, Start, {10, 155}, {0.8, 0.8});
+	text.draw("Reset View - R"                                     , Start, Start, {10, 165}, {0.8, 0.8});
+	text.draw("Clear Level - Control + Shift + R"                  , Start, Start, {10, 175}, {0.8, 0.8});
+	text.draw("Play Level - Control + Space or Hit the play button", Start, Start, {10, 185}, {0.8, 0.8});
+	text.draw("Save Level - Control + S or Hit the save button"    , Start, Start, {10, 195}, {0.8, 0.8});
+	text.draw("Load Level - Control + L or Hit the load button"    , Start, Start, {10, 205}, {0.8, 0.8});
+	text.draw("Pause - Escape"                                     , Start, Start, {10, 215}, {0.8, 0.8});
 }
 
 
@@ -506,14 +507,16 @@ void Game::update()
 		pausePress   = false;
 		pausePressed = false;
 
-		if (state == LevelEditor)
-		{
-			editor.updateSizeInputs();
-		}
+	if (state != LevelPlay) // not doing it when in a level, since the level takes care of updating the view
+	{
+		resetView();
+	}
 
-		if (state != LevelEditor && state != LevelPlay)
+		switch (state)
 		{
-			resetView();
+			case LevelEditor:
+				editor.updateLevelInputs();
+				break;
 		}
 
 		switch (lastState)
@@ -555,4 +558,37 @@ void Game::draw()
 		drawFPS();
 	}
 	displayClock.restart();
+}
+
+void Game::noMemoryLeaksForMeThankYouVeryMuch()
+{
+	/*
+		had this problem (on windows) were the game would continue running in the background after closing it
+		didn't fix it for a very long time since i was very lazy
+		plus i entirely forgot about it since i mainly develop on linux and it didn't seem to occur there
+		anyway, i just now realised it might have been do to a memory leak
+		i looked into it and i was correct
+		yeah
+		so this is the (ugly) solution for that
+	*/
+
+	for (LevelVector* levelVector : storyLevels)
+	{
+		delete levelVector;
+	}
+
+	for (Menubox* menubox : menu)
+	{
+		delete menubox;
+	}
+
+	for (Input* input : editor.levelInputs)
+	{
+		delete input;
+	}
+
+	for (sf::Sprite* sprite : sprites.tilesets)
+	{
+		delete sprite;
+	}
 }

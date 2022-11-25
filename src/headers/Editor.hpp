@@ -26,6 +26,8 @@ struct Input
 	Input();
 	Input(sf::Vector2f _position, sf::Vector2f _size, unsigned int _maxLength, bool _numbersOnly = false);
 
+	void setValue(int _value);
+	void setValue(std::string _value);
 	int getValue();
 	std::string getString();
 };
@@ -79,9 +81,13 @@ struct Editor
 	Input* levelWidthInput;
 	Input* levelHeightInput;
 	Input* selectedInput;
-	std::vector<Input*> sizeInputs;
+	std::vector<Input*> levelInputs;
 	bool inputHovering = false;
 	bool inputSelected = false;
+
+	sf::Vector2u resizeOriginCoord;
+	std::vector<sf::RectangleShape> resizeRects;
+	bool resizeHovering = false;
 
 	Button* playButton;
 	Button* saveButton;
@@ -148,6 +154,9 @@ struct Editor
 	// Control + Shift + R
 	bool clearLevelPress   = false;
 	bool clearLevelPressed = false;
+	// Control + Space
+	bool playLevelPress   = false;
+	bool playLevelPressed = false;
 	// Control + S
 	bool saveLevelPress   = false;
 	bool saveLevelPressed = false;
@@ -185,7 +194,7 @@ struct Editor
 	void playLevel();
 	void saveLevel();
 	void loadLevel();
-	void changeLevelSize(unsigned int newWidth, unsigned int newHeight);
+	void resizeLevel(unsigned int newWidth, unsigned int newHeight);
 
 	sf::Vector3i determineTile(sf::Vector2i levelCoord, int tileset);
 	sf::Vector3i getTile(unsigned int x, unsigned int y);
@@ -216,8 +225,9 @@ struct Editor
 
 	void handleTextEntered(sf::Event event);
 	void clampSizeInputs();
-	void updateSizeInputs();
-	void drawSizeInputs();
+	void updateLevelInputs();
+	void drawLevelInputs();
+	void updateResizeOrigin();
 
 	void updateButtons();
 	void drawButtons();

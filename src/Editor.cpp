@@ -22,6 +22,18 @@ Input::Input(sf::Vector2f _position, sf::Vector2f _size, unsigned int _maxLength
 	numbersOnly = _numbersOnly;
 }
 
+void Input::setValue(int _value)
+{
+	value.str("");
+	value << _value;
+}
+
+void Input::setValue(std::string _value)
+{
+	value.str("");
+	value << _value;
+}
+
 int Input::getValue()
 {
 	return std::atoi(value.str().c_str());
@@ -61,16 +73,29 @@ Editor::Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewp
 	levelSize = {initialLevelWidth, initialLevelHeight};
 	clearLevel();
 
-	sizeInputs = {
+	levelInputs = {
 		new Input({viewWidth * 0.5 - 48, viewHeight - 24}, {96, 12}, 15),
-		new Input({16, viewHeight - 32}, {24 ,12}, 3, true),
-		new Input({16, viewHeight - 16}, {24 ,12}, 3, true)
+		new Input({16, viewHeight - 32}, {24, 12}, 3, true),
+		new Input({16, viewHeight - 16}, {24, 12}, 3, true)
 	};
-	levelNameInput   = sizeInputs.at(0);
-	levelWidthInput  = sizeInputs.at(1);
-	levelHeightInput = sizeInputs.at(2);
+	levelNameInput   = levelInputs.at(0);
+	levelWidthInput  = levelInputs.at(1);
+	levelHeightInput = levelInputs.at(2);
 	levelWidthInput ->value << levelSize.x;
 	levelHeightInput->value << levelSize.y;
+
+	// creating resize rects
+	for (unsigned int y = 0; y < 3; y++)
+	{
+		for (unsigned int x = 0; x < 3; x++)
+		{
+			sf::RectangleShape rect;
+			rect.setOutlineThickness(-1);
+			rect.setSize({8, 8});
+			rect.setPosition({(float)44 + x * 8, (float)viewHeight - 30 + y * 8});
+			resizeRects.push_back(rect);
+		}
+	}
 
 	buttons = {
 		Button("Play", {35, 20}, End, End, {viewWidth - 5, viewHeight - 55}),
@@ -166,6 +191,8 @@ void Editor::processKeyboardInput()
 	handlePress(pressing(sf::Keyboard::R), resetViewPress, resetViewPressed);
 	// clear
 	handlePress(*pressingControl && *pressingShift && pressing(sf::Keyboard::R), clearLevelPress, clearLevelPressed);
+	// play
+	handlePress(*pressingControl && pressing(sf::Keyboard::Space), playLevelPress, playLevelPressed);
 	// save
 	handlePress(*pressingControl && pressing(sf::Keyboard::S), saveLevelPress, saveLevelPressed);
 	// load
@@ -203,7 +230,11 @@ void Editor::handleKeyboardInput()
 		}
 	}
 
-	if (saveLevelPress)
+	if (playLevelPress)
+	{
+		playLevel();
+	}
+	else if (saveLevelPress)
 	{
 		saveLevel();
 	}
@@ -368,10 +399,8 @@ void Editor::loadLevel()
 		levelSize.x = levelVector.size();
 		levelSize.y = levelVector.at(0).size();
 
-		levelWidthInput ->value.str("");
-		levelHeightInput->value.str("");
-		levelWidthInput ->value << levelSize.x;
-		levelHeightInput->value << levelSize.y;
+		levelWidthInput ->setValue(levelSize.x);
+		levelHeightInput->setValue(levelSize.y);
 
 		for (unsigned int x = 0; x < levelSize.x; x++)
 		{
@@ -394,7 +423,7 @@ void Editor::loadLevel()
 	updateLevelRect();
 }
 
-void Editor::changeLevelSize(unsigned int newWidth, unsigned int newHeight)
+void Editor::resizeLevel(unsigned int newWidth, unsigned int newHeight) // todo: improve with ability to choose origin
 {
 	unsigned int oldWidth  = levelSize.x;
 	unsigned int oldHeight = levelSize.y;
@@ -598,7 +627,7 @@ void Editor::adjustAdjacentTiles(unsigned int x, unsigned int y)
 	adjustTile(x + 1, y + 1);
 }
 
-void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned int x, unsigned int y, int oldTileset      , int newTileset)
+void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned int x, unsigned int y, int oldTileset, int newTileset)
 {
 	if (invalidTile(x, y) || localLevel.at(x).at(y).x != oldTileset) { return; }
 
@@ -632,7 +661,7 @@ void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned i
 	fill(localLevel, x + 1, y, oldTile, newTileset);
 }
 
-void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned int x, unsigned int y, int oldTileset      , sf::Vector3i newTile)
+void Editor::fill(std::vector<std::vector<sf::Vector3i>> &localLevel, unsigned int x, unsigned int y, int oldTileset, sf::Vector3i newTile)
 {
 	if (invalidTile(x, y) || localLevel.at(x).at(y).x != oldTileset) { return; }
 
@@ -755,6 +784,9 @@ void Editor::drawLevelCheckers()
 	{
 		for (unsigned int y = 0; y < levelSize.y; y++)
 		{
+			// only allowing tiles seen in view to be drawn
+			if (!viewport->intersects(sf::FloatRect(relativeLevelPosition(x * tilesize, y * tilesize), {tilesize * zoom, tilesize * zoom}))) { continue; }
+
 			if ((x + y) % 2 == 0)
 			{
 				levelChecker.setFillColor(levelCheckerEvenColor);
@@ -775,6 +807,9 @@ void Editor::drawLevelTiles()
 	{
 		for (unsigned int y = 0; y < levelSize.y; y++)
 		{
+			// only allowing tiles seen in view to be drawn
+			if (!viewport->intersects(sf::FloatRect(relativeLevelPosition(x * tilesize, y * tilesize), {tilesize * zoom, tilesize * zoom}))) { continue; }
+
 			sf::Vector3i tile = getTile(x, y);
 			int tileset = tile.x;
 			if (tileset != 0)
@@ -876,7 +911,7 @@ void Editor::drawLevel()
 	drawLevelCheckers();
 	drawLevelTiles();
 	drawLevelRestrictedAreas();
-	if (mouseOnLevel && !(inputHovering || buttonHovering))
+	if (!(*paused || *transitioning) && mouseOnLevel && !(inputHovering || resizeHovering || buttonHovering))
 	{
 		drawLevelGhostTiles();
 	}
@@ -974,11 +1009,11 @@ void Editor::clampSizeInputs()
 	levelHeightInput->value.seekp(levelHeightInput->value.str().length());
 }
 
-void Editor::updateSizeInputs()
+void Editor::updateLevelInputs()
 {
 	inputHovering = false;
 
-	for (Input* input : sizeInputs)
+	for (Input* input : levelInputs)
 	{
 		input->shape.setPosition(relativeViewPosition(view, input->position));
 		input->bounds = input->shape.getGlobalBounds();
@@ -1011,18 +1046,67 @@ void Editor::updateSizeInputs()
 	}
 }
 
-void Editor::drawSizeInputs()
+void Editor::drawLevelInputs()
 {
-	for (Input* input : sizeInputs)
+	for (Input* input : levelInputs)
 	{
 		window->draw(input->shape);
 		text->draw(input->value.str(), Start, Center, {input->bounds.left + 3.5f, input->bounds.top + input->bounds.height / 2}, input->textColor);
 	}
 
-	text->draw("Name of level", Center, Center, {levelNameInput->bounds.left + levelNameInput->bounds.width / 2, levelNameInput->bounds.top - 6});
-	text->draw("Size", Center, Center, {levelWidthInput->bounds.left + levelWidthInput->bounds.width / 2, levelWidthInput->bounds.top - 6});
-	text->draw("x", Center, Center, {levelWidthInput->bounds.left - 6, levelWidthInput->bounds.top + levelWidthInput->bounds.height / 2});
-	text->draw("y", Center, Center, {levelHeightInput->bounds.left - 6, levelHeightInput->bounds.top + levelHeightInput->bounds.height / 2});
+	text->draw("Name of level", Center, End, {levelNameInput->bounds.left + levelNameInput->bounds.width / 2, levelNameInput->bounds.top - 3});
+	text->draw("Size", Center, End, {levelWidthInput->bounds.left + levelWidthInput->bounds.width / 2, levelWidthInput->bounds.top - 3});
+	text->draw("x", End, Center, {levelWidthInput->bounds.left - 3, levelWidthInput->bounds.top + levelWidthInput->bounds.height / 2});
+	text->draw("y", End, Center, {levelHeightInput->bounds.left - 3, levelHeightInput->bounds.top + levelHeightInput->bounds.height / 2});
+}
+
+void Editor::updateResizeOrigin()
+{
+	resizeHovering = false;
+
+	for (unsigned int C = 0; C < resizeRects.size(); C++ /* :o */)
+	{
+		sf::RectangleShape &rect = resizeRects.at(C);
+
+		unsigned int selectedIndex = resizeOriginCoord.x + resizeOriginCoord.y * 3;
+
+		rect.setFillColor(inactiveMenuboxBackground);
+		rect.setOutlineColor(inactiveMenuboxForeground);
+
+		sf::FloatRect rectBounds(relativeViewPosition(view, rect.getPosition()), rect.getSize());
+
+		// hovering
+		if (rectBounds.contains(*mousePosition))
+		{
+			rect.setFillColor(activeMenuboxBackground);
+			rect.setOutlineColor(activeMenuboxForeground);
+			resizeHovering = true;
+			*handyCursor = true;
+			if (*leftClick)
+			{
+				switch ((int)std::floor(C / 3))
+				{
+					case 0: // 0-2
+						resizeOriginCoord = {C, 0};
+						break;
+
+					case 1: // 3-5
+						resizeOriginCoord = {C - 3, 1};
+						break;
+
+					case 2: // 6-8
+						resizeOriginCoord = {C - 6, 2};
+						break;
+				}
+			}
+		}
+		// selected
+		if (C == selectedIndex)
+		{
+			rect.setFillColor(activeMenuboxForeground);
+			rect.setOutlineColor(activeMenuboxBackground);
+		}
+	}
 }
 
 
@@ -1058,7 +1142,11 @@ void Editor::update()
 	processKeyboardInput();
 	processMouseInput();
 
-	updateSizeInputs();
+	updateLevelInputs();
+	if (inputSelected)
+	{
+		updateResizeOrigin();
+	}
 	updateButtons();
 
 	if (buttonHovering && *leftClick)
@@ -1078,14 +1166,20 @@ void Editor::update()
 		}
 	}
 
-	if (inputSelected && (pressing(sf::Keyboard::Enter) || (pressing(sf::Mouse::Left) && !inputHovering)))
+	if (inputSelected && (pressing(sf::Keyboard::Enter) || (pressing(sf::Mouse::Left) && !(inputHovering || resizeHovering))))
 	{
 		inputSelected = false;
 		clampSizeInputs();
-		changeLevelSize(levelWidthInput->getValue(), levelHeightInput->getValue());
+		resizeLevel(levelWidthInput->getValue(), levelHeightInput->getValue());
+	}
+	else if (inputSelected && pressing(sf::Mouse::Right))
+	{
+		inputSelected = false;
+		levelWidthInput ->setValue(levelSize.x);
+		levelHeightInput->setValue(levelSize.y);
 	}
 
-	if (!inputHovering && !buttonHovering)
+	if (!(inputHovering || resizeHovering || buttonHovering))
 	{
 		if (method == Fill && mouseOnLevel)
 		{
@@ -1124,6 +1218,6 @@ void Editor::draw()
 {
 	drawLevel();
 	drawSelectionTileset();
-	drawSizeInputs();
+	drawLevelInputs();
 	drawButtons();
 }

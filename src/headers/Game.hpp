@@ -141,4 +141,6 @@ struct Game
 
 	void update();
 	void draw();
+
+	void noMemoryLeaksForMeThankYouVeryMuch();
 };

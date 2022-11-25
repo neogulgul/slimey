@@ -1,1 +1,0 @@
-[] ability to choose origin of resize in editor

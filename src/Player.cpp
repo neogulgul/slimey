@@ -28,8 +28,8 @@ Player::Player(sf::Sprite* _sprite, sf::Sprite* _slimeyDeath, sf::Sprite* _offsc
 
 void Player::place(int x, int y)
 {
-	position.x = x * (int)tilesize + 1;
-	position.y = y * (int)tilesize + 4;
+	position.x = x * tilesize + 1;
+	position.y = y * tilesize + 4;
 	velocity.x = 0;
 	velocity.y = 0;
 }
@@ -96,12 +96,10 @@ void Player::handleInput()
 	if (left && !right && !down && velocity.x >= -maxMoveVelocity)
 	{
 		velocity.x -= acceleration;
-		if (velocity.x < -maxMoveVelocity) { velocity.x = -maxMoveVelocity; }
 	}
 	else if (right && !left && !down && velocity.x <= maxMoveVelocity)
 	{
 		velocity.x += acceleration;
-		if (velocity.x > maxMoveVelocity) { velocity.x = maxMoveVelocity; }
 	}
 	else if (onGround && !onIce)
 	{

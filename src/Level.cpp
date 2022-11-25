@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "headers/Level.hpp"
 
 Level::Level() {}
@@ -205,30 +207,26 @@ void Level::drawDebugMode()
 
 	std::stringstream stream;
 	stream << "alive:   " << boolString(player.alive);
-	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 60}));
-
-	stream.str("");
-	stream << "onGround:" << boolString(player.onGround);
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 50}));
 
 	stream.str("");
-	stream << "onIce:   " << boolString(player.onIce);
+	stream << "onGround:" << boolString(player.onGround);
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 40}));
 
 	stream.str("");
-	stream << "pos.x:   " << player.position.x;
+	stream << "onIce:   " << boolString(player.onIce);
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 30}));
 
 	stream.str("");
-	stream << "pos.y:   " << player.position.y;
+	stream << "coord:   (x:" << std::floor(player.position.x / tilesize) << ", y:" << std::floor(player.position.y / tilesize) << ")";
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 20}));
 
 	stream.str("");
-	stream << "vel.x:   " << player.velocity.x;
+	stream << "position:(x:" << player.position.x << ", y:" << player.position.y << ")";
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight - 10}));
 
 	stream.str("");
-	stream << "vel.y:   " << player.velocity.y;
+	stream << "velocity:(x:" << player.velocity.x << ", y:" << player.velocity.y << ")";
 	text->draw(stream.str(), Start, End, relativeViewPosition(view, {0, viewHeight     }));
 }
 

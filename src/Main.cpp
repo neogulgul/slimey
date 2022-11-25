@@ -49,5 +49,7 @@ int main()
 		window.display();
 	}
 
+	game.noMemoryLeaksForMeThankYouVeryMuch();
+
 	return 0;
 }

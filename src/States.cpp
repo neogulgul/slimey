@@ -273,8 +273,6 @@ void Game::updateLevelPlay()
 	level.update();
 }
 
-#include <iostream>
-
 void Game::updateLevelClear()
 {
 	for (Menubox* box : menu)
