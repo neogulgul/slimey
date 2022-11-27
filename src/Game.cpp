@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstring>
+#include <fstream>
 #include <set>
 
 #include "headers/Game.hpp"
@@ -138,6 +139,35 @@ void Game::limitCustomLevelsScroll()
 
 void Game::createStoryLevelboxes()
 {
+	bool needToCreateLevelsClearedFile = false;
+	int clearedLevels = 0;
+
+	if (fs::is_directory("savedata"))
+	{
+		if (fs::exists("savedata/levels_cleared.txt") && !fs::is_directory("savedata/levels_cleared.txt"))
+		{
+			// here
+			std::ifstream fileStream;
+			fileStream.open("savedata/levels_cleared.txt");
+			std::string line;
+			std::getline(fileStream, line);
+			clearedLevels = atoi(line.c_str());
+		}
+		else { needToCreateLevelsClearedFile = true; }
+	}
+	else
+	{
+		fs::create_directory("savedata");
+		needToCreateLevelsClearedFile = true;
+	}
+
+	if (needToCreateLevelsClearedFile)
+	{
+		std::ofstream levelsCleared("savedata/levels_cleared.txt");
+		levelsCleared << 0;
+		levelsCleared.close();
+	}
+
 	unsigned int currentColumn = 0;
 	unsigned int currentRow    = 0;
 
@@ -165,7 +195,11 @@ void Game::createStoryLevelboxes()
 
 		position.y = viewHeight * 0.25 + 48 + levelboxSpacing * currentRow;
 
-		menu.push_back(new Levelbox(&level, i, position));
+		bool locked = true;
+
+		if (i <= clearedLevels + 1) { locked = false; }
+
+		menu.push_back(new Levelbox(&level, i, position, locked));
 
 		currentColumn++;
 
@@ -186,11 +220,11 @@ void Game::createCustomLevelboxes()
 {
 	lastCustomLevelVerticalPosition = 0;
 	customLevelsCount = 0;
-	if (!fs::is_directory("custom_levels")) { return; }
+	if (!fs::is_directory("savedata/custom_levels")) { return; }
 
 	std::set<fs::path> levels_sorted_by_name;
 
-	for (fs::directory_entry entry : fs::directory_iterator("custom_levels"))
+	for (fs::directory_entry entry : fs::directory_iterator("savedata/custom_levels"))
 	{
 		levels_sorted_by_name.insert(entry.path());
 	}
@@ -204,6 +238,11 @@ void Game::createCustomLevelboxes()
 		// if the file is not a .txt we skip it
 		if (!strstr(levelName.c_str(), ".txt")) { continue; }
 
+		replaceSubstringInString(levelName, "savedata/custom_levels");
+		replaceSubstringInString(levelName, ".txt");
+		replaceSubstringInString(levelName, "\""); // we do this two times, since there
+		replaceSubstringInString(levelName, "\""); // is one quotation mark on each side
+
 		// this removes a two \ from the name, which appears on windows
 		if (strstr(levelName.c_str(), "\\"))
 		{
@@ -215,10 +254,6 @@ void Game::createCustomLevelboxes()
 		{
 			replaceSubstringInString(levelName, "/");
 		}
-		replaceSubstringInString(levelName, "custom_levels");
-		replaceSubstringInString(levelName, ".txt");
-		replaceSubstringInString(levelName, "\""); // we do this two times, since there
-		replaceSubstringInString(levelName, "\""); // is one quotation mark on each side
 
 		float verticalPosition = viewHeight * 0.25 + 48 + levelboxSpacing * customLevelsCount;
 
@@ -321,7 +356,7 @@ void Game::updateMenu()
 	for (Menubox* box : menu)
 	{
 		box->update(mousePosition);
-		if (box->active)
+		if (box->active && !box->locked)
 		{
 			handyCursor = true;
 			if (leftClick)

@@ -16,6 +16,8 @@ struct Button
 	bool relativeToView;
 	bool active = false;
 
+	bool locked = false;
+
 	Button();
 	Button(std::string _string, sf::Vector2f size, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f _position, bool _relativeToView = true);
 	Button(sf::Sprite* _sprite, Alignment horizontalAlignment, Alignment verticalAlignment, sf::Vector2f position, bool _relativeToView = true);

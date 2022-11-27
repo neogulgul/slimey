@@ -6,10 +6,11 @@
 #define horizontalAlignment Center
 #define   verticalAlignment Center
 
-Levelbox::Levelbox(Level* _level, unsigned int index, sf::Vector2f position)
+Levelbox::Levelbox(Level* _level, unsigned int index, sf::Vector2f position, bool _locked)
 : Menubox(destination, std::to_string(index), storySize, horizontalAlignment, verticalAlignment, position)
 {
 	level = _level;
+	locked = _locked;
 }
 
 Levelbox::Levelbox(Level* _level, std::string string, sf::Vector2f position)

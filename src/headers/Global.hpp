@@ -54,13 +54,15 @@ enum State
 	LevelClear
 };
 
-extern sf::Color                background;
-extern sf::Color                foreground;
-extern sf::Color inactiveMenuboxBackground;
-extern sf::Color   activeMenuboxBackground;
-extern sf::Color inactiveMenuboxForeground;
-extern sf::Color   activeMenuboxForeground;
-extern sf::Color                pauseColor;
+extern sf::Color               background;
+extern sf::Color               foreground;
+extern sf::Color inactiveButtonBackground;
+extern sf::Color   activeButtonBackground;
+extern sf::Color   lockedButtonBackground;
+extern sf::Color inactiveButtonForeground;
+extern sf::Color   activeButtonForeground;
+extern sf::Color   lockedButtonForeground;
+extern sf::Color               pauseColor;
 // level
 extern sf::Color collisionColor;
 // editor
@@ -69,8 +71,8 @@ extern sf::Color levelCheckerEvenColor;
 extern sf::Color  levelCheckerOddColor;
 extern sf::Color   levelCrosshairColor;
 extern sf::Color  levelRestrictedColor;
-extern sf::Color          placeColor;
-extern sf::Color          eraseColor;
+extern sf::Color            placeColor;
+extern sf::Color            eraseColor;
 extern sf::Color       selectionTilesetBackgroundColor;
 extern sf::Color          selectionTilesetOutlineColor;
 extern sf::Color selectionTilesetSelectionOutlineColor;

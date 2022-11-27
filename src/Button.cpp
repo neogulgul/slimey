@@ -85,26 +85,41 @@ void Button::draw(sf::RenderWindow* window, sf::View* view, Text* text)
 		shapeCenter.x = bounds.left + bounds.width  / 2;
 		shapeCenter.y = bounds.top  + bounds.height / 2;
 
-		if (active)
+		if (locked)
 		{
-			shape .setFillColor(activeMenuboxBackground);
-			border.setFillColor(activeMenuboxForeground);
+			shape .setFillColor(lockedButtonBackground);
+			border.setFillColor(lockedButtonForeground);
 		}
 		else
 		{
-			shape .setFillColor(inactiveMenuboxBackground);
-			border.setFillColor(inactiveMenuboxForeground);
+			if (active)
+			{
+				shape .setFillColor(activeButtonBackground);
+				border.setFillColor(activeButtonForeground);
+			}
+			else
+			{
+				shape .setFillColor(inactiveButtonBackground);
+				border.setFillColor(inactiveButtonForeground);
+			}
 		}
 
 		window->draw(shape);
 
-		if (active)
+		if (locked)
 		{
-			text->draw(string, Center, Center, shapeCenter, activeMenuboxForeground, {activeScale, activeScale});
+			text->draw(string, Center, Center, shapeCenter, lockedButtonForeground);
 		}
 		else
 		{
-			text->draw(string, Center, Center, shapeCenter, inactiveMenuboxForeground);
+			if (active)
+			{
+				text->draw(string, Center, Center, shapeCenter, activeButtonForeground, {activeScale, activeScale});
+			}
+			else
+			{
+				text->draw(string, Center, Center, shapeCenter, inactiveButtonForeground);
+			}
 		}
 
 		// drawing border sides

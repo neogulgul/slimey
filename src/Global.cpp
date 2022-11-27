@@ -3,13 +3,15 @@
 #include "headers/Global.hpp"
 #include "headers/StoryLevels.hpp"
 
-sf::Color                background( 66,  76, 110);
-sf::Color                foreground(255, 255, 255);
-sf::Color inactiveMenuboxBackground(146, 161, 185);
-sf::Color   activeMenuboxBackground( 90, 197,  79);
-sf::Color inactiveMenuboxForeground(101, 115, 146);
-sf::Color   activeMenuboxForeground( 12,  46,  68);
-sf::Color                pauseColor(  0,   0,   0, 191);
+sf::Color               background( 66,  76, 110);
+sf::Color               foreground(255, 255, 255);
+sf::Color inactiveButtonBackground(146, 161, 185);
+sf::Color   activeButtonBackground( 90, 197,  79);
+sf::Color   lockedButtonBackground( 48,  48,  64);
+sf::Color inactiveButtonForeground(101, 115, 146);
+sf::Color   activeButtonForeground( 12,  46,  68);
+sf::Color   lockedButtonForeground( 32,  32,  48);
+sf::Color               pauseColor(  0,   0,   0, 191);
 // level
 sf::Color collisionColor(0x4f37b3ee);
 // editor
@@ -18,8 +20,8 @@ sf::Color      levelCheckerEvenColor(0x53a5d9ff);
 sf::Color       levelCheckerOddColor(0x73b6dfff);
 sf::Color        levelCrosshairColor(0x306bbdaa);
 sf::Color       levelRestrictedColor(255,  23,  68, 191);
-sf::Color               placeColor(  0, 255,   0,  63);
-sf::Color               eraseColor(255,   0,   0,  63);
+sf::Color                 placeColor(  0, 255,   0,  63);
+sf::Color                 eraseColor(255,   0,   0,  63);
 sf::Color       selectionTilesetBackgroundColor(0xd9c797ff);
 sf::Color          selectionTilesetOutlineColor(0xdaba87ff);
 sf::Color selectionTilesetSelectionOutlineColor(0x5ac54faa);
@@ -124,7 +126,7 @@ LevelVector getCustomLevelVector(std::string levelName)
 	LevelVector customLevel;
 
 	std::ifstream levelStream;
-	levelStream.open("custom_levels/" + levelName + ".txt");
+	levelStream.open("savedata/custom_levels/" + levelName + ".txt");
 	std::stringstream stream;
 	int currentRow = 0;
 	char character;

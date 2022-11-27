@@ -37,8 +37,8 @@ VolumeBar::VolumeBar(sf::Vector2f position, float* _volume, bool* _hoveringVolum
 	shape.setSize(shapeSize);
 	shape.setOrigin(shapeSize.x / 2, shapeSize.y / 2);
 	shape.setPosition(position);
-	shape.setFillColor(inactiveMenuboxBackground);
-	shape.setOutlineColor(inactiveMenuboxForeground);
+	shape.setFillColor(inactiveButtonBackground);
+	shape.setOutlineColor(inactiveButtonForeground);
 	shape.setOutlineThickness(-2);
 
 	bounds = shape.getGlobalBounds();
@@ -51,14 +51,14 @@ VolumeBar::VolumeBar(sf::Vector2f position, float* _volume, bool* _hoveringVolum
 	sf::Vector2f separatorSize(2, 6);
 	volumeSeparator.setSize(separatorSize);
 	volumeSeparator.setOrigin(separatorSize.x / 2, separatorSize.y / 2);
-	volumeSeparator.setFillColor(inactiveMenuboxForeground);
+	volumeSeparator.setFillColor(inactiveButtonForeground);
 
 	// slider
 	sf::Vector2f sliderSize(4, 8);
 	volumeSlider.setSize(sliderSize);
 	volumeSlider.setOrigin(sliderSize.x / 2, sliderSize.y / 2);
-	volumeSlider.setFillColor(activeMenuboxBackground);
-	volumeSlider.setOutlineColor(activeMenuboxForeground);
+	volumeSlider.setFillColor(activeButtonBackground);
+	volumeSlider.setOutlineColor(activeButtonForeground);
 	volumeSlider.setOutlineThickness(-1);
 
 	updateVolumeSlider();

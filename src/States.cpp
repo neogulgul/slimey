@@ -238,7 +238,7 @@ void Game::updateCustomLevels()
 	}
 	if (remove)
 	{
-		fs::remove("custom_levels/" + customLevelboxes.at(index).customLevelName + ".txt");
+		fs::remove("savedata/custom_levels/" + customLevelboxes.at(index).customLevelName + ".txt");
 
 		customLevelsCount--;
 		customLevelboxes.erase(customLevelboxes.begin() + index);
@@ -402,7 +402,7 @@ void Game::drawCustomLevels()
 	text.draw("Custom Levels", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
 	if (customLevelsCount == 0)
 	{
-		text.draw("No custom levels...", Center, Center, {viewWidth * 0.5, viewHeight * 0.5});
+		text.draw("No custom levels.", Center, Center, {viewWidth * 0.5, viewHeight * 0.5});
 	}
 	else
 	{

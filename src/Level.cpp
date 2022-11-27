@@ -1,4 +1,5 @@
 #include <cmath>
+#include <fstream>
 
 #include "headers/Level.hpp"
 
@@ -307,6 +308,44 @@ void Level::update()
 
 	if (cleared && !transition->transitioning)
 	{
+		if (destination == LevelClear)
+		{
+			bool needToCreateLevelsClearedFile = false;
+			if (fs::is_directory("savedata"))
+			{
+				if (!(fs::exists("savedata/levels_cleared.txt") && !fs::is_directory("savedata/levels_cleared.txt")))
+				{
+					needToCreateLevelsClearedFile = true;
+				}
+			}
+			else
+			{
+				fs::create_directory("savedata");
+				needToCreateLevelsClearedFile = true;
+			}
+
+			if (needToCreateLevelsClearedFile)
+			{
+				std::ofstream levelsCleared("savedata/levels_cleared.txt");
+				levelsCleared.close();
+			}
+
+			int clearedLevels = 0;
+			std::ifstream readStream;
+			readStream.open("savedata/levels_cleared.txt");
+			std::string line;
+			std::getline(readStream, line);
+			readStream.close();
+			clearedLevels = atoi(line.c_str());
+
+			if (index == clearedLevels)
+			{
+				std::ofstream writeStream;
+				writeStream.open("savedata/levels_cleared.txt");
+				writeStream << index + 1;
+				writeStream.close();
+			}
+		}
 		transition->to(destination);
 	}
 

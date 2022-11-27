@@ -380,19 +380,24 @@ void Editor::saveLevel()
 	}
 	levelStream << "};";
 
-	if (!fs::exists("custom_levels"))
+	if (!(fs::exists("savedata") && fs::is_directory("savedata")))
 	{
-		fs::create_directory("custom_levels");
+		fs::create_directory("savedata");
 	}
 
-	std::ofstream output("custom_levels/" + levelNameInput->getString() + ".txt");
+	if (!(fs::exists("savedata/custom_levels") && fs::is_directory("savedata/custom_levels")))
+	{
+		fs::create_directory("savedata/custom_levels");
+	}
+
+	std::ofstream output("savedata/custom_levels/" + levelNameInput->getString() + ".txt");
 	output << levelStream.str();
 	output.close();
 }
 
 void Editor::loadLevel()
 {
-	if (fs::exists("custom_levels/" + levelNameInput->getString() + ".txt"))
+	if (fs::exists("savedata/custom_levels/" + levelNameInput->getString() + ".txt"))
 	{
 		levelVector = getCustomLevelVector(levelNameInput->getString());
 
@@ -1018,17 +1023,17 @@ void Editor::updateLevelInputs()
 		input->shape.setPosition(relativeViewPosition(view, input->position));
 		input->bounds = input->shape.getGlobalBounds();
 
-		input->shape.setFillColor(inactiveMenuboxBackground);
-		input->shape.setOutlineColor(inactiveMenuboxForeground);
-		input->textColor = inactiveMenuboxForeground;
+		input->shape.setFillColor(inactiveButtonBackground);
+		input->shape.setOutlineColor(inactiveButtonForeground);
+		input->textColor = inactiveButtonForeground;
 
 		if (input->bounds.contains(*mousePosition))
 		{
 			inputHovering = true;
 
-			input->shape.setFillColor(activeMenuboxBackground);
-			input->shape.setOutlineColor(activeMenuboxForeground);
-			input->textColor = activeMenuboxForeground;
+			input->shape.setFillColor(activeButtonBackground);
+			input->shape.setOutlineColor(activeButtonForeground);
+			input->textColor = activeButtonForeground;
 
 			if (pressing(sf::Mouse::Left))
 			{
@@ -1039,9 +1044,9 @@ void Editor::updateLevelInputs()
 
 		if (inputSelected && selectedInput == input)
 		{
-			input->shape.setFillColor(activeMenuboxForeground);
-			input->shape.setOutlineColor(activeMenuboxBackground);
-			input->textColor = activeMenuboxBackground;
+			input->shape.setFillColor(activeButtonForeground);
+			input->shape.setOutlineColor(activeButtonBackground);
+			input->textColor = activeButtonBackground;
 		}
 	}
 }
@@ -1070,16 +1075,16 @@ void Editor::updateResizeOrigin()
 
 		unsigned int selectedIndex = resizeOriginCoord.x + resizeOriginCoord.y * 3;
 
-		rect.setFillColor(inactiveMenuboxBackground);
-		rect.setOutlineColor(inactiveMenuboxForeground);
+		rect.setFillColor(inactiveButtonBackground);
+		rect.setOutlineColor(inactiveButtonForeground);
 
 		sf::FloatRect rectBounds(relativeViewPosition(view, rect.getPosition()), rect.getSize());
 
 		// hovering
 		if (rectBounds.contains(*mousePosition))
 		{
-			rect.setFillColor(activeMenuboxBackground);
-			rect.setOutlineColor(activeMenuboxForeground);
+			rect.setFillColor(activeButtonBackground);
+			rect.setOutlineColor(activeButtonForeground);
 			resizeHovering = true;
 			*handyCursor = true;
 			if (*leftClick)
@@ -1103,8 +1108,8 @@ void Editor::updateResizeOrigin()
 		// selected
 		if (C == selectedIndex)
 		{
-			rect.setFillColor(activeMenuboxForeground);
-			rect.setOutlineColor(activeMenuboxBackground);
+			rect.setFillColor(activeButtonForeground);
+			rect.setOutlineColor(activeButtonBackground);
 		}
 	}
 }
