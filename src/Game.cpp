@@ -152,6 +152,10 @@ void Game::createStoryLevelboxes()
 			std::string line;
 			std::getline(fileStream, line);
 			clearedLevels = atoi(line.c_str());
+			if (clearedLevels < 0)
+			{
+				clearedLevels = 0;
+			}
 		}
 		else { needToCreateLevelsClearedFile = true; }
 	}

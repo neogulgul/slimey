@@ -275,13 +275,14 @@ void Game::updateLevelPlay()
 
 void Game::updateLevelClear()
 {
+	bool lastLevel = (level.index + 1 == storyLevels.size());
 	for (Menubox* box : menu)
 	{
 		if (box->active && leftClick)
 		{
 			if (box->string == "Continue")
 			{
-				if (level.index + 1 == storyLevels.size())
+				if (lastLevel)
 				{
 					transition.to(StoryLevels);
 				}
@@ -425,7 +426,7 @@ void Game::drawLevelPlay()
 
 void Game::drawLevelClear()
 {
-	text.draw("Continue to\nnext level?", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
+	text.draw("Continue?", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
 }
 
 void Game::drawState()

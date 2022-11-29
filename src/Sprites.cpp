@@ -48,6 +48,8 @@ Sprites::Sprites()
 		&tilesetBounce,
 		&tilesetOther
 	};
+
+	amountOfTilesets = tilesets.size();
 }
 
 void Sprites::resetScale()

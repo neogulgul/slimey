@@ -13,6 +13,7 @@
 #define turretDown   sf::Vector3i(4, 1, 2)
 #define turretLeft   sf::Vector3i(4, 1, 3)
 #define turretRight  sf::Vector3i(4, 1, 4)
+#define transparentSpawnTile sf::Vector3i(5, 0, 3)
 
 namespace fs = std::filesystem;
 

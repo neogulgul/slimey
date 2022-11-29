@@ -65,6 +65,11 @@ void Level::loadLevel(LevelVector _level, State _destination)
 				spawn.x = x;
 				spawn.y = y - 1;
 			}
+			else if (tile == transparentSpawnTile)
+			{
+				spawn.x = x;
+				spawn.y = y;
+			}
 			else if (tile == exitTile)
 			{
 				exit.x = x;
@@ -116,6 +121,8 @@ void Level::drawLevel()
 				crop.width  = tilesize;
 				crop.height = tilesize;
 
+				bool transparent = false;
+
 				if (tile == sawbladeTile)
 				{
 					sprite = &sprites->sawblade;
@@ -124,13 +131,26 @@ void Level::drawLevel()
 				}
 				else
 				{
+					if (tile == transparentSpawnTile)
+					{
+						transparent = true;
+						tileset = 4;
+					}
 					sprite = sprites->tilesets.at(tileset - 1);
 					crop.left = tile.y * tilesize;
 					crop.top  = tile.z * tilesize;
 				}
 				sprite->setPosition(x * tilesize, y * tilesize);
 				sprite->setTextureRect(crop);
+				if (transparent)
+				{
+					sprite->setColor(sf::Color(255, 255, 255, 63));
+				}
 				window->draw(*sprite);
+				if (transparent)
+				{
+					sprite->setColor(sf::Color(255, 255, 255));
+				}
 			}
 		}
 	}
@@ -337,6 +357,10 @@ void Level::update()
 			std::getline(readStream, line);
 			readStream.close();
 			clearedLevels = atoi(line.c_str());
+			if (clearedLevels < 0)
+			{
+				clearedLevels = 0;
+			}
 
 			if (index == clearedLevels)
 			{

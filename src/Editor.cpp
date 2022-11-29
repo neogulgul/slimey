@@ -84,27 +84,16 @@ Editor::Editor(sf::RenderWindow* _window, sf::View* _view, sf::FloatRect* _viewp
 	levelWidthInput ->value << levelSize.x;
 	levelHeightInput->value << levelSize.y;
 
-	// creating resize rects
-	for (unsigned int y = 0; y < 3; y++)
-	{
-		for (unsigned int x = 0; x < 3; x++)
-		{
-			sf::RectangleShape rect;
-			rect.setOutlineThickness(-1);
-			rect.setSize({8, 8});
-			rect.setPosition({(float)44 + x * 8, (float)viewHeight - 30 + y * 8});
-			resizeRects.push_back(rect);
-		}
-	}
-
 	buttons = {
 		Button("Play", {35, 20}, End, End, {viewWidth - 5, viewHeight - 55}),
 		Button("Save", {35, 20}, End, End, {viewWidth - 5, viewHeight - 30}),
-		Button("Load", {35, 20}, End, End, {viewWidth - 5, viewHeight - 5})
+		Button("Load", {35, 20}, End, End, {viewWidth - 5, viewHeight -  5}),
+		Button("", {16, 16}, Center, Center, {viewWidth - 18, 84 + 18})
 	};
 	playButton = &buttons.at(0);
 	saveButton = &buttons.at(1);
 	loadButton = &buttons.at(2);
+	toggleTransparentSpawnButton = &buttons.at(3);
 
 	tileDimension = {tilesize, tilesize};
 
@@ -348,7 +337,16 @@ void Editor::clearLevel()
 
 void Editor::playLevel()
 {
-	level->loadLevel(levelVector, LevelEditor);
+	if (transparentSpawn)
+	{
+		LevelVector levelVectorCopy = levelVector;
+		levelVectorCopy[spawnPosition.x][spawnPosition.y] = transparentSpawnTile;
+		level->loadLevel(levelVectorCopy, LevelEditor);
+	}
+	else
+	{
+		level->loadLevel(levelVector, LevelEditor);
+	}
 	level->transition->to(LevelPlay);
 }
 
@@ -362,6 +360,10 @@ void Editor::saveLevel()
 		for (unsigned int y = 0; y < levelSize.y; y++)
 		{
 			sf::Vector3i tile = getTile(x, y);
+			if (tile == spawnTile && transparentSpawn) // to distinguish a non-transparent spawn from a transparent spawn
+			{
+				tile.x += 1;
+			}
 			levelStream << "{" << tile.x << "," << tile.y << "," << tile.z << "}";
 
 			if (y == levelSize.y - 1)
@@ -569,7 +571,8 @@ void Editor::eyedropper()
 
 void Editor::placeTile(unsigned int x, unsigned int y, sf::Vector3i newTile)
 {
-	if (x == spawnPosition.x && y == spawnPosition.y - 1 && getTile(spawnPosition.x, spawnPosition.y) == spawnTile
+	// removes any tile placed above spawn (when not transparent) or exit
+	if (x == spawnPosition.x && y == spawnPosition.y - 1 && getTile(spawnPosition.x, spawnPosition.y) == spawnTile && !transparentSpawn
 	    ||
 	    x ==  exitPosition.x && y ==  exitPosition.y - 1 && getTile( exitPosition.x,  exitPosition.y) ==  exitTile)
 	{
@@ -578,11 +581,12 @@ void Editor::placeTile(unsigned int x, unsigned int y, sf::Vector3i newTile)
 
 	if (newTile == spawnTile)
 	{
+		// removes previous spawn
 		if (getTile(spawnPosition.x, spawnPosition.y) == spawnTile)
 		{
 			placeTile(spawnPosition.x, spawnPosition.y, emptyTile);
 		}
-		if (y != 0) // removing any tile placed above the spawn
+		if (y != 0 && !transparentSpawn) // removing any tile placed above the spawn, but only if spawn isn't transparent
 		{
 			placeTile(x, y - 1, emptyTile);
 		}
@@ -836,10 +840,23 @@ void Editor::drawLevelTiles()
 					tilesetCrop.left = tile.y * tilesize;
 					tilesetCrop.top  = tile.z * tilesize;
 				}
+
+				// changing opacity if spawn is transparent
+				if (tile == spawnTile && transparentSpawn)
+				{
+					tilesetSprite->setColor(sf::Color(255, 255, 255, 63));
+				}
+
 				tilesetSprite->setPosition(relativeLevelPosition(x * tilesize, y * tilesize));
 				tilesetSprite->setTextureRect(tilesetCrop);
 				tilesetSprite->setScale(zoom, zoom);
 				window->draw(*tilesetSprite);
+
+				// resetting color
+				if (tile == spawnTile && transparentSpawn)
+				{
+					tilesetSprite->setColor(sf::Color(255, 255, 255));
+				}
 			}
 		}
 	}
@@ -847,16 +864,27 @@ void Editor::drawLevelTiles()
 
 void Editor::drawLevelRestrictedAreas()
 {
-	if (spawnPosition.y != 0 && getTile(spawnPosition.x, spawnPosition.y) == spawnTile)
+	// spawn
+	if (getTile(spawnPosition.x, spawnPosition.y) == spawnTile)
 	{
-		levelRestrictedArea.setPosition(relativeLevelPosition(spawnPosition.x * tilesize, (spawnPosition.y - 1) * tilesize));
-		levelRestrictedArea.setScale(zoom, zoom);
-		sprites->slimey.setPosition(relativeLevelPosition(spawnPosition.x * tilesize + 1, (spawnPosition.y - 1) * tilesize + 4));
-		sprites->slimey.setScale(zoom, zoom);
-		window->draw(levelRestrictedArea);
-		window->draw(sprites->slimey);
+		if (transparentSpawn)
+		{
+			sprites->slimey.setPosition(relativeLevelPosition(spawnPosition.x * tilesize + 1, (spawnPosition.y) * tilesize + 4));
+			sprites->slimey.setScale(zoom, zoom);
+			window->draw(sprites->slimey);
+		}
+		else if (spawnPosition.y != 0)
+		{
+			levelRestrictedArea.setPosition(relativeLevelPosition(spawnPosition.x * tilesize, (spawnPosition.y - 1) * tilesize));
+			levelRestrictedArea.setScale(zoom, zoom);
+			sprites->slimey.setPosition(relativeLevelPosition(spawnPosition.x * tilesize + 1, (spawnPosition.y - 1) * tilesize + 4));
+			sprites->slimey.setScale(zoom, zoom);
+			window->draw(levelRestrictedArea);
+			window->draw(sprites->slimey);
+		}
 	}
-	if (exitPosition.y != 0 && getTile(exitPosition.x, exitPosition.y) == exitTile)
+	// exit
+	if (getTile(exitPosition.x, exitPosition.y) == exitTile && exitPosition.y != 0)
 	{
 		sf::Vector2f position = relativeLevelPosition(exitPosition.x * tilesize, (exitPosition.y - 1) * tilesize);
 		levelRestrictedArea.setPosition(position);
@@ -916,7 +944,7 @@ void Editor::drawLevel()
 	drawLevelCheckers();
 	drawLevelTiles();
 	drawLevelRestrictedAreas();
-	if (!(*paused || *transitioning) && mouseOnLevel && !(inputHovering || resizeHovering || buttonHovering))
+	if (!(*paused || *transitioning) && mouseOnLevel && !(inputHovering || buttonHovering))
 	{
 		drawLevelGhostTiles();
 	}
@@ -1065,55 +1093,6 @@ void Editor::drawLevelInputs()
 	text->draw("y", End, Center, {levelHeightInput->bounds.left - 3, levelHeightInput->bounds.top + levelHeightInput->bounds.height / 2});
 }
 
-void Editor::updateResizeOrigin()
-{
-	resizeHovering = false;
-
-	for (unsigned int C = 0; C < resizeRects.size(); C++ /* :o */)
-	{
-		sf::RectangleShape &rect = resizeRects.at(C);
-
-		unsigned int selectedIndex = resizeOriginCoord.x + resizeOriginCoord.y * 3;
-
-		rect.setFillColor(inactiveButtonBackground);
-		rect.setOutlineColor(inactiveButtonForeground);
-
-		sf::FloatRect rectBounds(relativeViewPosition(view, rect.getPosition()), rect.getSize());
-
-		// hovering
-		if (rectBounds.contains(*mousePosition))
-		{
-			rect.setFillColor(activeButtonBackground);
-			rect.setOutlineColor(activeButtonForeground);
-			resizeHovering = true;
-			*handyCursor = true;
-			if (*leftClick)
-			{
-				switch ((int)std::floor(C / 3))
-				{
-					case 0: // 0-2
-						resizeOriginCoord = {C, 0};
-						break;
-
-					case 1: // 3-5
-						resizeOriginCoord = {C - 3, 1};
-						break;
-
-					case 2: // 6-8
-						resizeOriginCoord = {C - 6, 2};
-						break;
-				}
-			}
-		}
-		// selected
-		if (C == selectedIndex)
-		{
-			rect.setFillColor(activeButtonForeground);
-			rect.setOutlineColor(activeButtonBackground);
-		}
-	}
-}
-
 
 
 void Editor::updateButtons()
@@ -1134,7 +1113,26 @@ void Editor::drawButtons()
 {
 	for (Button &button : buttons)
 	{
-		button.draw(window, view, text);
+		if (&button == toggleTransparentSpawnButton)
+		{
+			if (selectionCoord.x == 0 && selectionCoord.y == 3)
+			{
+				if (transparentSpawn)
+				{
+					button.string = "x";
+				}
+				else
+				{
+					button.string = " ";
+				}
+				text->draw("Transparent", Center, Center, relativeViewPosition(view, {viewWidth - 18, 84 + 18 * 2}), {0.5, 0.5});
+				button.draw(window, view, text);
+			}
+		}
+		else
+		{
+			button.draw(window, view, text);
+		}
 	}
 }
 
@@ -1148,10 +1146,6 @@ void Editor::update()
 	processMouseInput();
 
 	updateLevelInputs();
-	if (inputSelected)
-	{
-		updateResizeOrigin();
-	}
 	updateButtons();
 
 	if (buttonHovering && *leftClick)
@@ -1169,9 +1163,18 @@ void Editor::update()
 		{
 			loadLevel();
 		}
+		else if (activeButton == toggleTransparentSpawnButton)
+		{
+			// removes any tile placed above spawn when changing spawn to be non-transparent
+			if (transparentSpawn && spawnPosition.y != 0)
+			{
+				placeTile(spawnPosition.x, spawnPosition.y - 1, emptyTile);
+			}
+			toggle(transparentSpawn);
+		}
 	}
 
-	if (inputSelected && (pressing(sf::Keyboard::Enter) || (pressing(sf::Mouse::Left) && !(inputHovering || resizeHovering))))
+	if (inputSelected && (pressing(sf::Keyboard::Enter) || (pressing(sf::Mouse::Left) && !inputHovering)))
 	{
 		inputSelected = false;
 		clampSizeInputs();
@@ -1184,7 +1187,7 @@ void Editor::update()
 		levelHeightInput->setValue(levelSize.y);
 	}
 
-	if (!(inputHovering || resizeHovering || buttonHovering))
+	if (!(inputHovering || buttonHovering))
 	{
 		if (method == Fill && mouseOnLevel)
 		{

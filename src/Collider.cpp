@@ -38,6 +38,10 @@ sf::FloatRect Collider::getTileHitbox(sf::Vector3i tile, sf::Vector2i tileCoord)
 	{
 		return sf::FloatRect(tileCoord.x * tilesize + 1, tileCoord.y * tilesize + 1, tilesize - 2, tilesize - 2);
 	}
+	else if (tile == transparentSpawnTile)
+	{
+		return sf::FloatRect(0, 0, 0, 0);
+	}
 
 	return sf::FloatRect(tileCoord.x * tilesize, tileCoord.y * tilesize, tilesize, tilesize);
 }

@@ -13,7 +13,7 @@ struct Player : Collider
 	int width  = 14;
 	int height = 12;
 
-	float maxMoveVelocity  = 2.0;
+	float maxMoveVelocity  =  2.0;
 	float terminalVelocity = 10.0;
 	float acceleration = 0.2;
 	float deceleration = 0.3;

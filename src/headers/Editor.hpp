@@ -85,10 +85,8 @@ struct Editor
 	bool inputHovering = false;
 	bool inputSelected = false;
 
-	sf::Vector2u resizeOriginCoord;
-	std::vector<sf::RectangleShape> resizeRects;
-	bool resizeHovering = false;
-
+	bool transparentSpawn = false;
+	Button* toggleTransparentSpawnButton;
 	Button* playButton;
 	Button* saveButton;
 	Button* loadButton;
@@ -227,7 +225,6 @@ struct Editor
 	void clampSizeInputs();
 	void updateLevelInputs();
 	void drawLevelInputs();
-	void updateResizeOrigin();
 
 	void updateButtons();
 	void drawButtons();
