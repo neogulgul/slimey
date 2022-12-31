@@ -65,17 +65,17 @@ int main()
 		delete levelVector;
 	}
 
-	for (Menubox* menubox : menu)
+	for (Menubox* menubox : game.menu)
 	{
 		delete menubox;
 	}
 
-	for (Input* input : editor.levelInputs)
+	for (Input* input : game.editor.levelInputs)
 	{
 		delete input;
 	}
 
-	for (sf::Sprite* sprite : sprites.tilesets)
+	for (sf::Sprite* sprite : game.sprites.tilesets)
 	{
 		delete sprite;
 	}
