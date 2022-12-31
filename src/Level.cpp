@@ -330,24 +330,9 @@ void Level::update()
 	{
 		if (destination == LevelClear)
 		{
-			bool needToCreateLevelsClearedFile = false;
-			if (fs::is_directory("savedata"))
+			if (!fs::is_regular_file("savedata/levels_cleared.txt"))
 			{
-				if (!(fs::exists("savedata/levels_cleared.txt") && !fs::is_directory("savedata/levels_cleared.txt")))
-				{
-					needToCreateLevelsClearedFile = true;
-				}
-			}
-			else
-			{
-				fs::create_directory("savedata");
-				needToCreateLevelsClearedFile = true;
-			}
-
-			if (needToCreateLevelsClearedFile)
-			{
-				std::ofstream levelsCleared("savedata/levels_cleared.txt");
-				levelsCleared.close();
+				createSavedataFile("levels_cleared.txt");
 			}
 
 			int clearedLevels = 0;
@@ -362,10 +347,9 @@ void Level::update()
 				clearedLevels = 0;
 			}
 
-			if (index == clearedLevels)
+			if (index >= clearedLevels)
 			{
-				std::ofstream writeStream;
-				writeStream.open("savedata/levels_cleared.txt");
+				std::ofstream writeStream("savedata/levels_cleared.txt");
 				writeStream << index + 1;
 				writeStream.close();
 			}

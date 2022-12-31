@@ -36,10 +36,10 @@ struct VolumeBar
 
 struct Options
 {
-	static const bool default_music = false; // true
-	static const bool default_SFX   =  true;
-	static const bool default_FPS   = false;
-	static const bool default_debug = false;
+	const bool default_music =  true;
+	const bool default_SFX   =  true;
+	const bool default_FPS   = false;
+	const bool default_debug = false;
 
 	float default_volumeMusic = 0.5;
 	float default_volumeSFX   = 0.5;
@@ -61,5 +61,6 @@ struct Options
 
 	Options();
 
+	void reloadGUI();
 	void reset();
 };

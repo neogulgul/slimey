@@ -22,6 +22,7 @@ Sprites::Sprites()
 	bulletExplosionTexture.loadFromFile("assets/textures/bullet-explosion.png");
 	bookTexture           .loadFromFile("assets/textures/book.png");
 	xMarkTexture          .loadFromFile("assets/textures/x-mark.png");
+	creditsTexture        .loadFromFile("assets/textures/credits.png");
 
 	// sprites
 	slimey         .setTexture(slimeyTexture);
@@ -41,6 +42,7 @@ Sprites::Sprites()
 	bulletExplosion.setTexture(bulletExplosionTexture);
 	book           .setTexture(bookTexture);
 	xMark          .setTexture(xMarkTexture);
+	credits        .setTexture(creditsTexture);
 
 	tilesets = {
 		&tilesetNormal,

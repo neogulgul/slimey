@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <fstream>
@@ -10,6 +11,11 @@
 #define customLevelsScrollDelta 30
 
 #define backMenubox MainMenu, "Back", {60, 20}, Start, Start, {10, 10}
+
+void replaceSubstringInString(std::string &string, std::string substring)
+{
+	string.replace(string.find(substring), substring.size(), "");
+}
 
 Game::Game(sf::RenderWindow* _window, sf::View* _view)
 {
@@ -37,7 +43,8 @@ Game::Game(sf::RenderWindow* _window, sf::View* _view)
 	rng.seed(std::random_device{}());
 
 	// buttons
-	bookButton = Button(&sprites.book, End, End, {viewWidth - 5, viewHeight - 5});
+	bookButton    = Button(&sprites.book   , End  , End, {viewWidth - 5, viewHeight - 5});
+	creditsButton = Button(&sprites.credits, Start, End, {            5, viewHeight - 5});
 }
 
 
@@ -137,36 +144,97 @@ void Game::limitCustomLevelsScroll()
 
 
 
+void Game::saveOptions()
+{
+	if (!fs::is_regular_file("savedata/options.txt"))
+	{
+		createSavedataFile("options.txt");
+	}
+
+	std::ofstream writeStream("savedata/options.txt");
+	writeStream
+	<< "Music:"        << options.music       << "\n"
+	<< "Music Volume:" << options.volumeMusic << "\n"
+	<< "SFX:"          << options.SFX         << "\n"
+	<< "SFX Volume:"   << options.volumeSFX   << "\n"
+	<< "FPS:"          << options.FPS         << "\n"
+	<< "Debug:"        << options.debug;
+	writeStream.close();
+}
+
+bool aboutOption(std::string &line, std::string option)
+{
+	if (strstr(line.c_str(), std::string(option + ":").c_str()))
+	{
+		replaceSubstringInString(line, option + ":");
+		return true;
+	}
+
+	return false;
+}
+
+void Game::loadOptions()
+{
+	if (fs::is_regular_file("savedata/options.txt"))
+	{
+		std::ifstream readStream;
+		readStream.open("savedata/options.txt");
+		std::string line;
+		while (getline(readStream, line))
+		{
+			if (aboutOption(line, "Music"))
+			{
+				options.music = std::stoi(line);
+			}
+			else if (aboutOption(line, "Music Volume"))
+			{
+				options.volumeMusic = std::clamp(std::stof(line), 0.01f, 0.99f);
+			}
+			else if (aboutOption(line, "SFX"))
+			{
+				options.SFX = std::stoi(line);
+			}
+			else if (aboutOption(line, "SFX Volume"))
+			{
+				options.volumeSFX = std::clamp(std::stof(line), 0.01f, 0.99f);
+			}
+			else if (aboutOption(line, "FPS"))
+			{
+				options.FPS = std::stoi(line);
+			}
+			else if (aboutOption(line, "Debug"))
+			{
+				options.debug = std::stoi(line);
+			}
+		}
+		readStream.close();
+
+		options.reloadGUI();
+	}
+}
+
+
+
 void Game::createStoryLevelboxes()
 {
 	bool needToCreateLevelsClearedFile = false;
 	int clearedLevels = 0;
 
-	if (fs::is_directory("savedata"))
+	if (fs::is_regular_file("savedata/levels_cleared.txt"))
 	{
-		if (fs::exists("savedata/levels_cleared.txt") && !fs::is_directory("savedata/levels_cleared.txt"))
+		std::ifstream fileStream;
+		fileStream.open("savedata/levels_cleared.txt");
+		std::string line;
+		std::getline(fileStream, line);
+		clearedLevels = std::stoi(line);
+		if (clearedLevels < 0)
 		{
-			// here
-			std::ifstream fileStream;
-			fileStream.open("savedata/levels_cleared.txt");
-			std::string line;
-			std::getline(fileStream, line);
-			clearedLevels = atoi(line.c_str());
-			if (clearedLevels < 0)
-			{
-				clearedLevels = 0;
-			}
+			clearedLevels = 0;
 		}
-		else { needToCreateLevelsClearedFile = true; }
 	}
 	else
 	{
-		fs::create_directory("savedata");
-		needToCreateLevelsClearedFile = true;
-	}
-
-	if (needToCreateLevelsClearedFile)
-	{
+		createSavedataFile("levels_cleared.txt");
 		std::ofstream levelsCleared("savedata/levels_cleared.txt");
 		levelsCleared << 0;
 		levelsCleared.close();
@@ -215,11 +283,6 @@ void Game::createStoryLevelboxes()
 	}
 }
 
-void replaceSubstringInString(std::string &string, std::string substring)
-{
-	string.replace(string.find(substring), substring.size(), "");
-}
-
 void Game::createCustomLevelboxes()
 {
 	lastCustomLevelVerticalPosition = 0;
@@ -247,17 +310,12 @@ void Game::createCustomLevelboxes()
 		replaceSubstringInString(levelName, "\""); // we do this two times, since there
 		replaceSubstringInString(levelName, "\""); // is one quotation mark on each side
 
-		// this removes a two \ from the name, which appears on windows
-		if (strstr(levelName.c_str(), "\\"))
-		{
-			replaceSubstringInString(levelName, "\\");
-			replaceSubstringInString(levelName, "\\");
-		}
-		// this removes a / from the name
-		else
-		{
-			replaceSubstringInString(levelName, "/");
-		}
+		#ifdef _WIN32
+		replaceSubstringInString(levelName, "\\");
+		replaceSubstringInString(levelName, "\\");
+		#elif __linux__
+		replaceSubstringInString(levelName, "/");
+		#endif
 
 		float verticalPosition = viewHeight * 0.25 + 48 + levelboxSpacing * customLevelsCount;
 
@@ -331,7 +389,7 @@ void Game::createMenu()
 
 void Game::updateMenu()
 {
-	if (state == MainMenu && bookIsOpen) { return; }
+	if (state == MainMenu && (bookIsOpen || creditsIsOpen)) { return; }
 
 	if (changedState)
 	{
@@ -384,20 +442,20 @@ void Game::drawMenu()
 
 
 
-void Game::drawBookIsOpen()
+void Game::drawBookContents()
 {
 	pauseRect.setPosition(relativeViewPosition(view, {0, 0}));
 	window->draw(pauseRect);
 
 	text.draw("Level", Center, Start, {viewWidth / 2, 10}, {1.5, 1.5});
-	text.draw("Move - WASD or Arrow Keys", Start, Start, {10, 25}, {0.8, 0.8});
-	text.draw("Jump - J or Space"        , Start, Start, {10, 35}, {0.8, 0.8});
-	text.draw("Reset - R"                , Start, Start, {10, 45}, {0.8, 0.8});
+	text.draw("Move - WASD || Arrow Keys", Start, Start, {10, 25}, {0.8, 0.8});
+	text.draw("Jump - J || Space"        , Start, Start, {10, 35}, {0.8, 0.8});
+	text.draw("Restart - R"                , Start, Start, {10, 45}, {0.8, 0.8});
 	text.draw("Pause - Escape"           , Start, Start, {10, 55}, {0.8, 0.8});
 
 	text.draw("Editor", Center, Start, {viewWidth / 2, 70}, {1.5, 1.5});
 	text.draw("Place / Erase - Left Click"                         , Start, Start, {10,  85}, {0.8, 0.8});
-	text.draw("Move View - (Middle Click or Shift) + Mouse Move"   , Start, Start, {10,  95}, {0.8, 0.8});
+	text.draw("Move View - (Middle Click || Shift) + Mouse Move"   , Start, Start, {10,  95}, {0.8, 0.8});
 	text.draw("Zoom View - Scroll Wheel"                           , Start, Start, {10, 105}, {0.8, 0.8});
 	text.draw("Eyedropper - Alt + Left Click"                      , Start, Start, {10, 115}, {0.8, 0.8});
 	text.draw("Equip Brush - B"                                    , Start, Start, {10, 125}, {0.8, 0.8});
@@ -406,10 +464,21 @@ void Game::drawBookIsOpen()
 	text.draw("Toggle Crosshair - C"                               , Start, Start, {10, 155}, {0.8, 0.8});
 	text.draw("Reset View - R"                                     , Start, Start, {10, 165}, {0.8, 0.8});
 	text.draw("Clear Level - Control + Shift + R"                  , Start, Start, {10, 175}, {0.8, 0.8});
-	text.draw("Play Level - Control + Space or Hit the play button", Start, Start, {10, 185}, {0.8, 0.8});
-	text.draw("Save Level - Control + S or Hit the save button"    , Start, Start, {10, 195}, {0.8, 0.8});
-	text.draw("Load Level - Control + L or Hit the load button"    , Start, Start, {10, 205}, {0.8, 0.8});
+	text.draw("Play Level - Control + Space || Hit the play button", Start, Start, {10, 185}, {0.8, 0.8});
+	text.draw("Save Level - Control + S || Hit the save button"    , Start, Start, {10, 195}, {0.8, 0.8});
+	text.draw("Load Level - Control + L || Hit the load button"    , Start, Start, {10, 205}, {0.8, 0.8});
 	text.draw("Pause - Escape"                                     , Start, Start, {10, 215}, {0.8, 0.8});
+}
+
+void Game::drawCreditsContents()
+{
+	pauseRect.setPosition(relativeViewPosition(view, {0, 0}));
+	window->draw(pauseRect);
+
+	text.draw("Credits", Center, Start, {viewWidth / 2, 10}, {1.5, 1.5});
+	text.draw("Neo Gullberg - Programming && Visual Design", Start, Start, {10, 25}, {0.8, 0.8});
+	text.draw("Leo af Petersens - Level Design"               , Start, Start, {10, 35}, {0.8, 0.8});
+	text.draw("Artin Shakibi - Concept Design"             , Start, Start, {10, 45}, {0.8, 0.8});
 }
 
 
@@ -522,15 +591,6 @@ void Game::update()
 	updateCursor();
 	updateViewport();
 
-	if (playedMusicLastFrame != options.music || volumeMusicLastFrame != options.volumeMusic)
-	{
-		audio.updateMusicVolume(options.music, options.volumeMusic);
-	}
-	if (playedSFXLastFrame != options.SFX || volumeSFXLastFrame != options.volumeSFX)
-	{
-		audio.updateSFXVolume(options.SFX, options.volumeSFX);
-	}
-
 	if (state != lastState)
 	{
 		changedState = true;
@@ -546,10 +606,10 @@ void Game::update()
 		pausePress   = false;
 		pausePressed = false;
 
-	if (state != LevelPlay) // not doing it when in a level, since the level takes care of updating the view
-	{
-		resetView();
-	}
+		if (state != LevelPlay) // not doing it when in a level, since the level takes care of updating the view
+		{
+			resetView();
+		}
 
 		switch (state)
 		{
@@ -561,7 +621,12 @@ void Game::update()
 		switch (lastState)
 		{
 			case SplashScreen:
+				loadOptions();
 				audio.titleTrack.play();
+				break;
+
+			case OptionsScreen:
+				saveOptions();
 				break;
 
 			case LevelEditor:
@@ -569,6 +634,15 @@ void Game::update()
 				sprites.resetScale();
 				break;
 		}
+	}
+
+	if (playedMusicLastFrame != options.music || volumeMusicLastFrame != options.volumeMusic)
+	{
+		audio.updateMusicVolume(options.music, options.volumeMusic);
+	}
+	if (playedSFXLastFrame != options.SFX || volumeSFXLastFrame != options.volumeSFX)
+	{
+		audio.updateSFXVolume(options.SFX, options.volumeSFX);
 	}
 
 	lastState = state;
@@ -584,9 +658,10 @@ void Game::draw()
 		text.draw("Paused", Center, Center, relativeViewPosition(view, {viewWidth * 0.5, viewHeight * 0.25}), {2, 2});
 	}
 	drawMenu();
-	if (state == MainMenu && bookIsOpen)
+	if (state == MainMenu) // needs to run after drawMenu(), so can't have this in drawState().
 	{
-		drawBookIsOpen();
+		if (bookIsOpen) { drawBookContents(); }
+		else if (creditsIsOpen) { drawCreditsContents(); }
 	}
 	if (transition.transitioning)
 	{
@@ -595,39 +670,5 @@ void Game::draw()
 	if (options.FPS)
 	{
 		drawFPS();
-	}
-	displayClock.restart();
-}
-
-void Game::noMemoryLeaksForMeThankYouVeryMuch()
-{
-	/*
-		had this problem (on windows) were the game would continue running in the background after closing it
-		didn't fix it for a very long time since i was very lazy
-		plus i entirely forgot about it since i mainly develop on linux and it didn't seem to occur there
-		anyway, i just now realised it might have been do to a memory leak
-		i looked into it and i was correct
-		yeah
-		so this is the (ugly) solution for that
-	*/
-
-	for (LevelVector* levelVector : storyLevels)
-	{
-		delete levelVector;
-	}
-
-	for (Menubox* menubox : menu)
-	{
-		delete menubox;
-	}
-
-	for (Input* input : editor.levelInputs)
-	{
-		delete input;
-	}
-
-	for (sf::Sprite* sprite : sprites.tilesets)
-	{
-		delete sprite;
 	}
 }

@@ -46,10 +46,41 @@ int main()
 
 		game.draw();
 
+		game.displayClock.restart();
+
 		window.display();
 	}
 
-	game.noMemoryLeaksForMeThankYouVeryMuch();
+	#ifdef _WIN32
+
+	/*
+		had a problem (memory leak?)
+		this fixed it
+		is ugly
+		but it works ¯\_(ツ)_/¯
+	*/
+
+	for (LevelVector* levelVector : storyLevels)
+	{
+		delete levelVector;
+	}
+
+	for (Menubox* menubox : menu)
+	{
+		delete menubox;
+	}
+
+	for (Input* input : editor.levelInputs)
+	{
+		delete input;
+	}
+
+	for (sf::Sprite* sprite : sprites.tilesets)
+	{
+		delete sprite;
+	}
+
+	#endif
 
 	return 0;
 }

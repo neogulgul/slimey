@@ -124,6 +124,19 @@ Options::Options()
 	};
 }
 
+void Options::reloadGUI()
+{
+	for (OptionButton &button : optionButtons)
+	{
+		button.updateString();
+	}
+
+	for (VolumeBar &bar : volumeBars)
+	{
+		bar.updateVolumeSlider();
+	}
+}
+
 void Options::reset()
 {
 	music = default_music;
@@ -134,13 +147,5 @@ void Options::reset()
 	volumeMusic = default_volumeMusic;
 	volumeSFX   = default_volumeSFX;
 
-	for (OptionButton &button : optionButtons)
-	{
-		button.updateString();
-	}
-
-	for (VolumeBar &bar : volumeBars)
-	{
-		bar.updateVolumeSlider();
-	}
+	reloadGUI();
 }

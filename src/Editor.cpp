@@ -382,14 +382,9 @@ void Editor::saveLevel()
 	}
 	levelStream << "};";
 
-	if (!(fs::exists("savedata") && fs::is_directory("savedata")))
+	if (!fs::is_directory("savedata/custom_levels"))
 	{
-		fs::create_directory("savedata");
-	}
-
-	if (!(fs::exists("savedata/custom_levels") && fs::is_directory("savedata/custom_levels")))
-	{
-		fs::create_directory("savedata/custom_levels");
+		createSavedataFolder("custom_levels");
 	}
 
 	std::ofstream output("savedata/custom_levels/" + levelNameInput->getString() + ".txt");

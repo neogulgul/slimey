@@ -3,13 +3,14 @@
 #define splashScreenWaitFrames 60
 #define amountOfRainbowSlimeys 100
 
-RainbowSlimey::RainbowSlimey(sf::Color _color, sf::Vector2f _position, float _scale, int _rotation, int _speed)
+RainbowSlimey::RainbowSlimey(sf::Color _color, sf::Vector2f _position, float _scale, int _rotation, int _speed, bool _reincarnated)
 {
-	color    = _color;
-	position = _position;
-	scale    = _scale;
-	rotation = _rotation;
-	speed    = _speed;
+	color        = _color;
+	position     = _position;
+	scale        = _scale;
+	rotation     = _rotation;
+	speed        = _speed;
+	reincarnated = _reincarnated;
 }
 
 void RainbowSlimey::update()
@@ -87,6 +88,7 @@ void Game::updateMainMenu()
 	static std::uniform_int_distribution<> speed_dist(1, 5);
 	static std::uniform_int_distribution<> color_dist(0, randomColors.size() - 1);
 	static std::uniform_int_distribution<> scale_dist(0.5 * 10, 2 * 10);
+	static std::uniform_int_distribution<> 兄貴_dist(0, 1000);
 
 	if (changedState)
 	{
@@ -100,7 +102,7 @@ void Game::updateMainMenu()
 		{
 			position.x -= viewWidth + sprites.slimeyColorlessTexture.getSize().x;
 		}
-		rainbowSlimeys.push_back(RainbowSlimey(randomColors.at(color_dist(rng)), position, scale_dist(rng) / 10.f, rotation_dist(rng), speed_dist(rng)));
+		rainbowSlimeys.push_back(RainbowSlimey(randomColors.at(color_dist(rng)), position, scale_dist(rng) / 10.f, rotation_dist(rng), speed_dist(rng), 兄貴_dist(rng) == 0));
 	}
 
 	for (unsigned int i = 0; i < rainbowSlimeys.size(); i++)
@@ -126,23 +128,29 @@ void Game::updateMainMenu()
 		}
 	}
 
-	// book button
-	if (bookIsOpen)
+	// book and credits
+	if (bookIsOpen || creditsIsOpen)
 	{
 		if (leftClick)
 		{
-			bookIsOpen = false;
+			bookIsOpen    = false;
+			creditsIsOpen = false;
 		}
 	}
 	else
 	{
 		bookButton.update(mousePosition);
-		if (bookButton.active) {
+		creditsButton.update(mousePosition);
+
+		if (bookButton.active)
+		{
 			handyCursor = true;
-			if (leftClick)
-			{
-				bookIsOpen = true;
-			}
+			if (leftClick) { bookIsOpen = true; }
+		}
+		else if (creditsButton.active)
+		{
+			handyCursor = true;
+			if (leftClick) { creditsIsOpen = true; }
 		}
 	}
 }
@@ -353,19 +361,28 @@ void Game::drawExitScreen()
 
 void Game::drawMainMenu()
 {
+	// drawing rainbow slimeys
 	for (RainbowSlimey rainbowSlimey : rainbowSlimeys)
 	{
-		sprites.slimeyColorless.setOrigin(sprites.slimeyColorlessTexture.getSize().x / 2, sprites.slimeyColorlessTexture.getSize().y / 2);
-		sprites.slimeyColorless.setRotation(rainbowSlimey.rotation);
-		sprites.slimeyColorless.setPosition(rainbowSlimey.position);
-		sprites.slimeyColorless.setColor(rainbowSlimey.color);
-		sprites.slimeyColorless.setScale(rainbowSlimey.scale, rainbowSlimey.scale);
-		window->draw(sprites.slimeyColorless);
+		if (rainbowSlimey.reincarnated)
+		{
+			text.draw(兄貴, Center, Center, rainbowSlimey.position, rainbowSlimey.color, {0.1f * rainbowSlimey.scale, 0.1f * rainbowSlimey.scale});
+		}
+		else
+		{
+			sprites.slimeyColorless.setOrigin(sprites.slimeyColorlessTexture.getSize().x / 2, sprites.slimeyColorlessTexture.getSize().y / 2);
+			sprites.slimeyColorless.setRotation(rainbowSlimey.rotation);
+			sprites.slimeyColorless.setPosition(rainbowSlimey.position);
+			sprites.slimeyColorless.setColor(rainbowSlimey.color);
+			sprites.slimeyColorless.setScale(rainbowSlimey.scale, rainbowSlimey.scale);
+			window->draw(sprites.slimeyColorless);
+		}
 	}
 
 	text.draw("Slimey", Center, Center, {viewWidth * 0.5, viewHeight * 0.25}, {2, 2});
 
 	bookButton.draw(window, view, &text);
+	creditsButton.draw(window, view, &text);
 }
 
 void Game::drawOptionsScreen()

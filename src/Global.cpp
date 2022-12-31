@@ -75,6 +75,49 @@ void handlePress(bool pressing, bool &press, bool &pressed)
 	}
 }
 
+void createSavedata()
+{
+	if (fs::is_regular_file("savedata"))
+	{
+		fs::remove("savedata");
+	}
+
+	if (!fs::exists("savedata"))
+	{
+		fs::create_directory("savedata");
+	}
+}
+
+void createSavedataFile(std::string path)
+{
+	if (!fs::is_directory("savedata")) { createSavedata(); }
+
+	if (!fs::is_regular_file("savedata/" + path))
+	{
+		if (fs::is_directory("savedata/" + path))
+		{
+			fs::remove_all("savedata/" + path);
+		}
+
+		std::ofstream optionsFile("savedata/" + path);
+		optionsFile.close();
+	}
+}
+
+void createSavedataFolder(std::string path)
+{
+	if (!fs::is_directory("savedata")) { createSavedata(); }
+
+	if (!fs::is_directory("savedata/" + path))
+	{
+		if (fs::is_regular_file("savedata/" + path))
+		{
+			fs::remove("savedata/" + path);
+		}
+
+		fs::create_directory("savedata/" + path);
+	}
+}
 
 sf::Vector2f relativeViewPosition(sf::View* view, sf::Vector2f position)
 {

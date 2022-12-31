@@ -20,6 +20,7 @@ struct Sprites
 	sf::Texture bulletExplosionTexture;
 	sf::Texture bookTexture;
 	sf::Texture xMarkTexture;
+	sf::Texture creditsTexture;
 
 	// sprites
 	sf::Sprite slimey;
@@ -39,6 +40,7 @@ struct Sprites
 	sf::Sprite bulletExplosion;
 	sf::Sprite book;
 	sf::Sprite xMark;
+	sf::Sprite credits;
 
 	std::vector<sf::Sprite*> tilesets;
 

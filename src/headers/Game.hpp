@@ -23,8 +23,10 @@ struct RainbowSlimey // used on the main menu
 	int speed;
 
 	bool passed = false;
-	
-	RainbowSlimey(sf::Color _color, sf::Vector2f _position, float _scale, int _rotation, int _speed);
+
+	bool reincarnated = false;
+
+	RainbowSlimey(sf::Color _color, sf::Vector2f _position, float _scale, int _rotation, int _speed, bool _reincarnated);
 
 	void update();
 };
@@ -56,8 +58,10 @@ struct Game
 
 	// main menu stuff
 	std::vector<RainbowSlimey> rainbowSlimeys;
-	Button bookButton;
-	bool bookIsOpen = false;
+	Button    bookButton;
+	Button creditsButton;
+	bool    bookIsOpen = false;
+	bool creditsIsOpen = false;
 
 	sf::Vector2f mousePosition;
 
@@ -104,13 +108,17 @@ struct Game
 	void handleCustomLevelsScroll(sf::Event event);
 	void limitCustomLevelsScroll();
 
+	void saveOptions();
+	void loadOptions();
+
 	void createStoryLevelboxes();
 	void createCustomLevelboxes();
 	void createMenu();
 	void updateMenu();
 	void drawMenu();
 
-	void drawBookIsOpen();
+	void drawBookContents();
+	void drawCreditsContents();
 
 	void updateCursor();
 
@@ -141,6 +149,4 @@ struct Game
 
 	void update();
 	void draw();
-
-	void noMemoryLeaksForMeThankYouVeryMuch();
 };

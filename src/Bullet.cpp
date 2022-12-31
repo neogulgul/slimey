@@ -29,10 +29,10 @@ void Bullet::handleCollision()
 		player->death();
 	}
 	if (position.x > levelSize.x * tilesize ||
-	    position.x < -bulletSize          ||
+	    position.x < -bulletSize            ||
 	    position.y > levelSize.y * tilesize ||
-	    position.y < -bulletSize          ||
-	      hitUp || hitDown                ||
+	    position.y < -bulletSize            ||
+	      hitUp || hitDown                  ||
 	    hitLeft || hitRight)
 	{
 		explode();
