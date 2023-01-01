@@ -207,3 +207,32 @@ LevelVector getCustomLevelVector(std::string levelName)
 
 	return customLevel;
 }
+
+int getLevelsCleared()
+{
+	int clearedLevels = 0;
+	if (fs::is_regular_file("savedata/levels_cleared.txt"))
+	{
+		std::ifstream fileStream;
+		fileStream.open("savedata/levels_cleared.txt");
+		std::string line;
+		std::getline(fileStream, line);
+		if (line.length() > 0)
+		{
+			clearedLevels = atoi(line.c_str());
+			if (clearedLevels < 0)
+			{
+				clearedLevels = 0;
+			}
+		}
+	}
+	else
+	{
+		createSavedataFile("levels_cleared.txt");
+		std::ofstream levelsCleared("savedata/levels_cleared.txt");
+		levelsCleared << 0;
+		levelsCleared.close();
+	}
+
+	return clearedLevels;
+}

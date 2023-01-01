@@ -217,28 +217,7 @@ void Game::loadOptions()
 
 void Game::createStoryLevelboxes()
 {
-	bool needToCreateLevelsClearedFile = false;
-	int clearedLevels = 0;
-
-	if (fs::is_regular_file("savedata/levels_cleared.txt"))
-	{
-		std::ifstream fileStream;
-		fileStream.open("savedata/levels_cleared.txt");
-		std::string line;
-		std::getline(fileStream, line);
-		clearedLevels = std::stoi(line);
-		if (clearedLevels < 0)
-		{
-			clearedLevels = 0;
-		}
-	}
-	else
-	{
-		createSavedataFile("levels_cleared.txt");
-		std::ofstream levelsCleared("savedata/levels_cleared.txt");
-		levelsCleared << 0;
-		levelsCleared.close();
-	}
+	int clearedLevels = getLevelsCleared();
 
 	unsigned int currentColumn = 0;
 	unsigned int currentRow    = 0;

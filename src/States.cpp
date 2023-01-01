@@ -102,7 +102,7 @@ void Game::updateMainMenu()
 		{
 			position.x -= viewWidth + sprites.slimeyColorlessTexture.getSize().x;
 		}
-		rainbowSlimeys.push_back(RainbowSlimey(randomColors.at(color_dist(rng)), position, scale_dist(rng) / 10.f, rotation_dist(rng), speed_dist(rng), 兄貴_dist(rng) == 0));
+		rainbowSlimeys.push_back(RainbowSlimey(randomColors.at(color_dist(rng)), position, scale_dist(rng) / 10.f, rotation_dist(rng), speed_dist(rng), getLevelsCleared() >= 20 && 兄貴_dist(rng) == 0));
 	}
 
 	for (unsigned int i = 0; i < rainbowSlimeys.size(); i++)
